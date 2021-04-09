@@ -896,18 +896,18 @@ pub enum ImageBuildChunk {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Aux {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ErrorDetail {
-    message: String,
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProgressDetail {
-    current: Option<u64>,
-    total: Option<u64>,
+    pub current: Option<u64>,
+    pub total: Option<u64>,
 }
 
 #[cfg(test)]
