@@ -297,7 +297,7 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove>
     pub async fn remove(
         &self,
-        opts: RmContainerOptions,
+        opts: &RmContainerOptions,
     ) -> Result<()> {
         let mut path = vec![format!("/containers/{}", self.id)];
         if let Some(query) = opts.serialize() {
