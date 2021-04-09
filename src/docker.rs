@@ -6,6 +6,7 @@ use std::{collections::HashMap, io, path::Path};
 
 use futures_util::{stream::Stream, TryStreamExt};
 use hyper::{client::HttpConnector, Body, Client, Method};
+use log::{debug, trace};
 use mime::Mime;
 use serde::{de, Deserialize, Serialize};
 use url::form_urlencoded;
@@ -256,6 +257,7 @@ impl Docker {
             .transport
             .request(Method::GET, endpoint, Payload::None, Headers::None)
             .await?;
+        trace!("{}", raw_string);
 
         Ok(serde_json::from_str::<T>(&raw_string)?)
     }
@@ -289,12 +291,13 @@ impl Docker {
         T: serde::de::DeserializeOwned,
         B: Into<Body>,
     {
-        let string = self
+        let raw_string = self
             .transport
             .request(Method::POST, endpoint, body, Headers::None)
             .await?;
+        trace!("{}", raw_string);
 
-        Ok(serde_json::from_str::<T>(&string)?)
+        Ok(serde_json::from_str::<T>(&&raw_string)?)
     }
 
     pub(crate) async fn post_json_headers<'a, T, B, H>(
@@ -308,12 +311,13 @@ impl Docker {
         B: Into<Body>,
         H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
-        let string = self
+        let raw_string = self
             .transport
             .request(Method::POST, endpoint, body, headers)
             .await?;
+        trace!("{}", raw_string);
 
-        Ok(serde_json::from_str::<T>(&string)?)
+        Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
     pub(crate) async fn delete(
@@ -329,12 +333,13 @@ impl Docker {
         &self,
         endpoint: &str,
     ) -> Result<T> {
-        let string = self
+        let raw_string = self
             .transport
             .request(Method::DELETE, endpoint, Payload::None, Headers::None)
             .await?;
+        trace!("{}", raw_string);
 
-        Ok(serde_json::from_str::<T>(&string)?)
+        Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
     /// Send a streaming post request.
