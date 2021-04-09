@@ -57,13 +57,6 @@ impl From<hyper::http::Error> for Error {
     }
 }
 
-impl From<http::uri::InvalidUri> for Error {
-    fn from(error: http::uri::InvalidUri) -> Self {
-        let http_error: http::Error = error.into();
-        http_error.into()
-    }
-}
-
 impl From<IoError> for Error {
     fn from(error: IoError) -> Error {
         Error::IO(error)

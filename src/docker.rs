@@ -2,7 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
 
-use std::{collections::HashMap, env, io, path::Path};
+use std::{collections::HashMap, io, path::Path};
 
 use futures_util::{stream::Stream, TryStreamExt};
 use hyper::{client::HttpConnector, Body, Client, Method};
@@ -18,7 +18,6 @@ use crate::{
     service::Services,
     transport::{Headers, Payload, Transport},
     volume::Volumes,
-    Uri,
 };
 
 #[cfg(feature = "chrono")]
@@ -45,67 +44,6 @@ fn get_http_connector() -> HttpConnector {
     http.enforce_http(false);
 
     http
-}
-
-#[cfg(feature = "tls")]
-// To be deleted after 0.8.0
-fn get_docker_for_tcp(tcp_host_str: String) -> Docker {
-    let http = get_http_connector();
-    if let Ok(ref certs) = env::var("DOCKER_CERT_PATH") {
-        // fixme: don't unwrap before you know what's in the box
-        // https://github.com/hyperium/hyper/blob/master/src/net.rs#L427-L428
-        let mut connector = SslConnector::builder(SslMethod::tls()).unwrap();
-        connector.set_cipher_list("DEFAULT").unwrap();
-        let cert = &format!("{}/cert.pem", certs);
-        let key = &format!("{}/key.pem", certs);
-        connector
-            .set_certificate_file(&Path::new(cert), SslFiletype::PEM)
-            .unwrap();
-        connector
-            .set_private_key_file(&Path::new(key), SslFiletype::PEM)
-            .unwrap();
-        if env::var("DOCKER_TLS_VERIFY").is_ok() {
-            let ca = &format!("{}/ca.pem", certs);
-            connector.set_ca_file(&Path::new(ca)).unwrap();
-        }
-
-        // If we are attempting to connec to the docker daemon via tcp
-        // we need to convert the scheme to `https` to let hyper connect.
-        // Otherwise, hyper will reject the connection since it does not
-        // recongnize `tcp` as a valid `http` scheme.
-        let tcp_host_str = if tcp_host_str.contains("tcp://") {
-            tcp_host_str.replace("tcp://", "https://")
-        } else {
-            tcp_host_str
-        };
-
-        Docker {
-            transport: Transport::EncryptedTcp {
-                client: Client::builder()
-                    .build(HttpsConnector::with_connector(http, connector).unwrap()),
-                host: tcp_host_str,
-            },
-        }
-    } else {
-        Docker {
-            transport: Transport::Tcp {
-                client: Client::builder().build(http),
-                host: tcp_host_str,
-            },
-        }
-    }
-}
-
-#[cfg(not(feature = "tls"))]
-// To be deleted after 0.8.0
-fn get_docker_for_tcp(tcp_host_str: String) -> Docker {
-    let http = get_http_connector();
-    Docker {
-        transport: Transport::Tcp {
-            client: Client::builder().build(http),
-            host: tcp_host_str,
-        },
-    }
 }
 
 #[cfg(feature = "tls")]

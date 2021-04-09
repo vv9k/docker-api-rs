@@ -34,8 +34,6 @@ mod tarball;
 #[cfg(feature = "chrono")]
 mod datetime;
 
-pub use hyper::Uri;
-
 pub use crate::{
     container::{
         Container, ContainerFilter, ContainerListOptions, ContainerOptions, Containers,
