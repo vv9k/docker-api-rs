@@ -902,9 +902,12 @@ impl ContainerOptionsBuilder {
     ) -> &mut Self
     where
         I: IntoIterator<Item = S> + Serialize,
-        S: AsRef<str>,
+        S: AsRef<str> + Serialize,
     {
-        self.params.insert("Entrypoint", json!(entrypoint));
+        self.params.insert(
+            "Entrypoint",
+            json!(entrypoint.into_iter().collect::<Vec<_>>()),
+        );
         self
     }
 
