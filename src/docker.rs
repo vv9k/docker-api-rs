@@ -6,7 +6,7 @@ use std::{collections::HashMap, io, path::Path};
 
 use futures_util::{stream::Stream, TryStreamExt};
 use hyper::{client::HttpConnector, Body, Client, Method};
-use log::{debug, trace};
+use log::trace;
 use mime::Mime;
 use serde::{de, Deserialize, Serialize};
 use url::form_urlencoded;

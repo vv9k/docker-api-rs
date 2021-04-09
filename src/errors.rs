@@ -1,6 +1,6 @@
 //! Representations of various client errors
 
-use hyper::{self, http, StatusCode};
+use hyper::{self, StatusCode};
 use serde_json::Error as SerdeError;
 use std::{error::Error as StdError, fmt, string::FromUtf8Error};
 
