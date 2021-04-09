@@ -233,32 +233,6 @@ impl Docker {
         }
     }
 
-    #[deprecated(since = "0.9.0", note = "Please use Docker::new instead")]
-    /// constructs a new Docker instance for docker host listening at the given host url
-    pub fn host(host: Uri) -> Docker {
-        let tcp_host_str = format!(
-            "{}://{}:{}",
-            host.scheme_str().unwrap(),
-            host.host().unwrap().to_owned(),
-            host.port_u16().unwrap_or(80)
-        );
-
-        match host.scheme_str() {
-            #[cfg(feature = "unix-socket")]
-            Some("unix") => Docker {
-                transport: Transport::Unix {
-                    client: Client::builder().build(UnixConnector),
-                    path: host.path().to_owned(),
-                },
-            },
-
-            #[cfg(not(feature = "unix-socket"))]
-            Some("unix") => panic!("Unix socket support is disabled"),
-
-            _ => get_docker_for_tcp(tcp_host_str),
-        }
-    }
-
     /// Exports an interface for interacting with docker images
     pub fn images(&'_ self) -> Images<'_> {
         Images::new(self)
