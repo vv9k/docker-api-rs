@@ -1,7 +1,7 @@
 [package]
 
 name = "moby"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Actively maintained Rust interface for maneuvering Docker containers"
 documentation = "https://docs.rs/moby"
