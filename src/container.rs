@@ -876,15 +876,16 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    pub fn env<E, S>(
+    pub fn env<I, S>(
         &mut self,
-        envs: E,
+        envs: I,
     ) -> &mut Self
     where
+        I: IntoIterator<Item = S> + Serialize,
         S: AsRef<str> + Serialize,
-        E: AsRef<[S]> + Serialize,
     {
-        self.params.insert("Env", json!(envs));
+        self.params
+            .insert("Env", json!(envs.into_iter().collect::<Vec<_>>()));
         self
     }
 
