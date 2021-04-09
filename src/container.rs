@@ -1297,7 +1297,7 @@ pub struct HostConfig {
     pub memory_swappiness: Option<i64>,
     #[serde(rename = "NanoCPUs")]
     pub nano_cpus: Option<i64>,
-    pub oom_kill_disable: bool,
+    pub oom_kill_disable: Option<bool>,
     pub init: Option<bool>,
     pub pids_limit: Option<i64>,
     pub ulimits: Option<Vec<Ulimit>>,
