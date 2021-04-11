@@ -30,6 +30,7 @@ use crate::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
+#[derive(Debug)]
 /// Interface for accessing and manipulating a docker container
 ///
 /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Container>
@@ -397,6 +398,7 @@ impl<'docker> Container<'docker> {
     }
 }
 
+#[derive(Debug)]
 /// Interface for docker containers
 ///
 /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Containers>

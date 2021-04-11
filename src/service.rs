@@ -21,6 +21,7 @@ use crate::{
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
+#[derive(Debug)]
 /// Interface for docker services
 ///
 /// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
@@ -59,6 +60,7 @@ impl<'docker> Services<'docker> {
     }
 }
 
+#[derive(Debug)]
 /// Interface for accessing and manipulating a named docker volume
 ///
 /// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>

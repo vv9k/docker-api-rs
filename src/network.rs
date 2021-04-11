@@ -17,6 +17,7 @@ use crate::{
     errors::{Error, Result},
 };
 
+#[derive(Debug)]
 /// Interface for docker network
 ///
 /// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Network>
@@ -71,6 +72,7 @@ impl<'docker> Networks<'docker> {
     }
 }
 
+#[derive(Debug)]
 /// Interface for accessing and manipulating a docker network
 pub struct Network<'docker> {
     docker: &'docker Docker,
