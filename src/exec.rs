@@ -190,6 +190,7 @@ impl<'docker> Exec<'docker> {
 #[derive(Serialize, Debug)]
 pub struct ExecContainerOptions {
     params: HashMap<&'static str, Vec<String>>,
+    params_str: HashMap<&'static str, String>,
     params_bool: HashMap<&'static str, bool>,
 }
 
@@ -210,6 +211,13 @@ impl ExecContainerOptions {
             );
         }
 
+        for (k, v) in &self.params_str {
+            body.insert(
+                (*k).to_owned(),
+                serde_json::to_value(v).map_err(Error::SerdeJsonError)?,
+            );
+        }
+
         for (k, v) in &self.params_bool {
             body.insert(
                 (*k).to_owned(),
@@ -224,6 +232,7 @@ impl ExecContainerOptions {
 #[derive(Default)]
 pub struct ExecContainerOptionsBuilder {
     params: HashMap<&'static str, Vec<String>>,
+    params_str: HashMap<&'static str, String>,
     params_bool: HashMap<&'static str, bool>,
 }
 
@@ -274,9 +283,63 @@ impl ExecContainerOptionsBuilder {
         self
     }
 
+    /// Override the key sequence for detaching a container. Format is a single
+    /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
+    pub fn detach_keys<S>(
+        &mut self,
+        format: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.params_str.insert("DetachKeys", format.into());
+        self
+    }
+
+    /// Allocate a pseudo-TTY
+    pub fn tty(
+        &mut self,
+        allocate: bool,
+    ) -> &mut Self {
+        self.params_bool.insert("Tty", allocate);
+        self
+    }
+
+    /// Runs the exec process with extended privileges. (Default: `false`)
+    pub fn privileged(
+        &mut self,
+        privileged: bool,
+    ) -> &mut Self {
+        self.params_bool.insert("Privileged", privileged);
+        self
+    }
+
+    pub fn user<S>(
+        &mut self,
+        user: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.params_str.insert("User", user.into());
+        self
+    }
+
+    pub fn working_dir<S>(
+        &mut self,
+        working_dir: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.params_str.insert("WorkingDir", working_dir.into());
+        self
+    }
+
     pub fn build(&self) -> ExecContainerOptions {
         ExecContainerOptions {
             params: self.params.clone(),
+            params_str: self.params_str.clone(),
             params_bool: self.params_bool.clone(),
         }
     }

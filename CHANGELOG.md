@@ -4,3 +4,4 @@
 * `HostConfig::init` field is now an Option
 * `Container::remove` now takes a reference to `RmContainerOptions` instead of owned value
 * All API handles like `Containers` or `Image` now implement `Debug`
+* Add missing fields to `ExecContainerOptions`
