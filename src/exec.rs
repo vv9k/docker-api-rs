@@ -238,30 +238,39 @@ pub struct ExecContainerOptionsBuilder {
 
 impl ExecContainerOptionsBuilder {
     /// Command to run, as an array of strings
-    pub fn cmd(
+    pub fn cmd<I, S>(
         &mut self,
-        cmds: Vec<&str>,
-    ) -> &mut Self {
-        for cmd in cmds {
+        cmds: I,
+    ) -> &mut Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        cmds.into_iter().for_each(|cmd| {
             self.params
                 .entry("Cmd")
                 .or_insert_with(Vec::new)
-                .push(cmd.to_owned());
-        }
+                .push(cmd.into());
+        });
         self
     }
 
     /// A list of environment variables in the form "VAR=value"
-    pub fn env(
+    pub fn env<I, S>(
         &mut self,
-        envs: Vec<&str>,
-    ) -> &mut Self {
-        for env in envs {
+        envs: I,
+    ) -> &mut Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        envs.into_iter().for_each(|env| {
             self.params
                 .entry("Env")
                 .or_insert_with(Vec::new)
-                .push(env.to_owned());
-        }
+                .push(env.into());
+        });
+
         self
     }
 
