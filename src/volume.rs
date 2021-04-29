@@ -151,21 +151,9 @@ impl VolumeCreateOptionsBuilder {
         VolumeCreateOptionsBuilder { params }
     }
 
-    pub fn name(
-        &mut self,
-        name: &str,
-    ) -> &mut Self {
-        self.params.insert("Name", json!(name));
-        self
-    }
+    impl_str_field!(name: N => "Name");
 
-    pub fn labels(
-        &mut self,
-        labels: &HashMap<&str, &str>,
-    ) -> &mut Self {
-        self.params.insert("Labels", json!(labels));
-        self
-    }
+    impl_map_field!(labels: L => "Labels");
 
     pub fn build(&self) -> VolumeCreateOptions {
         VolumeCreateOptions {

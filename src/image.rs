@@ -574,9 +574,9 @@ pub struct BuildOptionsBuilder {
 impl BuildOptionsBuilder {
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
-    pub(crate) fn new<S>(path: S) -> Self
+    pub(crate) fn new<P>(path: P) -> Self
     where
-        S: Into<String>,
+        P: Into<String>,
     {
         BuildOptionsBuilder {
             path: path.into(),
@@ -732,22 +732,28 @@ impl ImageListOptionsBuilder {
     }
 
     pub fn all(&mut self) -> &mut Self {
-        self.params.insert("all", "true".to_owned());
+        self.params.insert("all", "true".into());
         self
     }
 
-    pub fn filter_name(
+    pub fn filter_name<F>(
         &mut self,
-        name: &str,
-    ) -> &mut Self {
-        self.params.insert("filter", name.to_owned());
+        name: F,
+    ) -> &mut Self
+    where
+        F: Into<String>,
+    {
+        self.params.insert("filter", name.into());
         self
     }
 
-    pub fn filter(
+    pub fn filter<F>(
         &mut self,
-        filters: Vec<ImageFilter>,
-    ) -> &mut Self {
+        filters: F,
+    ) -> &mut Self
+    where
+        F: IntoIterator<Item = ImageFilter>,
+    {
         let mut param = HashMap::new();
         for f in filters {
             match f {

@@ -20,6 +20,8 @@
 pub mod errors;
 pub mod transport;
 pub mod tty;
+#[macro_use]
+mod builder;
 
 pub mod container;
 pub mod docker;

@@ -2,14 +2,6 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
 
-use std::{collections::HashMap, iter};
-
-use futures_util::stream::Stream;
-use hyper::Body;
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use url::form_urlencoded;
-
 use crate::{
     container::LogsOptions,
     docker::Docker,
@@ -17,6 +9,15 @@ use crate::{
     image::RegistryAuth,
     tty,
 };
+
+use futures_util::stream::Stream;
+use hyper::Body;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::iter;
+use url::form_urlencoded;
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
@@ -52,10 +53,13 @@ impl<'docker> Services<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named service
-    pub fn get(
+    pub fn get<N>(
         &self,
-        name: &str,
-    ) -> Service<'docker> {
+        name: N,
+    ) -> Service<'docker>
+    where
+        N: Into<String>,
+    {
         Service::new(self.docker, name)
     }
 }
@@ -71,12 +75,12 @@ pub struct Service<'docker> {
 
 impl<'docker> Service<'docker> {
     /// Exports an interface for operations that may be performed against a named service
-    pub fn new<S>(
+    pub fn new<N>(
         docker: &'docker Docker,
-        name: S,
+        name: N,
     ) -> Self
     where
-        S: Into<String>,
+        N: Into<String>,
     {
         Service {
             docker,
@@ -260,18 +264,18 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn labels<I>(
+    pub fn labels<L, K, V>(
         &mut self,
-        labels: I,
+        labels: L,
     ) -> &mut Self
     where
-        I: IntoIterator<Item = (String, String)>,
+        L: IntoIterator<Item = (K, V)>,
+        K: AsRef<str> + Serialize + Eq + Hash,
+        V: AsRef<str> + Serialize,
     {
         self.params.insert(
             "Labels",
-            Ok(json!(labels
-                .into_iter()
-                .collect::<HashMap<String, String>>())),
+            Ok(json!(labels.into_iter().collect::<HashMap<_, _>>())),
         );
         self
     }
@@ -308,12 +312,12 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn networks<I>(
+    pub fn networks<N>(
         &mut self,
-        networks: I,
+        networks: N,
     ) -> &mut Self
     where
-        I: IntoIterator<Item = NetworkAttachmentConfig>,
+        N: IntoIterator<Item = NetworkAttachmentConfig>,
     {
         self.params.insert(
             "Networks",

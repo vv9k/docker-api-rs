@@ -312,7 +312,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Exec>
     pub fn exec(
-        &self,
+        &'docker self,
         opts: &ExecContainerOptions,
     ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
         Exec::create_and_start(self.docker, &self.id, opts)
@@ -502,10 +502,13 @@ pub struct ContainerListOptionsBuilder {
 }
 
 impl ContainerListOptionsBuilder {
-    pub fn filter(
+    pub fn filter<F>(
         &mut self,
-        filters: Vec<ContainerFilter>,
-    ) -> &mut Self {
+        filters: F,
+    ) -> &mut Self
+    where
+        F: IntoIterator<Item = ContainerFilter>,
+    {
         let mut param = HashMap::new();
         for f in filters {
             match f {
@@ -527,19 +530,25 @@ impl ContainerListOptionsBuilder {
         self
     }
 
-    pub fn since(
+    pub fn since<S>(
         &mut self,
-        since: &str,
-    ) -> &mut Self {
-        self.params.insert("since", since.to_owned());
+        since: S,
+    ) -> &mut Self
+    where
+        S: Into<String>,
+    {
+        self.params.insert("since", since.into());
         self
     }
 
-    pub fn before(
+    pub fn before<B>(
         &mut self,
-        before: &str,
-    ) -> &mut Self {
-        self.params.insert("before", before.to_owned());
+        before: B,
+    ) -> &mut Self
+    where
+        B: Into<String>,
+    {
+        self.params.insert("before", before.into());
         self
     }
 
@@ -641,45 +650,33 @@ impl ContainerOptionsBuilder {
         ContainerOptionsBuilder { name: None, params }
     }
 
-    pub fn name(
+    pub fn name<N>(
         &mut self,
-        name: &str,
-    ) -> &mut Self {
-        self.name = Some(name.to_owned());
-        self
-    }
-
-    /// Specify the working dir (corresponds to the `-w` docker cli argument)
-    pub fn working_dir(
-        &mut self,
-        working_dir: &str,
-    ) -> &mut Self {
-        self.params.insert("WorkingDir", json!(working_dir));
-        self
-    }
-
-    /// Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`
-    pub fn volumes(
-        &mut self,
-        volumes: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.Binds", json!(volumes));
+        name: N,
+    ) -> &mut Self
+    where
+        N: Into<String>,
+    {
+        self.name = Some(name.into());
         self
     }
 
     /// enable all exposed ports on the container to be mapped to random, available, ports on the host
     pub fn publish_all_ports(&mut self) -> &mut Self {
         self.params
-            .insert("HostConfig.PublishAllPorts", json!(true));
+            .insert("HostConfig.PublishAllPorts", Value::Bool(true));
         self
     }
 
-    pub fn expose(
+    pub fn expose<P>(
         &mut self,
         srcport: u32,
-        protocol: &str,
+        protocol: P,
         hostport: u32,
-    ) -> &mut Self {
+    ) -> &mut Self
+    where
+        P: AsRef<str>,
+    {
         let mut exposedport: HashMap<String, String> = HashMap::new();
         exposedport.insert("HostPort".to_string(), hostport.to_string());
 
@@ -697,7 +694,7 @@ impl ContainerOptionsBuilder {
             port_bindings.insert(key.to_string(), json!(val));
         }
         port_bindings.insert(
-            format!("{}/{}", srcport, protocol),
+            format!("{}/{}", srcport, protocol.as_ref()),
             json!(vec![exposedport]),
         );
 
@@ -717,11 +714,14 @@ impl ContainerOptionsBuilder {
     }
 
     /// Publish a port in the container without assigning a port on the host
-    pub fn publish(
+    pub fn publish<P>(
         &mut self,
         srcport: u32,
-        protocol: &str,
-    ) -> &mut Self {
+        protocol: P,
+    ) -> &mut Self
+    where
+        P: AsRef<str>,
+    {
         /* The idea here is to go thought the 'old' port binds
          * and to apply them to the local 'exposedport_bindings' variable,
          * add the bind we want and replace the 'old' value */
@@ -736,7 +736,7 @@ impl ContainerOptionsBuilder {
         {
             exposed_port_bindings.insert(key.to_string(), json!(val));
         }
-        exposed_port_bindings.insert(format!("{}/{}", srcport, protocol), json!({}));
+        exposed_port_bindings.insert(format!("{}/{}", srcport, protocol.as_ref()), json!({}));
 
         // Replicate the port bindings over to the exposed ports config
         let mut exposed_ports: HashMap<String, Value> = HashMap::new();
@@ -750,43 +750,29 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    pub fn links(
-        &mut self,
-        links: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.Links", json!(links));
-        self
-    }
+    impl_str_field!(
+    "Specify the working dir (corresponds to the `-w` docker cli argument)"
+    working_dir: W => "WorkingDir");
 
-    pub fn memory(
-        &mut self,
-        memory: u64,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.Memory", json!(memory));
-        self
-    }
+    impl_vec_field!(
+        "Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`"
+        volumes: V => "HostConfig.Binds"
+    );
 
-    /// Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap.
-    pub fn memory_swap(
-        &mut self,
-        memory_swap: i64,
-    ) -> &mut Self {
-        self.params
-            .insert("HostConfig.MemorySwap", json!(memory_swap));
-        self
-    }
+    impl_vec_field!(links: L => "HostConfig.Links");
 
-    /// CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit.
-    ///
-    /// For example, setting `nano_cpus` to `500_000_000` results in the container being allocated
-    /// 50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs.
-    pub fn nano_cpus(
-        &mut self,
-        nano_cpus: u64,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.NanoCpus", json!(nano_cpus));
-        self
-    }
+    impl_field!(memory: u64 => "HostConfig.Memory");
+
+    impl_field!(
+    "Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap."
+    memory_swap: i64 => "HostConfig.MemorySwap");
+
+    impl_field!(
+    "CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit."
+    ""
+    "For example, setting `nano_cpus` to `500_000_000` results in the container being allocated"
+    "50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs."
+    nano_cpus: u64 => "HostConfig.NanoCpus");
 
     /// CPU quota in units of CPUs. This is a wrapper around `nano_cpus` to do the unit conversion.
     ///
@@ -798,24 +784,12 @@ impl ContainerOptionsBuilder {
         self.nano_cpus((1_000_000_000.0 * cpus) as u64)
     }
 
-    /// Sets an integer value representing the container's relative CPU weight versus other
-    /// containers.
-    pub fn cpu_shares(
-        &mut self,
-        cpu_shares: u32,
-    ) -> &mut Self {
-        self.params
-            .insert("HostConfig.CpuShares", json!(cpu_shares));
-        self
-    }
+    impl_field!(
+    "Sets an integer value representing the container's relative CPU weight versus other"
+    "containers."
+    cpu_shares: u32 => "HostConfig.CpuShares");
 
-    pub fn labels(
-        &mut self,
-        labels: &HashMap<&str, &str>,
-    ) -> &mut Self {
-        self.params.insert("Labels", json!(labels));
-        self
-    }
+    impl_map_field!(labels: L => "Labels");
 
     /// Whether to attach to `stdin`.
     pub fn attach_stdin(
@@ -827,100 +801,31 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    /// Whether to attach to `stdout`.
-    pub fn attach_stdout(
-        &mut self,
-        attach: bool,
-    ) -> &mut Self {
-        self.params.insert("AttachStdout", json!(attach));
-        self
-    }
+    impl_field!(
+    "Whether to attach to `stdout`."
+    attach_stdout: bool => "AttachStdout");
 
-    /// Whether to attach to `stderr`.
-    pub fn attach_stderr(
-        &mut self,
-        attach: bool,
-    ) -> &mut Self {
-        self.params.insert("AttachStderr", json!(attach));
-        self
-    }
+    impl_field!(
+    "Whether to attach to `stderr`."
+    attach_stderr: bool => "AttachStderr");
 
-    /// Whether standard streams should be attached to a TTY.
-    pub fn tty(
-        &mut self,
-        tty: bool,
-    ) -> &mut Self {
-        self.params.insert("Tty", json!(tty));
-        self
-    }
+    impl_field!(
+    "Whether standard streams should be attached to a TTY."
+    tty: bool => "Tty");
 
-    pub fn extra_hosts(
-        &mut self,
-        hosts: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.ExtraHosts", json!(hosts));
-        self
-    }
+    impl_vec_field!(extra_hosts: H => "HostConfig.ExtraHosts");
 
-    pub fn volumes_from(
-        &mut self,
-        volumes: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.VolumesFrom", json!(volumes));
-        self
-    }
+    impl_vec_field!(volumes_from: V => "HostConfig.VolumesFrom");
 
-    pub fn network_mode(
-        &mut self,
-        network: &str,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.NetworkMode", json!(network));
-        self
-    }
+    impl_str_field!(network_mode: M => "HostConfig.NetworkMode");
 
-    pub fn env<I, S>(
-        &mut self,
-        envs: I,
-    ) -> &mut Self
-    where
-        I: IntoIterator<Item = S> + Serialize,
-        S: AsRef<str> + Serialize,
-    {
-        self.params
-            .insert("Env", json!(envs.into_iter().collect::<Vec<_>>()));
-        self
-    }
+    impl_vec_field!(env: E => "Env");
 
-    pub fn cmd(
-        &mut self,
-        cmds: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("Cmd", json!(cmds));
-        self
-    }
+    impl_vec_field!(cmd: C => "Cmd");
 
-    pub fn entrypoint<I, S>(
-        &mut self,
-        entrypoint: I,
-    ) -> &mut Self
-    where
-        I: IntoIterator<Item = S> + Serialize,
-        S: AsRef<str> + Serialize,
-    {
-        self.params.insert(
-            "Entrypoint",
-            json!(entrypoint.into_iter().collect::<Vec<_>>()),
-        );
-        self
-    }
+    impl_vec_field!(entrypoint: E => "Entrypoint");
 
-    pub fn capabilities(
-        &mut self,
-        capabilities: Vec<&str>,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.CapAdd", json!(capabilities));
-        self
-    }
+    impl_vec_field!(capabilities: C => "HostConfig.CapAdd");
 
     pub fn devices(
         &mut self,
@@ -930,14 +835,7 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    pub fn log_driver(
-        &mut self,
-        log_driver: &str,
-    ) -> &mut Self {
-        self.params
-            .insert("HostConfig.LogConfig.Type", json!(log_driver));
-        self
-    }
+    impl_str_field!(log_driver: L => "HostConfig.LogConfig.Type");
 
     pub fn restart_policy(
         &mut self,
@@ -955,64 +853,25 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    pub fn auto_remove(
-        &mut self,
-        set: bool,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.AutoRemove", json!(set));
-        self
-    }
+    impl_field!(auto_remove: bool => "HostConfig.AutoRemove");
 
-    /// Signal to stop a container as a string. Default is "SIGTERM".
-    pub fn stop_signal(
-        &mut self,
-        sig: &str,
-    ) -> &mut Self {
-        self.params.insert("StopSignal", json!(sig));
-        self
-    }
+    impl_str_field!(
+    "Signal to stop a container as a string. Default is \"SIGTERM\""
+    stop_signal: S => "StopSignal");
 
-    /// Signal to stop a container as an integer. Default is 15 (SIGTERM).
-    pub fn stop_signal_num(
-        &mut self,
-        sig: u64,
-    ) -> &mut Self {
-        self.params.insert("StopSignal", json!(sig));
-        self
-    }
+    impl_field!(
+    "Signal to stop a container as an integer. Default is 15 (SIGTERM)."
+    stop_signal_num: u64 => "StopSignal");
 
-    /// Timeout to stop a container. Only seconds are counted. Default is 10s
-    pub fn stop_timeout(
-        &mut self,
-        timeout: Duration,
-    ) -> &mut Self {
-        self.params.insert("StopTimeout", json!(timeout.as_secs()));
-        self
-    }
+    impl_field!(
+    "Timeout to stop a container. Only seconds are counted. Default is 10s"
+    stop_timeout: Duration => "StopTimeout");
 
-    pub fn userns_mode(
-        &mut self,
-        mode: &str,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.UsernsMode", json!(mode));
-        self
-    }
+    impl_str_field!(userns_mode: M => "HostConfig.UsernsMode");
 
-    pub fn privileged(
-        &mut self,
-        set: bool,
-    ) -> &mut Self {
-        self.params.insert("HostConfig.Privileged", json!(set));
-        self
-    }
+    impl_field!(privileged: bool => "HostConfig.Privileged");
 
-    pub fn user(
-        &mut self,
-        user: &str,
-    ) -> &mut Self {
-        self.params.insert("User", json!(user));
-        self
-    }
+    impl_str_field!(user: U => "User");
 
     pub fn build(&self) -> ContainerOptions {
         ContainerOptions {

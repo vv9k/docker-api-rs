@@ -223,23 +223,9 @@ impl NetworkCreateOptionsBuilder {
         NetworkCreateOptionsBuilder { params }
     }
 
-    pub fn driver(
-        &mut self,
-        name: &str,
-    ) -> &mut Self {
-        if !name.is_empty() {
-            self.params.insert("Driver", json!(name));
-        }
-        self
-    }
+    impl_str_field!(driver: D => "Driver");
 
-    pub fn label(
-        &mut self,
-        labels: HashMap<String, String>,
-    ) -> &mut Self {
-        self.params.insert("Labels", json!(labels));
-        self
-    }
+    impl_map_field!(labels: L => "Labels");
 
     pub fn build(&self) -> NetworkCreateOptions {
         NetworkCreateOptions {
@@ -295,12 +281,18 @@ impl ContainerConnectionOptionsBuilder {
         ContainerConnectionOptionsBuilder { params }
     }
 
-    pub fn aliases(
+    pub fn aliases<A, S>(
         &mut self,
-        aliases: Vec<&str>,
-    ) -> &mut Self {
-        self.params
-            .insert("EndpointConfig", json!({ "Aliases": json!(aliases) }));
+        aliases: A,
+    ) -> &mut Self
+    where
+        A: IntoIterator<Item = S>,
+        S: AsRef<str> + Serialize,
+    {
+        self.params.insert(
+            "EndpointConfig",
+            json!({ "Aliases": json!(aliases.into_iter().collect::<Vec<_>>()) }),
+        );
         self
     }
 

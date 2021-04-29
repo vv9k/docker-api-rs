@@ -43,11 +43,14 @@ impl<'docker> Exec<'docker> {
     /// Creates a new exec instance that will be executed in a container with id == container_id
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerExec>
-    pub async fn create(
+    pub async fn create<C>(
         docker: &'docker Docker,
-        container_id: &str,
+        container_id: C,
         opts: &ExecContainerOptions,
-    ) -> Result<Exec<'docker>> {
+    ) -> Result<Exec<'docker>>
+    where
+        C: AsRef<str>,
+    {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "PascalCase")]
         struct Response {
@@ -58,7 +61,7 @@ impl<'docker> Exec<'docker> {
 
         let id = docker
             .post_json(
-                &format!("/containers/{}/exec", container_id),
+                &format!("/containers/{}/exec", container_id.as_ref()),
                 Some((body, mime::APPLICATION_JSON)),
             )
             .await
@@ -78,11 +81,14 @@ impl<'docker> Exec<'docker> {
     // into the stream and have the lifetimes work out as you would expect.
     //
     // Yes, it is sad that we can't do the easy method and thus have some duplicated code.
-    pub(crate) fn create_and_start(
+    pub(crate) fn create_and_start<C>(
         docker: &'docker Docker,
-        container_id: &str,
+        container_id: C,
         opts: &ExecContainerOptions,
-    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker
+    where
+        C: AsRef<str>,
+    {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "PascalCase")]
         struct Response {
@@ -96,7 +102,7 @@ impl<'docker> Exec<'docker> {
 
         // To not tie the lifetime of `container_id` to the stream, we convert it to an (owned)
         // endpoint outside of the stream.
-        let container_endpoint = format!("/containers/{}/exec", container_id);
+        let container_endpoint = format!("/containers/{}/exec", container_id.as_ref());
 
         Box::pin(
             async move {
@@ -125,12 +131,12 @@ impl<'docker> Exec<'docker> {
     /// It's in callers responsibility to ensure that exec instance with specified id actually
     /// exists. Use [Exec::create](Exec::create) to ensure that the exec instance is created
     /// beforehand.
-    pub async fn get<S>(
+    pub async fn get<I>(
         docker: &'docker Docker,
-        id: S,
+        id: I,
     ) -> Exec<'docker>
     where
-        S: Into<String>,
+        I: Into<String>,
     {
         Exec::new(docker, id)
     }
