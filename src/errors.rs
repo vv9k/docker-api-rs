@@ -2,7 +2,8 @@
 
 use hyper::{self, StatusCode};
 use serde_json::Error as SerdeError;
-use std::{error::Error as StdError, fmt, string::FromUtf8Error};
+use std::string::FromUtf8Error;
+use thiserror::Error as ThisError;
 
 use futures_util::io::Error as IoError;
 
@@ -12,113 +13,30 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[cfg(feature = "tls")]
 use openssl::error::ErrorStack;
 
-#[derive(Debug)]
+#[derive(Debug, ThisError)]
 pub enum Error {
-    SerdeJsonError(SerdeError),
-    Hyper(hyper::Error),
+    #[error(transparent)]
+    SerdeJsonError(#[from] SerdeError),
+    #[error(transparent)]
+    Hyper(#[from] hyper::Error),
+    #[error(transparent)]
     Http(hyper::http::Error),
+    #[error(transparent)]
     #[allow(clippy::upper_case_acronyms)]
-    IO(IoError),
-    Encoding(FromUtf8Error),
+    IO(#[from] IoError),
+    #[error(transparent)]
+    Encoding(#[from] FromUtf8Error),
+    #[error("The response is invalid - {0}")]
     InvalidResponse(String),
-    Fault {
-        code: StatusCode,
-        message: String,
-    },
+    #[error("error {code} - {message}")]
+    Fault { code: StatusCode, message: String },
+    #[error("The HTTP connection was not upgraded by the docker host")]
     ConnectionNotUpgraded,
     #[cfg(feature = "tls")]
-    ErrorStack(ErrorStack),
+    #[error(transparent)]
+    ErrorStack(#[from] ErrorStack),
+    #[error("Provided scheme `{0}` is not supported")]
     UnsupportedScheme(String),
+    #[error("Provided URI is missing authority part after scheme")]
     MissingAuthority,
-}
-
-#[cfg(feature = "tls")]
-impl From<ErrorStack> for Error {
-    fn from(error: ErrorStack) -> Error {
-        Error::ErrorStack(error)
-    }
-}
-
-impl From<SerdeError> for Error {
-    fn from(error: SerdeError) -> Error {
-        Error::SerdeJsonError(error)
-    }
-}
-
-impl From<hyper::Error> for Error {
-    fn from(error: hyper::Error) -> Error {
-        Error::Hyper(error)
-    }
-}
-
-impl From<hyper::http::Error> for Error {
-    fn from(error: hyper::http::Error) -> Error {
-        Error::Http(error)
-    }
-}
-
-impl From<IoError> for Error {
-    fn from(error: IoError) -> Error {
-        Error::IO(error)
-    }
-}
-
-impl From<FromUtf8Error> for Error {
-    fn from(error: FromUtf8Error) -> Error {
-        Error::Encoding(error)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter,
-    ) -> fmt::Result {
-        write!(f, "Docker Error: ")?;
-        match self {
-            Error::SerdeJsonError(ref err) => err.fmt(f),
-            Error::Http(ref err) => err.fmt(f),
-            Error::Hyper(ref err) => err.fmt(f),
-            Error::IO(ref err) => err.fmt(f),
-            Error::Encoding(ref err) => err.fmt(f),
-            Error::InvalidResponse(ref cause) => {
-                write!(f, "Response doesn't have the expected format: {}", cause)
-            }
-            Error::Fault { code, .. } => write!(f, "{}", code),
-            Error::ConnectionNotUpgraded => write!(
-                f,
-                "expected the docker host to upgrade the HTTP connection but it did not"
-            ),
-            #[cfg(feature = "tls")]
-            Error::ErrorStack(stack) => {
-                writeln!(f, "Error stack:")?;
-                for error in stack.errors() {
-                    writeln!(f, " - {}", error)?;
-                }
-                Ok(())
-            }
-            Error::UnsupportedScheme(scheme) => {
-                if scheme.as_str() == "unix" {
-                    writeln!(f, "Provided scheme `unix` is not supported. Recompile with `unix-socket` feature enabled.")
-                } else {
-                    writeln!(f, "Provided scheme `{}` is not supported", scheme)
-                }
-            }
-            Error::MissingAuthority => {
-                writeln!(f, "Provided URI is missing authority part after scheme")
-            }
-        }
-    }
-}
-
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        match self {
-            Error::SerdeJsonError(ref err) => Some(err),
-            Error::Http(ref err) => Some(err),
-            Error::IO(ref err) => Some(err),
-            Error::Encoding(e) => Some(e),
-            _ => None,
-        }
-    }
 }
