@@ -62,10 +62,13 @@ impl<'docker> Volumes<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named volume
-    pub fn get(
+    pub fn get<N>(
         &self,
-        name: &str,
-    ) -> Volume<'docker> {
+        name: N,
+    ) -> Volume<'docker>
+    where
+        N: Into<String>,
+    {
         Volume::new(self.docker, name)
     }
 }

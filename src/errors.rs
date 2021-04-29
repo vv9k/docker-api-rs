@@ -20,7 +20,7 @@ pub enum Error {
     #[error(transparent)]
     Hyper(#[from] hyper::Error),
     #[error(transparent)]
-    Http(hyper::http::Error),
+    Http(#[from] hyper::http::Error),
     #[error(transparent)]
     #[allow(clippy::upper_case_acronyms)]
     IO(#[from] IoError),

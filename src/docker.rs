@@ -84,9 +84,9 @@ impl Docker {
     ///
     ///  To create a Docker instance utilizing TLS use explicit [Docker::tls](Docker::tls)
     ///  constructor.
-    pub fn new<S>(uri: S) -> Result<Docker>
+    pub fn new<U>(uri: U) -> Result<Docker>
     where
-        S: AsRef<str>,
+        U: AsRef<str>,
     {
         let uri = uri.as_ref();
         let mut it = uri.split("://");
@@ -120,9 +120,9 @@ impl Docker {
     /// `socket_path` is the part of URI that comes after the `unix://`. For example a URI `unix:///run/docker.sock` has a
     /// `socket_path` == "/run/docker.sock".
     #[cfg(feature = "unix-socket")]
-    pub fn unix<S>(socket_path: S) -> Docker
+    pub fn unix<P>(socket_path: P) -> Docker
     where
-        S: Into<String>,
+        P: Into<String>,
     {
         Docker {
             transport: Transport::Unix {
@@ -142,13 +142,13 @@ impl Docker {
     /// `cert_path` specifies the base path in the filesystem containing a certificate (`cert.pem`)
     /// and a key (`key.pem`) that will be used by the client. If verify is `true` a CA file will be
     /// added (`ca.pem`) to the connector.
-    pub fn tls<S, P>(
-        host: S,
+    pub fn tls<H, P>(
+        host: H,
         cert_path: P,
         verify: bool,
     ) -> Result<Docker>
     where
-        S: Into<String>,
+        H: Into<String>,
         P: AsRef<Path>,
     {
         get_docker_for_tcp_tls(host.into(), cert_path.as_ref(), verify)
@@ -159,9 +159,9 @@ impl Docker {
     /// authority part.
     ///
     /// TLS is supported with feature `tls` enabled through [Docker::tls](Docker::tls) constructor.
-    pub fn tcp<S>(host: S) -> Docker
+    pub fn tcp<H>(host: H) -> Docker
     where
-        S: Into<String>,
+        H: Into<String>,
     {
         let http = get_http_connector();
         Docker {

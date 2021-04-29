@@ -429,12 +429,12 @@ impl<'docker> Containers<'docker> {
     }
 
     /// Returns a reference to a set of operations available to a specific container instance
-    pub fn get<S>(
+    pub fn get<N>(
         &self,
-        name: S,
+        name: N,
     ) -> Container<'docker>
     where
-        S: Into<String>,
+        N: Into<String>,
     {
         Container::new(self.docker, name)
     }
@@ -601,8 +601,11 @@ fn insert<'a, I, V>(
 
 impl ContainerOptions {
     /// return a new instance of a builder for options
-    pub fn builder(name: &str) -> ContainerOptionsBuilder {
-        ContainerOptionsBuilder::new(name)
+    pub fn builder<N>(name: N) -> ContainerOptionsBuilder
+    where
+        N: AsRef<str>,
+    {
+        ContainerOptionsBuilder::new(name.as_ref())
     }
 
     /// serialize options as a string. returns None if no options are defined

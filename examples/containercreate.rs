@@ -10,7 +10,7 @@ async fn main() {
 
     match docker
         .containers()
-        .create(&ContainerOptions::builder(image.as_ref()).build())
+        .create(&ContainerOptions::builder(image).build())
         .await
     {
         Ok(info) => println!("{:?}", info),

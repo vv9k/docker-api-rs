@@ -46,12 +46,12 @@ impl<'docker> Networks<'docker> {
     }
 
     /// Returns a reference to a set of operations available to a specific network instance
-    pub fn get<S>(
+    pub fn get<I>(
         &self,
-        id: S,
+        id: I,
     ) -> Network<'docker>
     where
-        S: Into<String>,
+        I: Into<String>,
     {
         Network::new(self.docker, id)
     }
@@ -138,16 +138,19 @@ impl<'docker> Network<'docker> {
         self.do_connection("disconnect", opts).await
     }
 
-    async fn do_connection(
+    async fn do_connection<S>(
         &self,
-        segment: &str,
+        segment: S,
         opts: &ContainerConnectionOptions,
-    ) -> Result<()> {
+    ) -> Result<()>
+    where
+        S: AsRef<str>,
+    {
         let body: Body = opts.serialize()?.into();
 
         self.docker
             .post(
-                &format!("/networks/{}/{}", self.id, segment)[..],
+                &format!("/networks/{}/{}", self.id, segment.as_ref())[..],
                 Some((body, mime::APPLICATION_JSON)),
             )
             .await?;
@@ -184,8 +187,11 @@ pub struct NetworkCreateOptions {
 
 impl NetworkCreateOptions {
     /// return a new instance of a builder for options
-    pub fn builder(name: &str) -> NetworkCreateOptionsBuilder {
-        NetworkCreateOptionsBuilder::new(name)
+    pub fn builder<N>(name: N) -> NetworkCreateOptionsBuilder
+    where
+        N: AsRef<str>,
+    {
+        NetworkCreateOptionsBuilder::new(name.as_ref())
     }
 
     /// serialize options as a string. returns None if no options are defined
@@ -264,8 +270,11 @@ impl ContainerConnectionOptions {
     }
 
     /// return a new instance of a builder for options
-    pub fn builder(container_id: &str) -> ContainerConnectionOptionsBuilder {
-        ContainerConnectionOptionsBuilder::new(container_id)
+    pub fn builder<I>(container_id: I) -> ContainerConnectionOptionsBuilder
+    where
+        I: AsRef<str>,
+    {
+        ContainerConnectionOptionsBuilder::new(container_id.as_ref())
     }
 }
 

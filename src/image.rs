@@ -161,12 +161,12 @@ impl<'docker> Images<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named image
-    pub fn get<S>(
+    pub fn get<N>(
         &self,
-        name: S,
+        name: N,
     ) -> Image<'docker>
     where
-        S: Into<String>,
+        N: Into<String>,
     {
         Image::new(self.docker, name)
     }
