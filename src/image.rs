@@ -27,10 +27,7 @@ pub struct Image<'docker> {
 
 impl<'docker> Image<'docker> {
     /// Exports an interface for operations that may be performed against a named image
-    pub fn new<S>(
-        docker: &'docker Docker,
-        name: S,
-    ) -> Self
+    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
     where
         S: Into<String>,
     {
@@ -81,10 +78,7 @@ impl<'docker> Image<'docker> {
     /// Adds a tag to an image
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageTag>
-    pub async fn tag(
-        &self,
-        opts: &TagOptions,
-    ) -> Result<()> {
+    pub async fn tag(&self, opts: &TagOptions) -> Result<()> {
         let mut path = vec![format!("/images/{}/tag", self.name)];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -147,10 +141,7 @@ impl<'docker> Images<'docker> {
     /// Lists the docker images on the current docker host
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageList>
-    pub async fn list(
-        &self,
-        opts: &ImageListOptions,
-    ) -> Result<Vec<ImageInfo>> {
+    pub async fn list(&self, opts: &ImageListOptions) -> Result<Vec<ImageInfo>> {
         let mut path = vec!["/images/json".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -161,10 +152,7 @@ impl<'docker> Images<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named image
-    pub fn get<N>(
-        &self,
-        name: N,
-    ) -> Image<'docker>
+    pub fn get<N>(&self, name: N) -> Image<'docker>
     where
         N: Into<String>,
     {
@@ -174,10 +162,7 @@ impl<'docker> Images<'docker> {
     /// Search for docker images by term
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageSearch>
-    pub async fn search(
-        &self,
-        term: &str,
-    ) -> Result<Vec<SearchResult>> {
+    pub async fn search(&self, term: &str) -> Result<Vec<SearchResult>> {
         let query = form_urlencoded::Serializer::new(String::new())
             .append_pair("term", term)
             .finish();
@@ -208,10 +193,7 @@ impl<'docker> Images<'docker> {
     /// either by name, name:tag, or image id, into a tarball
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageGetAll>
-    pub fn export(
-        &self,
-        names: Vec<&str>,
-    ) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
+    pub fn export(&self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         let params = names.iter().map(|n| ("names", *n));
         let query = form_urlencoded::Serializer::new(String::new())
             .extend_pairs(params)
@@ -303,10 +285,7 @@ pub struct RegistryAuthBuilder {
 }
 
 impl RegistryAuthBuilder {
-    pub fn username<I>(
-        &mut self,
-        username: I,
-    ) -> &mut Self
+    pub fn username<I>(&mut self, username: I) -> &mut Self
     where
         I: Into<String>,
     {
@@ -314,10 +293,7 @@ impl RegistryAuthBuilder {
         self
     }
 
-    pub fn password<I>(
-        &mut self,
-        password: I,
-    ) -> &mut Self
+    pub fn password<I>(&mut self, password: I) -> &mut Self
     where
         I: Into<String>,
     {
@@ -325,10 +301,7 @@ impl RegistryAuthBuilder {
         self
     }
 
-    pub fn email<I>(
-        &mut self,
-        email: I,
-    ) -> &mut Self
+    pub fn email<I>(&mut self, email: I) -> &mut Self
     where
         I: Into<String>,
     {
@@ -336,10 +309,7 @@ impl RegistryAuthBuilder {
         self
     }
 
-    pub fn server_address<I>(
-        &mut self,
-        server_address: I,
-    ) -> &mut Self
+    pub fn server_address<I>(&mut self, server_address: I) -> &mut Self
     where
         I: Into<String>,
     {
@@ -388,10 +358,7 @@ pub struct TagOptionsBuilder {
 }
 
 impl TagOptionsBuilder {
-    pub fn repo<R>(
-        &mut self,
-        r: R,
-    ) -> &mut Self
+    pub fn repo<R>(&mut self, r: R) -> &mut Self
     where
         R: Into<String>,
     {
@@ -399,10 +366,7 @@ impl TagOptionsBuilder {
         self
     }
 
-    pub fn tag<T>(
-        &mut self,
-        t: T,
-    ) -> &mut Self
+    pub fn tag<T>(&mut self, t: T) -> &mut Self
     where
         T: Into<String>,
     {
@@ -467,10 +431,7 @@ impl PullOptionsBuilder {
     /// If an untagged value is provided and no `tag` is provided, _all_
     /// tags will be pulled
     /// The pull is cancelled if the HTTP connection is closed.
-    pub fn image<I>(
-        &mut self,
-        img: I,
-    ) -> &mut Self
+    pub fn image<I>(&mut self, img: I) -> &mut Self
     where
         I: Into<String>,
     {
@@ -478,10 +439,7 @@ impl PullOptionsBuilder {
         self
     }
 
-    pub fn src<S>(
-        &mut self,
-        s: S,
-    ) -> &mut Self
+    pub fn src<S>(&mut self, s: S) -> &mut Self
     where
         S: Into<String>,
     {
@@ -494,10 +452,7 @@ impl PullOptionsBuilder {
     ///
     /// By default a `latest` tag is added when calling
     /// [PullOptionsBuilder::default](PullOptionsBuilder::default].
-    pub fn repo<R>(
-        &mut self,
-        r: R,
-    ) -> &mut Self
+    pub fn repo<R>(&mut self, r: R) -> &mut Self
     where
         R: Into<String>,
     {
@@ -507,10 +462,7 @@ impl PullOptionsBuilder {
 
     /// Tag or digest. If empty when pulling an image,
     /// this causes all tags for the given image to be pulled.
-    pub fn tag<T>(
-        &mut self,
-        t: T,
-    ) -> &mut Self
+    pub fn tag<T>(&mut self, t: T) -> &mut Self
     where
         T: Into<String>,
     {
@@ -518,10 +470,7 @@ impl PullOptionsBuilder {
         self
     }
 
-    pub fn auth(
-        &mut self,
-        auth: RegistryAuth,
-    ) -> &mut Self {
+    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
         self.auth = Some(auth);
         self
     }
@@ -585,10 +534,7 @@ impl BuildOptionsBuilder {
     }
 
     /// set the name of the docker file. defaults to "DockerFile"
-    pub fn dockerfile<P>(
-        &mut self,
-        path: P,
-    ) -> &mut Self
+    pub fn dockerfile<P>(&mut self, path: P) -> &mut Self
     where
         P: Into<String>,
     {
@@ -597,10 +543,7 @@ impl BuildOptionsBuilder {
     }
 
     /// tag this image with a name after building it
-    pub fn tag<T>(
-        &mut self,
-        t: T,
-    ) -> &mut Self
+    pub fn tag<T>(&mut self, t: T) -> &mut Self
     where
         T: Into<String>,
     {
@@ -608,10 +551,7 @@ impl BuildOptionsBuilder {
         self
     }
 
-    pub fn remote<R>(
-        &mut self,
-        r: R,
-    ) -> &mut Self
+    pub fn remote<R>(&mut self, r: R) -> &mut Self
     where
         R: Into<String>,
     {
@@ -620,35 +560,23 @@ impl BuildOptionsBuilder {
     }
 
     /// don't use the image cache when building image
-    pub fn nocache(
-        &mut self,
-        nc: bool,
-    ) -> &mut Self {
+    pub fn nocache(&mut self, nc: bool) -> &mut Self {
         self.params.insert("nocache", nc.to_string());
         self
     }
 
-    pub fn rm(
-        &mut self,
-        r: bool,
-    ) -> &mut Self {
+    pub fn rm(&mut self, r: bool) -> &mut Self {
         self.params.insert("rm", r.to_string());
         self
     }
 
-    pub fn forcerm(
-        &mut self,
-        fr: bool,
-    ) -> &mut Self {
+    pub fn forcerm(&mut self, fr: bool) -> &mut Self {
         self.params.insert("forcerm", fr.to_string());
         self
     }
 
     /// `bridge`, `host`, `none`, `container:<name|id>`, or a custom network name.
-    pub fn network_mode<T>(
-        &mut self,
-        t: T,
-    ) -> &mut Self
+    pub fn network_mode<T>(&mut self, t: T) -> &mut Self
     where
         T: Into<String>,
     {
@@ -656,18 +584,12 @@ impl BuildOptionsBuilder {
         self
     }
 
-    pub fn memory(
-        &mut self,
-        memory: u64,
-    ) -> &mut Self {
+    pub fn memory(&mut self, memory: u64) -> &mut Self {
         self.params.insert("memory", memory.to_string());
         self
     }
 
-    pub fn cpu_shares(
-        &mut self,
-        cpu_shares: u32,
-    ) -> &mut Self {
+    pub fn cpu_shares(&mut self, cpu_shares: u32) -> &mut Self {
         self.params.insert("cpushares", cpu_shares.to_string());
         self
     }
@@ -723,10 +645,7 @@ pub struct ImageListOptionsBuilder {
 }
 
 impl ImageListOptionsBuilder {
-    pub fn digests(
-        &mut self,
-        d: bool,
-    ) -> &mut Self {
+    pub fn digests(&mut self, d: bool) -> &mut Self {
         self.params.insert("digests", d.to_string());
         self
     }
@@ -736,10 +655,7 @@ impl ImageListOptionsBuilder {
         self
     }
 
-    pub fn filter_name<F>(
-        &mut self,
-        name: F,
-    ) -> &mut Self
+    pub fn filter_name<F>(&mut self, name: F) -> &mut Self
     where
         F: Into<String>,
     {
@@ -747,10 +663,7 @@ impl ImageListOptionsBuilder {
         self
     }
 
-    pub fn filter<F>(
-        &mut self,
-        filters: F,
-    ) -> &mut Self
+    pub fn filter<F>(&mut self, filters: F) -> &mut Self
     where
         F: IntoIterator<Item = ImageFilter>,
     {

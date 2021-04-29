@@ -1,10 +1,7 @@
 use moby::{ContainerConnectionOptions, Docker};
 use std::env;
 
-async fn network_disconnect(
-    container_id: &str,
-    network_id: &str,
-) {
+async fn network_disconnect(container_id: &str, network_id: &str) {
     let docker = Docker::new("tcp://127.0.0.1:80").unwrap();
     if let Err(e) = docker
         .networks()

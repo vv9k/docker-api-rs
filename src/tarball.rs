@@ -7,19 +7,12 @@ use std::{
 use tar::Builder;
 
 // todo: this is pretty involved. (re)factor this into its own crate
-pub fn dir<W>(
-    buf: W,
-    path: &str,
-) -> io::Result<()>
+pub fn dir<W>(buf: W, path: &str) -> io::Result<()>
 where
     W: Write,
 {
     let mut archive = Builder::new(GzEncoder::new(buf, Compression::best()));
-    fn bundle<F>(
-        dir: &Path,
-        f: &mut F,
-        bundle_dir: bool,
-    ) -> io::Result<()>
+    fn bundle<F>(dir: &Path, f: &mut F, bundle_dir: bool) -> io::Result<()>
     where
         F: FnMut(&Path) -> io::Result<()>,
     {

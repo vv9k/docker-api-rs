@@ -36,10 +36,7 @@ impl<'docker> Volumes<'docker> {
     /// Creates a new docker volume.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeCreate>
-    pub async fn create(
-        &self,
-        opts: &VolumeCreateOptions,
-    ) -> Result<VolumeCreateInfo> {
+    pub async fn create(&self, opts: &VolumeCreateOptions) -> Result<VolumeCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/volumes/create".to_owned()];
 
@@ -62,10 +59,7 @@ impl<'docker> Volumes<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named volume
-    pub fn get<N>(
-        &self,
-        name: N,
-    ) -> Volume<'docker>
+    pub fn get<N>(&self, name: N) -> Volume<'docker>
     where
         N: Into<String>,
     {
@@ -84,10 +78,7 @@ pub struct Volume<'docker> {
 
 impl<'docker> Volume<'docker> {
     /// Exports an interface for operations that may be performed against a named volume
-    pub fn new<S>(
-        docker: &'docker Docker,
-        name: S,
-    ) -> Self
+    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
     where
         S: Into<String>,
     {

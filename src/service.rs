@@ -39,10 +39,7 @@ impl<'docker> Services<'docker> {
     /// Lists the docker services on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceList>
-    pub async fn list(
-        &self,
-        opts: &ServiceListOptions,
-    ) -> Result<Vec<ServiceInfo>> {
+    pub async fn list(&self, opts: &ServiceListOptions) -> Result<Vec<ServiceInfo>> {
         let mut path = vec!["/services".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -53,10 +50,7 @@ impl<'docker> Services<'docker> {
     }
 
     /// Returns a reference to a set of operations available for a named service
-    pub fn get<N>(
-        &self,
-        name: N,
-    ) -> Service<'docker>
+    pub fn get<N>(&self, name: N) -> Service<'docker>
     where
         N: Into<String>,
     {
@@ -75,10 +69,7 @@ pub struct Service<'docker> {
 
 impl<'docker> Service<'docker> {
     /// Exports an interface for operations that may be performed against a named service
-    pub fn new<N>(
-        docker: &'docker Docker,
-        name: N,
-    ) -> Self
+    pub fn new<N>(docker: &'docker Docker, name: N) -> Self
     where
         N: Into<String>,
     {
@@ -91,10 +82,7 @@ impl<'docker> Service<'docker> {
     /// Creates a new service from ServiceOptions
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceCreate>
-    pub async fn create(
-        &self,
-        opts: &ServiceOptions,
-    ) -> Result<ServiceCreateInfo> {
+    pub async fn create(&self, opts: &ServiceOptions) -> Result<ServiceCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/service/create".to_owned()];
 
@@ -189,10 +177,7 @@ pub struct ServiceListOptionsBuilder {
 }
 
 impl ServiceListOptionsBuilder {
-    pub fn filter(
-        &mut self,
-        filters: Vec<ServiceFilter>,
-    ) -> &mut Self {
+    pub fn filter(&mut self, filters: Vec<ServiceFilter>) -> &mut Self {
         let mut param = HashMap::new();
         for f in filters {
             match f {
@@ -253,10 +238,7 @@ pub struct ServiceOptionsBuilder {
 }
 
 impl ServiceOptionsBuilder {
-    pub fn name<S>(
-        &mut self,
-        name: S,
-    ) -> &mut Self
+    pub fn name<S>(&mut self, name: S) -> &mut Self
     where
         S: AsRef<str>,
     {
@@ -264,10 +246,7 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn labels<L, K, V>(
-        &mut self,
-        labels: L,
-    ) -> &mut Self
+    pub fn labels<L, K, V>(&mut self, labels: L) -> &mut Self
     where
         L: IntoIterator<Item = (K, V)>,
         K: AsRef<str> + Serialize + Eq + Hash,
@@ -280,42 +259,27 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn task_template(
-        &mut self,
-        spec: &TaskSpec,
-    ) -> &mut Self {
+    pub fn task_template(&mut self, spec: &TaskSpec) -> &mut Self {
         self.params.insert("TaskTemplate", to_json_value(spec));
         self
     }
 
-    pub fn mode(
-        &mut self,
-        mode: &Mode,
-    ) -> &mut Self {
+    pub fn mode(&mut self, mode: &Mode) -> &mut Self {
         self.params.insert("Mode", to_json_value(mode));
         self
     }
 
-    pub fn update_config(
-        &mut self,
-        conf: &UpdateConfig,
-    ) -> &mut Self {
+    pub fn update_config(&mut self, conf: &UpdateConfig) -> &mut Self {
         self.params.insert("UpdateConfig", to_json_value(conf));
         self
     }
 
-    pub fn rollback_config(
-        &mut self,
-        conf: &RollbackConfig,
-    ) -> &mut Self {
+    pub fn rollback_config(&mut self, conf: &RollbackConfig) -> &mut Self {
         self.params.insert("RollbackConfig", to_json_value(conf));
         self
     }
 
-    pub fn networks<N>(
-        &mut self,
-        networks: N,
-    ) -> &mut Self
+    pub fn networks<N>(&mut self, networks: N) -> &mut Self
     where
         N: IntoIterator<Item = NetworkAttachmentConfig>,
     {
@@ -330,18 +294,12 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn endpoint_spec(
-        &mut self,
-        spec: &EndpointSpec,
-    ) -> &mut Self {
+    pub fn endpoint_spec(&mut self, spec: &EndpointSpec) -> &mut Self {
         self.params.insert("EndpointSpec", to_json_value(spec));
         self
     }
 
-    pub fn auth(
-        &mut self,
-        auth: RegistryAuth,
-    ) -> &mut Self {
+    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
         self.auth = Some(auth);
         self
     }

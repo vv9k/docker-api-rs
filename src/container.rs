@@ -41,10 +41,7 @@ pub struct Container<'docker> {
 
 impl<'docker> Container<'docker> {
     /// Exports an interface exposing operations against a container instance
-    pub fn new<S>(
-        docker: &'docker Docker,
-        id: S,
-    ) -> Self
+    pub fn new<S>(docker: &'docker Docker, id: S) -> Self
     where
         S: Into<String>,
     {
@@ -71,10 +68,7 @@ impl<'docker> Container<'docker> {
     /// Returns a `top` view of information about the container process
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerTop>
-    pub async fn top(
-        &self,
-        psargs: Option<&str>,
-    ) -> Result<Top> {
+    pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
         let mut path = vec![format!("/containers/{}/top", self.id)];
         if let Some(ref args) = psargs {
             let encoded = form_urlencoded::Serializer::new(String::new())
@@ -181,10 +175,7 @@ impl<'docker> Container<'docker> {
     /// Stop the container instance
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStop>
-    pub async fn stop(
-        &self,
-        wait: Option<Duration>,
-    ) -> Result<()> {
+    pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/stop", self.id)];
         if let Some(w) = wait {
             let encoded = form_urlencoded::Serializer::new(String::new())
@@ -200,10 +191,7 @@ impl<'docker> Container<'docker> {
     /// Restart the container instance
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRestart>
-    pub async fn restart(
-        &self,
-        wait: Option<Duration>,
-    ) -> Result<()> {
+    pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/restart", self.id)];
         if let Some(w) = wait {
             let encoded = form_urlencoded::Serializer::new(String::new())
@@ -218,10 +206,7 @@ impl<'docker> Container<'docker> {
     /// Kill the container instance
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerKill>
-    pub async fn kill(
-        &self,
-        signal: Option<&str>,
-    ) -> Result<()> {
+    pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/kill", self.id)];
         if let Some(sig) = signal {
             let encoded = form_urlencoded::Serializer::new(String::new())
@@ -236,10 +221,7 @@ impl<'docker> Container<'docker> {
     /// Rename the container instance
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename>
-    pub async fn rename(
-        &self,
-        name: &str,
-    ) -> Result<()> {
+    pub async fn rename(&self, name: &str) -> Result<()> {
         let query = form_urlencoded::Serializer::new(String::new())
             .append_pair("name", name)
             .finish();
@@ -296,10 +278,7 @@ impl<'docker> Container<'docker> {
     /// Delete the container instance (todo: force/v)
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove>
-    pub async fn remove(
-        &self,
-        opts: &RmContainerOptions,
-    ) -> Result<()> {
+    pub async fn remove(&self, opts: &RmContainerOptions) -> Result<()> {
         let mut path = vec![format!("/containers/{}", self.id)];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -328,10 +307,7 @@ impl<'docker> Container<'docker> {
     /// copied.  A symlink is always resolved to its target.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive>
-    pub fn copy_from(
-        &self,
-        path: &Path,
-    ) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
+    pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         let path_arg = form_urlencoded::Serializer::new(String::new())
             .append_pair("path", &path.to_string_lossy())
             .finish();
@@ -346,11 +322,7 @@ impl<'docker> Container<'docker> {
     /// with access mask 644.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
-    pub async fn copy_file_into<P: AsRef<Path>>(
-        &self,
-        path: P,
-        bytes: &[u8],
-    ) -> Result<()> {
+    pub async fn copy_file_into<P: AsRef<Path>>(&self, path: P, bytes: &[u8]) -> Result<()> {
         let path = path.as_ref();
 
         let mut ar = tar::Builder::new(Vec::new());
@@ -377,11 +349,7 @@ impl<'docker> Container<'docker> {
     /// The tarball will be copied to the container and extracted at the given location (see `path`).
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
-    pub async fn copy_to(
-        &self,
-        path: &Path,
-        body: Body,
-    ) -> Result<()> {
+    pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
         let path_arg = form_urlencoded::Serializer::new(String::new())
             .append_pair("path", &path.to_string_lossy())
             .finish();
@@ -415,10 +383,7 @@ impl<'docker> Containers<'docker> {
     /// Lists the container instances on the docker host
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerList>
-    pub async fn list(
-        &self,
-        opts: &ContainerListOptions,
-    ) -> Result<Vec<ContainerInfo>> {
+    pub async fn list(&self, opts: &ContainerListOptions) -> Result<Vec<ContainerInfo>> {
         let mut path = vec!["/containers/json".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -429,10 +394,7 @@ impl<'docker> Containers<'docker> {
     }
 
     /// Returns a reference to a set of operations available to a specific container instance
-    pub fn get<N>(
-        &self,
-        name: N,
-    ) -> Container<'docker>
+    pub fn get<N>(&self, name: N) -> Container<'docker>
     where
         N: Into<String>,
     {
@@ -440,10 +402,7 @@ impl<'docker> Containers<'docker> {
     }
 
     /// Returns a builder interface for creating a new container instance
-    pub async fn create(
-        &self,
-        opts: &ContainerOptions,
-    ) -> Result<ContainerCreateInfo> {
+    pub async fn create(&self, opts: &ContainerOptions) -> Result<ContainerCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let mut path = vec!["/containers/create".to_owned()];
 
@@ -502,10 +461,7 @@ pub struct ContainerListOptionsBuilder {
 }
 
 impl ContainerListOptionsBuilder {
-    pub fn filter<F>(
-        &mut self,
-        filters: F,
-    ) -> &mut Self
+    pub fn filter<F>(&mut self, filters: F) -> &mut Self
     where
         F: IntoIterator<Item = ContainerFilter>,
     {
@@ -530,10 +486,7 @@ impl ContainerListOptionsBuilder {
         self
     }
 
-    pub fn since<S>(
-        &mut self,
-        since: S,
-    ) -> &mut Self
+    pub fn since<S>(&mut self, since: S) -> &mut Self
     where
         S: Into<String>,
     {
@@ -541,10 +494,7 @@ impl ContainerListOptionsBuilder {
         self
     }
 
-    pub fn before<B>(
-        &mut self,
-        before: B,
-    ) -> &mut Self
+    pub fn before<B>(&mut self, before: B) -> &mut Self
     where
         B: Into<String>,
     {
@@ -573,11 +523,8 @@ pub struct ContainerOptions {
 
 /// Function to insert a JSON value into a tree where the desired
 /// location of the value is given as a path of JSON keys.
-fn insert<'a, I, V>(
-    key_path: &mut Peekable<I>,
-    value: &V,
-    parent_node: &mut Value,
-) where
+fn insert<'a, I, V>(key_path: &mut Peekable<I>, value: &V, parent_node: &mut Value)
+where
     V: Serialize,
     I: Iterator<Item = &'a str>,
 {
@@ -623,11 +570,8 @@ impl ContainerOptions {
         body
     }
 
-    pub fn parse_from<'a, K, V>(
-        &self,
-        params: &'a HashMap<K, V>,
-        body: &mut Value,
-    ) where
+    pub fn parse_from<'a, K, V>(&self, params: &'a HashMap<K, V>, body: &mut Value)
+    where
         &'a HashMap<K, V>: IntoIterator,
         K: ToString + Eq + Hash,
         V: Serialize,
@@ -653,10 +597,7 @@ impl ContainerOptionsBuilder {
         ContainerOptionsBuilder { name: None, params }
     }
 
-    pub fn name<N>(
-        &mut self,
-        name: N,
-    ) -> &mut Self
+    pub fn name<N>(&mut self, name: N) -> &mut Self
     where
         N: Into<String>,
     {
@@ -671,12 +612,7 @@ impl ContainerOptionsBuilder {
         self
     }
 
-    pub fn expose<P>(
-        &mut self,
-        srcport: u32,
-        protocol: P,
-        hostport: u32,
-    ) -> &mut Self
+    pub fn expose<P>(&mut self, srcport: u32, protocol: P, hostport: u32) -> &mut Self
     where
         P: AsRef<str>,
     {
@@ -717,11 +653,7 @@ impl ContainerOptionsBuilder {
     }
 
     /// Publish a port in the container without assigning a port on the host
-    pub fn publish<P>(
-        &mut self,
-        srcport: u32,
-        protocol: P,
-    ) -> &mut Self
+    pub fn publish<P>(&mut self, srcport: u32, protocol: P) -> &mut Self
     where
         P: AsRef<str>,
     {
@@ -780,10 +712,7 @@ impl ContainerOptionsBuilder {
     /// CPU quota in units of CPUs. This is a wrapper around `nano_cpus` to do the unit conversion.
     ///
     /// See [`nano_cpus`](#method.nano_cpus).
-    pub fn cpus(
-        &mut self,
-        cpus: f64,
-    ) -> &mut Self {
+    pub fn cpus(&mut self, cpus: f64) -> &mut Self {
         self.nano_cpus((1_000_000_000.0 * cpus) as u64)
     }
 
@@ -795,10 +724,7 @@ impl ContainerOptionsBuilder {
     impl_map_field!(labels: L => "Labels");
 
     /// Whether to attach to `stdin`.
-    pub fn attach_stdin(
-        &mut self,
-        attach: bool,
-    ) -> &mut Self {
+    pub fn attach_stdin(&mut self, attach: bool) -> &mut Self {
         self.params.insert("AttachStdin", json!(attach));
         self.params.insert("OpenStdin", json!(attach));
         self
@@ -830,21 +756,14 @@ impl ContainerOptionsBuilder {
 
     impl_vec_field!(capabilities: C => "HostConfig.CapAdd");
 
-    pub fn devices(
-        &mut self,
-        devices: Vec<HashMap<String, String>>,
-    ) -> &mut Self {
+    pub fn devices(&mut self, devices: Vec<HashMap<String, String>>) -> &mut Self {
         self.params.insert("HostConfig.Devices", json!(devices));
         self
     }
 
     impl_str_field!(log_driver: L => "HostConfig.LogConfig.Type");
 
-    pub fn restart_policy(
-        &mut self,
-        name: &str,
-        maximum_retry_count: u64,
-    ) -> &mut Self {
+    pub fn restart_policy(&mut self, name: &str, maximum_retry_count: u64) -> &mut Self {
         self.params
             .insert("HostConfig.RestartPolicy.Name", json!(name));
         if name == "on-failure" {
@@ -917,52 +836,34 @@ pub struct LogsOptionsBuilder {
 }
 
 impl LogsOptionsBuilder {
-    pub fn follow(
-        &mut self,
-        f: bool,
-    ) -> &mut Self {
+    pub fn follow(&mut self, f: bool) -> &mut Self {
         self.params.insert("follow", f.to_string());
         self
     }
 
-    pub fn stdout(
-        &mut self,
-        s: bool,
-    ) -> &mut Self {
+    pub fn stdout(&mut self, s: bool) -> &mut Self {
         self.params.insert("stdout", s.to_string());
         self
     }
 
-    pub fn stderr(
-        &mut self,
-        s: bool,
-    ) -> &mut Self {
+    pub fn stderr(&mut self, s: bool) -> &mut Self {
         self.params.insert("stderr", s.to_string());
         self
     }
 
-    pub fn timestamps(
-        &mut self,
-        t: bool,
-    ) -> &mut Self {
+    pub fn timestamps(&mut self, t: bool) -> &mut Self {
         self.params.insert("timestamps", t.to_string());
         self
     }
 
     /// how_many can either be "all" or a to_string() of the number
-    pub fn tail(
-        &mut self,
-        how_many: &str,
-    ) -> &mut Self {
+    pub fn tail(&mut self, how_many: &str) -> &mut Self {
         self.params.insert("tail", how_many.to_owned());
         self
     }
 
     #[cfg(feature = "chrono")]
-    pub fn since<Tz>(
-        &mut self,
-        timestamp: &chrono::DateTime<Tz>,
-    ) -> &mut Self
+    pub fn since<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
     where
         Tz: chrono::TimeZone,
     {
@@ -972,10 +873,7 @@ impl LogsOptionsBuilder {
     }
 
     #[cfg(not(feature = "chrono"))]
-    pub fn since(
-        &mut self,
-        timestamp: i64,
-    ) -> &mut Self {
+    pub fn since(&mut self, timestamp: i64) -> &mut Self {
         self.params.insert("since", timestamp.to_string());
         self
     }
@@ -1020,18 +918,12 @@ pub struct RmContainerOptionsBuilder {
 }
 
 impl RmContainerOptionsBuilder {
-    pub fn force(
-        &mut self,
-        f: bool,
-    ) -> &mut Self {
+    pub fn force(&mut self, f: bool) -> &mut Self {
         self.params.insert("force", f.to_string());
         self
     }
 
-    pub fn volumes(
-        &mut self,
-        s: bool,
-    ) -> &mut Self {
+    pub fn volumes(&mut self, s: bool) -> &mut Self {
         self.params.insert("v", s.to_string());
         self
     }

@@ -34,10 +34,7 @@ impl<'docker> Networks<'docker> {
     /// List the docker networks on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
-    pub async fn list(
-        &self,
-        opts: &NetworkListOptions,
-    ) -> Result<Vec<NetworkInfo>> {
+    pub async fn list(&self, opts: &NetworkListOptions) -> Result<Vec<NetworkInfo>> {
         let mut path = vec!["/networks".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -46,10 +43,7 @@ impl<'docker> Networks<'docker> {
     }
 
     /// Returns a reference to a set of operations available to a specific network instance
-    pub fn get<I>(
-        &self,
-        id: I,
-    ) -> Network<'docker>
+    pub fn get<I>(&self, id: I) -> Network<'docker>
     where
         I: Into<String>,
     {
@@ -59,10 +53,7 @@ impl<'docker> Networks<'docker> {
     /// Create a new Network instance
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkCreate>
-    pub async fn create(
-        &self,
-        opts: &NetworkCreateOptions,
-    ) -> Result<NetworkCreateInfo> {
+    pub async fn create(&self, opts: &NetworkCreateOptions) -> Result<NetworkCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/networks/create".to_owned()];
 
@@ -81,10 +72,7 @@ pub struct Network<'docker> {
 
 impl<'docker> Network<'docker> {
     /// Exports an interface exposing operations against a network instance
-    pub fn new<S>(
-        docker: &'docker Docker,
-        id: S,
-    ) -> Self
+    pub fn new<S>(docker: &'docker Docker, id: S) -> Self
     where
         S: Into<String>,
     {
@@ -121,28 +109,18 @@ impl<'docker> Network<'docker> {
     /// Connect container to network
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkConnect>
-    pub async fn connect(
-        &self,
-        opts: &ContainerConnectionOptions,
-    ) -> Result<()> {
+    pub async fn connect(&self, opts: &ContainerConnectionOptions) -> Result<()> {
         self.do_connection("connect", opts).await
     }
 
     /// Disconnect container to network
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkDisconnect>
-    pub async fn disconnect(
-        &self,
-        opts: &ContainerConnectionOptions,
-    ) -> Result<()> {
+    pub async fn disconnect(&self, opts: &ContainerConnectionOptions) -> Result<()> {
         self.do_connection("disconnect", opts).await
     }
 
-    async fn do_connection<S>(
-        &self,
-        segment: S,
-        opts: &ContainerConnectionOptions,
-    ) -> Result<()>
+    async fn do_connection<S>(&self, segment: S, opts: &ContainerConnectionOptions) -> Result<()>
     where
         S: AsRef<str>,
     {
@@ -290,10 +268,7 @@ impl ContainerConnectionOptionsBuilder {
         ContainerConnectionOptionsBuilder { params }
     }
 
-    pub fn aliases<A, S>(
-        &mut self,
-        aliases: A,
-    ) -> &mut Self
+    pub fn aliases<A, S>(&mut self, aliases: A) -> &mut Self
     where
         A: IntoIterator<Item = S>,
         S: AsRef<str> + Serialize,

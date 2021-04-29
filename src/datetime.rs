@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
 pub(crate) fn datetime_from_unix_timestamp<'de, D>(
-    deserializer: D
+    deserializer: D,
 ) -> Result<DateTime<Utc>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -12,7 +12,7 @@ where
 }
 
 pub(crate) fn datetime_from_nano_timestamp<'de, D>(
-    deserializer: D
+    deserializer: D,
 ) -> Result<DateTime<Utc>, D::Error>
 where
     D: serde::Deserializer<'de>,

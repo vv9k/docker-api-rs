@@ -48,11 +48,7 @@ fn get_http_connector() -> HttpConnector {
 }
 
 #[cfg(feature = "tls")]
-fn get_docker_for_tcp_tls(
-    host: String,
-    cert_path: &Path,
-    verify: bool,
-) -> Result<Docker> {
+fn get_docker_for_tcp_tls(host: String, cert_path: &Path, verify: bool) -> Result<Docker> {
     let http = get_http_connector();
     let mut connector = SslConnector::builder(SslMethod::tls())?;
     connector.set_cipher_list("DEFAULT")?;
@@ -142,11 +138,7 @@ impl Docker {
     /// `cert_path` specifies the base path in the filesystem containing a certificate (`cert.pem`)
     /// and a key (`key.pem`) that will be used by the client. If verify is `true` a CA file will be
     /// added (`ca.pem`) to the connector.
-    pub fn tls<H, P>(
-        host: H,
-        cert_path: P,
-        verify: bool,
-    ) -> Result<Docker>
+    pub fn tls<H, P>(host: H, cert_path: P, verify: bool) -> Result<Docker>
     where
         H: Into<String>,
         P: AsRef<Path>,
@@ -240,10 +232,7 @@ impl Docker {
     // Utility functions to make requests
     //
 
-    pub(crate) async fn get(
-        &self,
-        endpoint: &str,
-    ) -> Result<String> {
+    pub(crate) async fn get(&self, endpoint: &str) -> Result<String> {
         self.transport
             .request(Method::GET, endpoint, Payload::None, Headers::None)
             .await
@@ -262,21 +251,13 @@ impl Docker {
         Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
-    pub(crate) async fn post(
-        &self,
-        endpoint: &str,
-        body: Option<(Body, Mime)>,
-    ) -> Result<String> {
+    pub(crate) async fn post(&self, endpoint: &str, body: Option<(Body, Mime)>) -> Result<String> {
         self.transport
             .request(Method::POST, endpoint, body, Headers::None)
             .await
     }
 
-    pub(crate) async fn put(
-        &self,
-        endpoint: &str,
-        body: Option<(Body, Mime)>,
-    ) -> Result<String> {
+    pub(crate) async fn put(&self, endpoint: &str, body: Option<(Body, Mime)>) -> Result<String> {
         self.transport
             .request(Method::PUT, endpoint, body, Headers::None)
             .await
@@ -320,10 +301,7 @@ impl Docker {
         Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
-    pub(crate) async fn delete(
-        &self,
-        endpoint: &str,
-    ) -> Result<String> {
+    pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.transport
             .request(Method::DELETE, endpoint, Payload::None, Headers::None)
             .await
@@ -477,27 +455,18 @@ pub struct EventsOptionsBuilder {
 
 impl EventsOptionsBuilder {
     /// Filter events since a given timestamp
-    pub fn since(
-        &mut self,
-        ts: &u64,
-    ) -> &mut Self {
+    pub fn since(&mut self, ts: &u64) -> &mut Self {
         self.params.insert("since", ts.to_string());
         self
     }
 
     /// Filter events until a given timestamp
-    pub fn until(
-        &mut self,
-        ts: &u64,
-    ) -> &mut Self {
+    pub fn until(&mut self, ts: &u64) -> &mut Self {
         self.params.insert("until", ts.to_string());
         self
     }
 
-    pub fn filter(
-        &mut self,
-        filters: Vec<EventFilter>,
-    ) -> &mut Self {
+    pub fn filter(&mut self, filters: Vec<EventFilter>) -> &mut Self {
         let mut params = HashMap::new();
         for f in filters {
             match f {

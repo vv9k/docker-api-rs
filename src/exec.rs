@@ -27,10 +27,7 @@ pub struct Exec<'docker> {
 }
 
 impl<'docker> Exec<'docker> {
-    fn new<S>(
-        docker: &'docker Docker,
-        id: S,
-    ) -> Self
+    fn new<S>(docker: &'docker Docker, id: S) -> Self
     where
         S: Into<String>,
     {
@@ -131,10 +128,7 @@ impl<'docker> Exec<'docker> {
     /// It's in callers responsibility to ensure that exec instance with specified id actually
     /// exists. Use [Exec::create](Exec::create) to ensure that the exec instance is created
     /// beforehand.
-    pub async fn get<I>(
-        docker: &'docker Docker,
-        id: I,
-    ) -> Exec<'docker>
+    pub async fn get<I>(docker: &'docker Docker, id: I) -> Exec<'docker>
     where
         I: Into<String>,
     {
@@ -178,10 +172,7 @@ impl<'docker> Exec<'docker> {
     /// with `tty` enabled.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ExecResize>
-    pub async fn resize(
-        &self,
-        opts: &ExecResizeOptions,
-    ) -> Result<()> {
+    pub async fn resize(&self, opts: &ExecResizeOptions) -> Result<()> {
         let body: Body = opts.serialize()?.into();
 
         self.docker
@@ -244,10 +235,7 @@ pub struct ExecContainerOptionsBuilder {
 
 impl ExecContainerOptionsBuilder {
     /// Command to run, as an array of strings
-    pub fn cmd<I, S>(
-        &mut self,
-        cmds: I,
-    ) -> &mut Self
+    pub fn cmd<I, S>(&mut self, cmds: I) -> &mut Self
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
@@ -262,10 +250,7 @@ impl ExecContainerOptionsBuilder {
     }
 
     /// A list of environment variables in the form "VAR=value"
-    pub fn env<I, S>(
-        &mut self,
-        envs: I,
-    ) -> &mut Self
+    pub fn env<I, S>(&mut self, envs: I) -> &mut Self
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
@@ -281,29 +266,20 @@ impl ExecContainerOptionsBuilder {
     }
 
     /// Attach to stdout of the exec command
-    pub fn attach_stdout(
-        &mut self,
-        stdout: bool,
-    ) -> &mut Self {
+    pub fn attach_stdout(&mut self, stdout: bool) -> &mut Self {
         self.params_bool.insert("AttachStdout", stdout);
         self
     }
 
     /// Attach to stderr of the exec command
-    pub fn attach_stderr(
-        &mut self,
-        stderr: bool,
-    ) -> &mut Self {
+    pub fn attach_stderr(&mut self, stderr: bool) -> &mut Self {
         self.params_bool.insert("AttachStderr", stderr);
         self
     }
 
     /// Override the key sequence for detaching a container. Format is a single
     /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
-    pub fn detach_keys<S>(
-        &mut self,
-        format: S,
-    ) -> &mut Self
+    pub fn detach_keys<S>(&mut self, format: S) -> &mut Self
     where
         S: Into<String>,
     {
@@ -312,27 +288,18 @@ impl ExecContainerOptionsBuilder {
     }
 
     /// Allocate a pseudo-TTY
-    pub fn tty(
-        &mut self,
-        allocate: bool,
-    ) -> &mut Self {
+    pub fn tty(&mut self, allocate: bool) -> &mut Self {
         self.params_bool.insert("Tty", allocate);
         self
     }
 
     /// Runs the exec process with extended privileges. (Default: `false`)
-    pub fn privileged(
-        &mut self,
-        privileged: bool,
-    ) -> &mut Self {
+    pub fn privileged(&mut self, privileged: bool) -> &mut Self {
         self.params_bool.insert("Privileged", privileged);
         self
     }
 
-    pub fn user<S>(
-        &mut self,
-        user: S,
-    ) -> &mut Self
+    pub fn user<S>(&mut self, user: S) -> &mut Self
     where
         S: Into<String>,
     {
@@ -340,10 +307,7 @@ impl ExecContainerOptionsBuilder {
         self
     }
 
-    pub fn working_dir<S>(
-        &mut self,
-        working_dir: S,
-    ) -> &mut Self
+    pub fn working_dir<S>(&mut self, working_dir: S) -> &mut Self
     where
         S: Into<String>,
     {
@@ -406,18 +370,12 @@ impl ExecResizeOptionsBuilder {
         ExecResizeOptionsBuilder { params }
     }
 
-    pub fn height(
-        &mut self,
-        height: u64,
-    ) -> &mut Self {
+    pub fn height(&mut self, height: u64) -> &mut Self {
         self.params.insert("Name", json!(height));
         self
     }
 
-    pub fn width(
-        &mut self,
-        width: u64,
-    ) -> &mut Self {
+    pub fn width(&mut self, width: u64) -> &mut Self {
         self.params.insert("Name", json!(width));
         self
     }

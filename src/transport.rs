@@ -57,10 +57,7 @@ pub enum Transport {
 }
 
 impl fmt::Debug for Transport {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Transport::Tcp { ref host, .. } => write!(f, "Tcp({})", host),
             #[cfg(feature = "tls")]
@@ -212,10 +209,7 @@ impl Transport {
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
-    async fn send_request(
-        &self,
-        req: Request<hyper::Body>,
-    ) -> Result<hyper::Response<Body>> {
+    async fn send_request(&self, req: Request<hyper::Body>) -> Result<hyper::Response<Body>> {
         match self {
             Transport::Tcp { ref client, .. } => Ok(client.request(req).await?),
             #[cfg(feature = "tls")]
@@ -317,16 +311,10 @@ where
     ) -> Poll<io::Result<usize>> {
         self.project().tokio_multiplexer.poll_write(cx, buf)
     }
-    fn poll_flush(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<io::Result<()>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.project().tokio_multiplexer.poll_flush(cx)
     }
-    fn poll_close(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<io::Result<()>> {
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.project().tokio_multiplexer.poll_shutdown(cx)
     }
 }

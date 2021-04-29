@@ -128,10 +128,7 @@ use std::{
 
 impl<'a> Stream for Multiplexer<'a> {
     type Item = Result<TtyChunk>;
-    fn poll_next(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Option<Self::Item>> {
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         self.project().reader.poll_next(cx)
     }
 }
@@ -144,16 +141,10 @@ impl<'a> AsyncWrite for Multiplexer<'a> {
     ) -> Poll<io::Result<usize>> {
         self.project().writer.poll_write(cx, buf)
     }
-    fn poll_flush(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<io::Result<()>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.project().writer.poll_flush(cx)
     }
-    fn poll_close(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<io::Result<()>> {
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         self.project().writer.poll_close(cx)
     }
 }
@@ -161,7 +152,7 @@ impl<'a> AsyncWrite for Multiplexer<'a> {
 impl<'a> Multiplexer<'a> {
     /// Split the `Multiplexer` into the component `Stream` and `AsyncWrite` parts
     pub fn split(
-        self
+        self,
     ) -> (
         impl Stream<Item = Result<TtyChunk>> + 'a,
         impl AsyncWrite + Send + 'a,
