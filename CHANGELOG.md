@@ -6,3 +6,4 @@
 * All API handles like `Containers` or `Image` now implement `Debug`
 * Add missing fields to `ExecContainerOptions`
 * Change calling interface of `ExecContainerOptionsBuilder` `env` and `cmd` to a generic one
+* The interface is now much more generic
