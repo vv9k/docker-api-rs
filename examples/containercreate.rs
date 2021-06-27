@@ -1,4 +1,4 @@
-use moby::{ContainerOptions, Docker};
+use docker_api::{ContainerOptions, Docker};
 use std::env;
 
 #[tokio::main]

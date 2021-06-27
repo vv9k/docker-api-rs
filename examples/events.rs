@@ -1,5 +1,5 @@
 use futures::StreamExt;
-use moby::Docker;
+use docker_api::Docker;
 
 #[tokio::main]
 async fn main() {

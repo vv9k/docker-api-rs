@@ -1,4 +1,4 @@
-use moby::{Docker, VolumeCreateOptions};
+use docker_api::{Docker, VolumeCreateOptions};
 use std::{collections::HashMap, env};
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() {
         .expect("You need to specify an volume name");
 
     let mut labels = HashMap::new();
-    labels.insert("com.github", "moby");
+    labels.insert("com.github", "docker_api");
 
     match docker
         .volumes()

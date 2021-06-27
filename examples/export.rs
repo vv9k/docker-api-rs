@@ -1,7 +1,7 @@
 use futures::StreamExt;
 use std::{env, fs::OpenOptions, io::Write};
 
-use moby::{errors::Error, Docker};
+use docker_api::{errors::Error, Docker};
 
 #[tokio::main]
 async fn main() {

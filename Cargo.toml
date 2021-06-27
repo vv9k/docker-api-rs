@@ -1,13 +1,13 @@
 [package]
 
-name = "moby"
+name = "docker-api"
 version = "0.2.0"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
-documentation = "https://docs.rs/moby"
-homepage = "https://github.com/wojciechkepka/moby"
-repository = "https://github.com/wojciechkepka/moby"
-keywords = ["docker", "unix", "containers", "api", "moby"]
+documentation = "https://docs.rs/docker-api"
+homepage = "https://github.com/wojciechkepka/docker-api-rs"
+repository = "https://github.com/wojciechkepka/docker-api-rs"
+keywords = ["docker", "api", "containers", "unix"]
 license = "MIT"
 edition = "2018"
 readme = "README.md"

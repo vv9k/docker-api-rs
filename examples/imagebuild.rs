@@ -1,5 +1,5 @@
 use futures::StreamExt;
-use moby::{BuildOptions, Docker};
+use docker_api::{BuildOptions, Docker};
 use std::env;
 
 #[tokio::main]
@@ -7,7 +7,7 @@ async fn main() {
     let docker = Docker::new("tcp://127.0.0.1:80").unwrap();
     let path = env::args().nth(1).expect("You need to specify a path");
 
-    let options = BuildOptions::builder(path).tag("moby_test").build();
+    let options = BuildOptions::builder(path).tag("docker_api_test").build();
 
     let mut stream = docker.images().build(&options);
     while let Some(build_result) = stream.next().await {

@@ -1,4 +1,4 @@
-use moby::{Docker, Exec, ExecContainerOptions, ExecResizeOptions};
+use docker_api::{Docker, Exec, ExecContainerOptions, ExecResizeOptions};
 use std::env;
 
 #[tokio::main]

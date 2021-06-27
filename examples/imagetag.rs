@@ -1,6 +1,6 @@
 // cargo run --example imagetag img repo tag
 
-use moby::{Docker, Image, TagOptions};
+use docker_api::{Docker, Image, TagOptions};
 use std::env;
 
 #[tokio::main]

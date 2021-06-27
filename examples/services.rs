@@ -1,4 +1,4 @@
-use moby::{Docker, ServiceListOptions};
+use docker_api::{Docker, ServiceListOptions};
 
 #[tokio::main]
 async fn main() {

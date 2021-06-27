@@ -1,5 +1,5 @@
 use futures::StreamExt;
-use moby::Docker;
+use docker_api::Docker;
 use std::{env, fs::File};
 
 #[tokio::main]

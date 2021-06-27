@@ -1,7 +1,7 @@
 // cargo run --example imagepull busybox
 
 use futures::StreamExt;
-use moby::{Docker, PullOptions};
+use docker_api::{Docker, PullOptions};
 use std::env;
 
 #[tokio::main]

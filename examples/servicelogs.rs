@@ -1,5 +1,5 @@
 use futures::StreamExt;
-use moby::{tty::TtyChunk, Docker, LogsOptions};
+use docker_api::{tty::TtyChunk, Docker, LogsOptions};
 use std::env;
 
 #[tokio::main]

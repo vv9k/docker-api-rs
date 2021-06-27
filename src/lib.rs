@@ -1,10 +1,10 @@
-//! moby is a multi-transport utility for maneuvering [docker](https://www.docker.com/) containers
+//! docker-api is a multi-transport utility for maneuvering [docker](https://www.docker.com/) containers
 //!
 //! # examples
 //!
 //! ```no_run
 //! # async {
-//! let docker = moby::Docker::new("tcp://127.0.0.1:80").unwrap();
+//! let docker = docker_api::Docker::new("tcp://127.0.0.1:80").unwrap();
 //!
 //! match docker.images().list(&Default::default()).await {
 //!     Ok(images) => {

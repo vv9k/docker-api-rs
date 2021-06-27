@@ -1,20 +1,20 @@
-# Contributing to moby
-Contributing to moby isn't limited to just filing bugs, users are more than welcomed to make suggestions, report any issue they may find, and make pull requests to help make moby better.
+# Contributing to docker-api
+Contributing to docker-api isn't limited to just filing bugs, users are more than welcomed to make suggestions, report any issue they may find, and make pull requests to help make docker-api better.
 
-## Working on moby
+## Working on docker-api
 ### Prerequisites
 * The [rust toolchain](https://rustup.rs/)
 * [Git](https://git-scm.com/)
 
 
-### Getting moby
+### Getting docker-api
 1. Fork a copy of our repo
 2. Open up Git in an environment of your choice
 3. Run the following
 
 ```sh
-$ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/moby.git
-$ cd moby
+$ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/docker-api.git
+$ cd docker-api
 ```
 
 
@@ -64,4 +64,4 @@ $ cargo +nightly fmt --all
 
 
 ### Finding issues to fix
-After you've forked and cloned our repo, you can find issues to work on by heading over to our [issues list](https://github.com/wojciechkepka/moby/issues)
+After you've forked and cloned our repo, you can find issues to work on by heading over to our [issues list](https://github.com/wojciechkepka/docker-api/issues)

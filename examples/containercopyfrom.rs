@@ -1,5 +1,5 @@
 use futures::TryStreamExt;
-use moby::Docker;
+use docker_api::Docker;
 use std::{env, path};
 use tar::Archive;
 

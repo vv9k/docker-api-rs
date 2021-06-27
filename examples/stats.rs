@@ -1,6 +1,6 @@
 //  cargo run --example stats -- <container>
 use futures::StreamExt;
-use moby::Docker;
+use docker_api::Docker;
 use std::env;
 
 #[tokio::main]

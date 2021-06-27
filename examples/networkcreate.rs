@@ -1,4 +1,4 @@
-use moby::{Docker, NetworkCreateOptions};
+use docker_api::{Docker, NetworkCreateOptions};
 use std::env;
 
 #[tokio::main]
