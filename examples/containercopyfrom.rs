@@ -1,5 +1,5 @@
-use futures::TryStreamExt;
 use docker_api::Docker;
+use futures::TryStreamExt;
 use std::{env, path};
 use tar::Archive;
 

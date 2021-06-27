@@ -1,5 +1,5 @@
-use futures::StreamExt;
 use docker_api::{tty::TtyChunk, Docker, ExecContainerOptions};
+use futures::StreamExt;
 use std::{env, str::from_utf8};
 
 #[tokio::main]

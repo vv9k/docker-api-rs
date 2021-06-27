@@ -1,7 +1,7 @@
 // cargo run --example imagepull_auth busybox username password
 
-use futures::StreamExt;
 use docker_api::{Docker, PullOptions, RegistryAuth};
+use futures::StreamExt;
 use std::env;
 
 #[tokio::main]

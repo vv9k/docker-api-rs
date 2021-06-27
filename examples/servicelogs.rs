@@ -1,5 +1,5 @@
-use futures::StreamExt;
 use docker_api::{tty::TtyChunk, Docker, LogsOptions};
+use futures::StreamExt;
 use std::env;
 
 #[tokio::main]
