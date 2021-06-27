@@ -26,6 +26,8 @@ use std::{
     task::{Context, Poll},
 };
 
+static JSON_WHITESPACE: &[u8] = b"\r\n";
+
 pub fn tar() -> Mime {
     "application/tar".parse().unwrap()
 }
@@ -158,6 +160,37 @@ impl Transport {
         H: IntoIterator<Item = (&'static str, String)> + 'stream,
     {
         self.get_chunk_stream(method, endpoint, body, headers)
+            .try_flatten_stream()
+    }
+
+    async fn get_json_chunk_stream<B, H>(
+        &self,
+        method: Method,
+        endpoint: impl AsRef<str>,
+        body: Option<(B, Mime)>,
+        headers: Option<H>,
+    ) -> Result<impl Stream<Item = Result<Bytes>>>
+    where
+        B: Into<Body>,
+        H: IntoIterator<Item = (&'static str, String)>,
+    {
+        let body = self.get_body(method, endpoint, body, headers).await?;
+
+        Ok(stream_json_body(body))
+    }
+
+    pub fn stream_json_chunks<'stream, H, B>(
+        &'stream self,
+        method: Method,
+        endpoint: impl AsRef<str> + 'stream,
+        body: Option<(B, Mime)>,
+        headers: Option<H>,
+    ) -> impl Stream<Item = Result<Bytes>> + 'stream
+    where
+        B: Into<Body> + 'stream,
+        H: IntoIterator<Item = (&'static str, String)> + 'stream,
+    {
+        self.get_json_chunk_stream(method, endpoint, body, headers)
             .try_flatten_stream()
     }
 
@@ -327,8 +360,30 @@ struct ErrorResponse {
 fn stream_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
     async fn unfold(mut body: Body) -> Option<(Result<Bytes>, Body)> {
         let chunk_result = body.next().await?.map_err(Error::from);
-
         Some((chunk_result, body))
+    }
+
+    futures_util::stream::unfold(body, unfold)
+}
+
+fn stream_json_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
+    async fn unfold(mut body: Body) -> Option<(Result<Bytes>, Body)> {
+        let mut chunk = Vec::new();
+        while let Some(chnk) = body.next().await {
+            match chnk {
+                Ok(chnk) => {
+                    chunk.extend(chnk.to_vec());
+                    if chnk.ends_with(JSON_WHITESPACE) {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    return Some((Err(Error::from(e)), body));
+                }
+            }
+        }
+
+        Some((Ok(Bytes::from(chunk)), body))
     }
 
     futures_util::stream::unfold(body, unfold)

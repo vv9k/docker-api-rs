@@ -336,9 +336,23 @@ impl Docker {
             .stream_chunks(Method::POST, endpoint, body, headers)
     }
 
+    /// Send a streaming post request.
+    fn stream_json_post<'a, H>(
+        &'a self,
+        endpoint: impl AsRef<str> + 'a,
+        body: Option<(Body, Mime)>,
+        headers: Option<H>,
+    ) -> impl Stream<Item = Result<hyper::body::Bytes>> + 'a
+    where
+        H: IntoIterator<Item = (&'static str, String)> + 'a,
+    {
+        self.transport
+            .stream_json_chunks(Method::POST, endpoint, body, headers)
+    }
+
     /// Send a streaming post request that returns a stream of JSON values
     ///
-    /// Assumes that each received chunk contains one or more JSON values
+    /// When a received chunk does not contain a full JSON reads more chunks from the stream
     pub(crate) fn stream_post_into<'a, H, T>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
@@ -349,7 +363,7 @@ impl Docker {
         H: IntoIterator<Item = (&'static str, String)> + 'a,
         T: de::DeserializeOwned,
     {
-        self.stream_post(endpoint, body, headers)
+        self.stream_json_post(endpoint, body, headers)
             .and_then(|chunk| async move {
                 let stream = futures_util::stream::iter(
                     serde_json::Deserializer::from_slice(&chunk)
