@@ -15,7 +15,7 @@ use url::form_urlencoded;
 use crate::{
     docker::Docker,
     errors::{Error, Result},
-    transport::Payload
+    transport::Payload,
 };
 
 #[derive(Debug)]
@@ -130,7 +130,7 @@ impl<'docker> Network<'docker> {
         self.docker
             .post(
                 &format!("/networks/{}/{}", self.id, segment.as_ref())[..],
-                        Payload::Json(body),
+                Payload::Json(body),
             )
             .await?;
         Ok(())

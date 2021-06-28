@@ -9,7 +9,7 @@ use hyper::Body;
 use serde::{Deserialize, Serialize};
 use url::form_urlencoded;
 
-use crate::{docker::Docker, errors::Result, tarball, transport::{Payload}};
+use crate::{docker::Docker, errors::Result, tarball, transport::Payload};
 
 #[cfg(feature = "chrono")]
 use crate::datetime::datetime_from_unix_timestamp;
@@ -83,7 +83,10 @@ impl<'docker> Image<'docker> {
         if let Some(query) = opts.serialize() {
             path.push(query)
         }
-        let _ = self.docker.post(&path.join("?"), Payload::None::<Body>).await?;
+        let _ = self
+            .docker
+            .post(&path.join("?"), Payload::None::<Body>)
+            .await?;
         Ok(())
     }
 }
@@ -128,7 +131,7 @@ impl<'docker> Images<'docker> {
 
                 let value_stream = docker.stream_post_into(
                     endpoint.join("?"),
-                    Payload::Tar(bytes.into()),
+                    Payload::Tar(bytes),
                     None::<iter::Empty<_>>,
                 );
 
@@ -186,7 +189,10 @@ impl<'docker> Images<'docker> {
             .auth_header()
             .map(|a| iter::once(("X-Registry-Auth", a)));
 
-        Box::pin(self.docker.stream_post_into(path.join("?"), Payload::None::<Body>, headers))
+        Box::pin(
+            self.docker
+                .stream_post_into(path.join("?"), Payload::None::<Body>, headers),
+        )
     }
 
     /// exports a collection of named images,
@@ -222,7 +228,7 @@ impl<'docker> Images<'docker> {
 
                 let value_stream = self.docker.stream_post_into(
                     "/images/load",
-                    Payload::Tar(bytes.into()),
+                    Payload::Tar(bytes),
                     None::<iter::Empty<_>>,
                 );
                 Ok(value_stream)

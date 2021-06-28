@@ -103,7 +103,7 @@ impl<'docker> Container<'docker> {
                     "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
                     self.id
                 ),
-                Payload::None::<Body>
+                Payload::None::<Body>,
             )
             .await
     }
@@ -116,9 +116,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerAttach>
     pub async fn attach(&self) -> Result<TtyMultiPlexer<'docker>> {
-        self.attach_raw()
-            .await
-            .map(TtyMultiPlexer::new)
+        self.attach_raw().await.map(TtyMultiPlexer::new)
     }
 
     /// Returns a set of changes made to the container instance
@@ -166,7 +164,10 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStart>
     pub async fn start(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/start", self.id)[..], Payload::None::<Body>)
+            .post(
+                &format!("/containers/{}/start", self.id)[..],
+                Payload::None::<Body>,
+            )
             .await
             .map(|_| ())
     }
@@ -183,7 +184,10 @@ impl<'docker> Container<'docker> {
 
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
+        self.docker
+            .post(&path.join("?"), Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Restart the container instance
@@ -197,7 +201,10 @@ impl<'docker> Container<'docker> {
                 .finish();
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
+        self.docker
+            .post(&path.join("?"), Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Kill the container instance
@@ -211,7 +218,10 @@ impl<'docker> Container<'docker> {
                 .finish();
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
+        self.docker
+            .post(&path.join("?"), Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Rename the container instance
@@ -235,7 +245,10 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerPause>
     pub async fn pause(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/pause", self.id)[..], Payload::None::<Body>)
+            .post(
+                &format!("/containers/{}/pause", self.id)[..],
+                Payload::None::<Body>,
+            )
             .await
             .map(|_| ())
     }
@@ -245,7 +258,10 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerUnpause>
     pub async fn unpause(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/unpause", self.id)[..], Payload::None::<Body>)
+            .post(
+                &format!("/containers/{}/unpause", self.id)[..],
+                Payload::None::<Body>,
+            )
             .await
             .map(|_| ())
     }
@@ -255,7 +271,10 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait>
     pub async fn wait(&self) -> Result<Exit> {
         self.docker
-            .post_json(format!("/containers/{}/wait", self.id), Payload::None::<Body>)
+            .post_json(
+                format!("/containers/{}/wait", self.id),
+                Payload::None::<Body>,
+            )
             .await
     }
 
@@ -335,8 +354,7 @@ impl<'docker> Container<'docker> {
         .unwrap();
         let data = ar.into_inner().unwrap();
 
-        self.copy_to(Path::new("/"), data.into())
-            .await.map(|_| ())
+        self.copy_to(Path::new("/"), data.into()).await.map(|_| ())
     }
 
     /// Copy a tarball (see `body`) to the container.
@@ -354,7 +372,8 @@ impl<'docker> Container<'docker> {
                 &format!("/containers/{}/archive?{}", self.id, path_arg),
                 Payload::XTar(body),
             )
-            .await.map(|_| ())
+            .await
+            .map(|_| ())
     }
 }
 
@@ -406,7 +425,9 @@ impl<'docker> Containers<'docker> {
             );
         }
 
-        self.docker.post_json(&path.join("?"), Payload::Json(body)).await
+        self.docker
+            .post_json(&path.join("?"), Payload::Json(body))
+            .await
     }
 }
 

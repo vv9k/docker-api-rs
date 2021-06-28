@@ -13,8 +13,8 @@ use serde_json::{json, Value};
 
 use crate::{
     errors::{Error, Result},
+    transport::Payload,
     Docker,
-    transport::Payload
 };
 
 #[cfg(feature = "chrono")]

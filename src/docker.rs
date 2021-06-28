@@ -4,10 +4,14 @@
 
 use std::{collections::HashMap, io, path::Path};
 
-use futures_util::{stream::Stream, TryStreamExt};
-use hyper::{client::HttpConnector, Body, Client, Method};
+use futures_util::{
+    io::{AsyncRead, AsyncWrite},
+    stream::Stream,
+    TryStreamExt,
+};
+use hyper::{body::Bytes, client::HttpConnector, Body, Client, Method};
 use log::trace;
-use serde::{de, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use url::form_urlencoded;
 
 use crate::{
@@ -237,10 +241,7 @@ impl Docker {
             .await
     }
 
-    pub(crate) async fn get_json<T: serde::de::DeserializeOwned>(
-        &self,
-        endpoint: &str,
-    ) -> Result<T> {
+    pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
             .request(Method::GET, endpoint, Payload::None::<&[u8]>, Headers::None)
@@ -250,25 +251,31 @@ impl Docker {
         Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
-    pub(crate) async fn post(&self, endpoint: &str, body: Payload<Body>) -> Result<String> {
+    pub(crate) async fn post<B>(&self, endpoint: &str, body: Payload<B>) -> Result<String>
+    where
+        B: Into<Body>,
+    {
         self.transport
             .request(Method::POST, endpoint, body, Headers::None)
             .await
     }
 
-    pub(crate) async fn put(&self, endpoint: &str, body: Payload<Body>) -> Result<String> {
+    pub(crate) async fn put<B>(&self, endpoint: &str, body: Payload<B>) -> Result<String>
+    where
+        B: Into<Body>,
+    {
         self.transport
             .request(Method::PUT, endpoint, body, Headers::None)
             .await
     }
 
-    pub(crate) async fn post_json<T, B>(
+    pub(crate) async fn post_json<B, T>(
         &self,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
     ) -> Result<T>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
         B: Into<Body>,
     {
         let raw_string = self
@@ -280,14 +287,14 @@ impl Docker {
         Ok(serde_json::from_str::<T>(&&raw_string)?)
     }
 
-    pub(crate) async fn post_json_headers<'a, T, B, H>(
+    pub(crate) async fn post_json_headers<'a, B, H, T>(
         &self,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
         headers: Option<H>,
     ) -> Result<T>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
         B: Into<Body>,
         H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
@@ -302,17 +309,24 @@ impl Docker {
 
     pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.transport
-            .request(Method::DELETE, endpoint, Payload::None::<Body>, Headers::None)
+            .request(
+                Method::DELETE,
+                endpoint,
+                Payload::None::<Body>,
+                Headers::None,
+            )
             .await
     }
 
-    pub(crate) async fn delete_json<T: serde::de::DeserializeOwned>(
-        &self,
-        endpoint: &str,
-    ) -> Result<T> {
+    pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request(Method::DELETE, endpoint, Payload::None::<Body>, Headers::None)
+            .request(
+                Method::DELETE,
+                endpoint,
+                Payload::None::<Body>,
+                Headers::None,
+            )
             .await?;
         trace!("{}", raw_string);
 
@@ -322,13 +336,14 @@ impl Docker {
     /// Send a streaming post request.
     ///
     /// Use stream_post_into_values if the endpoint returns JSON values
-    pub(crate) fn stream_post<'a, H>(
+    pub(crate) fn stream_post<'a, B, H>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
-        body: Payload<Body>,
+        body: Payload<B>,
         headers: Option<H>,
-    ) -> impl Stream<Item = Result<hyper::body::Bytes>> + 'a
+    ) -> impl Stream<Item = Result<Bytes>> + 'a
     where
+        B: Into<Body> + 'a,
         H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
         self.transport
@@ -336,13 +351,14 @@ impl Docker {
     }
 
     /// Send a streaming post request.
-    fn stream_json_post<'a, H>(
+    fn stream_json_post<'a, B, H>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
-        body: Payload<Body>,
+        body: Payload<B>,
         headers: Option<H>,
-    ) -> impl Stream<Item = Result<hyper::body::Bytes>> + 'a
+    ) -> impl Stream<Item = Result<Bytes>> + 'a
     where
+        B: Into<Body> + 'a,
         H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
         self.transport
@@ -352,15 +368,16 @@ impl Docker {
     /// Send a streaming post request that returns a stream of JSON values
     ///
     /// When a received chunk does not contain a full JSON reads more chunks from the stream
-    pub(crate) fn stream_post_into<'a, H, T>(
+    pub(crate) fn stream_post_into<'a, B, H, T>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
-        body: Payload<Body>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> impl Stream<Item = Result<T>> + 'a
     where
+        B: Into<Body> + 'a,
         H: IntoIterator<Item = (&'static str, String)> + 'a,
-        T: de::DeserializeOwned,
+        T: DeserializeOwned,
     {
         self.stream_json_post(endpoint, body, headers)
             .and_then(|chunk| async move {
@@ -379,17 +396,20 @@ impl Docker {
     pub(crate) fn stream_get<'a>(
         &'a self,
         endpoint: impl AsRef<str> + Unpin + 'a,
-    ) -> impl Stream<Item = Result<hyper::body::Bytes>> + 'a {
+    ) -> impl Stream<Item = Result<Bytes>> + 'a {
         let headers = Some(Vec::default());
         self.transport
             .stream_chunks(Method::GET, endpoint, Payload::None::<Body>, headers)
     }
 
-    pub(crate) async fn stream_post_upgrade<'a>(
+    pub(crate) async fn stream_post_upgrade<'a, B>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
-        body: Payload<Body>,
-    ) -> Result<impl futures_util::io::AsyncRead + futures_util::io::AsyncWrite + 'a> {
+        body: Payload<B>,
+    ) -> Result<impl AsyncRead + AsyncWrite + 'a>
+    where
+        B: Into<Body> + 'a,
+    {
         self.transport
             .stream_upgrade(Method::POST, endpoint, body)
             .await

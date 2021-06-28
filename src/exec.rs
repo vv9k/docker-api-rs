@@ -15,8 +15,8 @@ use serde_json::{json, Value};
 
 use crate::{
     errors::{Error, Result},
+    transport::Payload,
     tty, Docker,
-    transport::Payload
 };
 
 /// Interface for docker exec instance
@@ -114,7 +114,7 @@ impl<'docker> Exec<'docker> {
 
                 let stream = Box::pin(docker.stream_post(
                     format!("/exec/{}/start", exec_id),
-                    Payload::Json("{}".into()),
+                    Payload::Json("{}"),
                     None::<iter::Empty<_>>,
                 ));
 
@@ -150,7 +150,7 @@ impl<'docker> Exec<'docker> {
             async move {
                 let stream = Box::pin(docker.stream_post(
                     endpoint,
-                    Payload::Json("{}".into()),
+                    Payload::Json("{}"),
                     None::<iter::Empty<_>>,
                 ));
 

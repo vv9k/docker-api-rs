@@ -3,7 +3,7 @@
 use crate::{Error, Result};
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
-    stream::Stream,
+    stream::{self, Stream},
     StreamExt, TryFutureExt,
 };
 use hyper::{
@@ -29,7 +29,6 @@ static JSON_WHITESPACE: &[u8] = b"\r\n";
 
 pub(crate) type Headers = Option<Vec<(&'static str, String)>>;
 // pub(crate) type Payload = Option<(Body, Mime)>;
-
 
 pub enum Payload<B: Into<Body>> {
     None,
@@ -181,7 +180,7 @@ impl Transport {
         Ok(stream_body(body))
     }
 
-    pub fn stream_chunks<'stream, H, B>(
+    pub fn stream_chunks<'stream, B, H>(
         &'stream self,
         method: Method,
         endpoint: impl AsRef<str> + 'stream,
@@ -212,7 +211,7 @@ impl Transport {
         Ok(stream_json_body(body))
     }
 
-    pub fn stream_json_chunks<'stream, H, B>(
+    pub fn stream_json_chunks<'stream, B, H>(
         &'stream self,
         method: Method,
         endpoint: impl AsRef<str> + 'stream,
@@ -274,11 +273,9 @@ impl Transport {
 
         if let Some(c) = mime {
             req = req.header(header::CONTENT_TYPE, &c.to_string()[..]);
-
         }
 
-        Ok(req
-            .body(body.to_inner().unwrap().into())?)
+        Ok(req.body(body.to_inner().unwrap().into())?)
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
@@ -403,7 +400,7 @@ fn stream_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
         Some((chunk_result, body))
     }
 
-    futures_util::stream::unfold(body, unfold)
+    stream::unfold(body, unfold)
 }
 
 fn stream_json_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
@@ -426,5 +423,5 @@ fn stream_json_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
         Some((Ok(Bytes::from(chunk)), body))
     }
 
-    futures_util::stream::unfold(body, unfold)
+    stream::unfold(body, unfold)
 }

@@ -92,11 +92,7 @@ impl<'docker> Service<'docker> {
             .map(|a| iter::once(("X-Registry-Auth", a)));
 
         self.docker
-            .post_json_headers(
-                &path.join("?"),
-                Payload::Json(body),
-                headers,
-            )
+            .post_json_headers(&path.join("?"), Payload::Json(body), headers)
             .await
     }
 
