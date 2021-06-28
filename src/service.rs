@@ -7,6 +7,7 @@ use crate::{
     docker::Docker,
     errors::{Error, Result},
     image::RegistryAuth,
+    transport::Payload,
     tty,
 };
 
@@ -93,7 +94,7 @@ impl<'docker> Service<'docker> {
         self.docker
             .post_json_headers(
                 &path.join("?"),
-                Some((body, mime::APPLICATION_JSON)),
+                Payload::Json(body),
                 headers,
             )
             .await

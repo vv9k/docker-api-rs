@@ -17,7 +17,6 @@ use hyper_openssl::HttpsConnector;
 use hyperlocal::UnixConnector;
 #[cfg(feature = "unix-socket")]
 use hyperlocal::Uri as DomainUri;
-use mime::Mime;
 use pin_project::pin_project;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -28,12 +27,46 @@ use std::{
 
 static JSON_WHITESPACE: &[u8] = b"\r\n";
 
-pub fn tar() -> Mime {
-    "application/tar".parse().unwrap()
+pub(crate) type Headers = Option<Vec<(&'static str, String)>>;
+// pub(crate) type Payload = Option<(Body, Mime)>;
+
+
+pub enum Payload<B: Into<Body>> {
+    None,
+    Text(B),
+    Json(B),
+    XTar(B),
+    Tar(B),
 }
 
-pub(crate) type Headers = Option<Vec<(&'static str, String)>>;
-pub(crate) type Payload = Option<(Body, Mime)>;
+impl<B: Into<Body>> Payload<B> {
+    pub fn to_inner(self) -> Option<B> {
+        match self {
+            Self::None => None,
+            Self::Text(b) => Some(b),
+            Self::Json(b) => Some(b),
+            Self::XTar(b) => Some(b),
+            Self::Tar(b) => Some(b),
+        }
+    }
+
+    pub fn mime_type(&self) -> Option<mime::Mime> {
+        match &self {
+            Self::None => None,
+            Self::Text(_) => None,
+            Self::Json(_) => Some(mime::APPLICATION_JSON),
+            Self::XTar(_) => Some("application/x-tar".parse().unwrap()),
+            Self::Tar(_) => Some("application/tar".parse().unwrap()),
+        }
+    }
+
+    pub fn is_none(&self) -> bool {
+        match &self {
+            Self::None => true,
+            _ => false,
+        }
+    }
+}
 
 /// Transports are types which define the means of communication
 /// with the docker daemon
@@ -76,7 +109,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> Result<String>
     where
@@ -94,7 +127,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> Result<Body>
     where
@@ -136,7 +169,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> Result<impl Stream<Item = Result<Bytes>>>
     where
@@ -152,7 +185,7 @@ impl Transport {
         &'stream self,
         method: Method,
         endpoint: impl AsRef<str> + 'stream,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> impl Stream<Item = Result<Bytes>> + 'stream
     where
@@ -167,7 +200,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> Result<impl Stream<Item = Result<Bytes>>>
     where
@@ -183,7 +216,7 @@ impl Transport {
         &'stream self,
         method: Method,
         endpoint: impl AsRef<str> + 'stream,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
     ) -> impl Stream<Item = Result<Bytes>> + 'stream
     where
@@ -199,7 +232,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
         headers: Option<H>,
         builder: hyper::http::request::Builder,
     ) -> Result<Request<Body>>
@@ -233,12 +266,19 @@ impl Transport {
             }
         }
 
-        match body {
-            Some((b, c)) => Ok(req
-                .header(header::CONTENT_TYPE, &c.to_string()[..])
-                .body(b.into())?),
-            _ => Ok(req.body(Body::empty())?),
+        if body.is_none() {
+            return Ok(req.body(Body::empty())?);
         }
+
+        let mime = body.mime_type();
+
+        if let Some(c) = mime {
+            req = req.header(header::CONTENT_TYPE, &c.to_string()[..]);
+
+        }
+
+        Ok(req
+            .body(body.to_inner().unwrap().into())?)
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
@@ -261,7 +301,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
     ) -> Result<hyper::upgrade::Upgraded>
     where
         B: Into<Body>,
@@ -290,7 +330,7 @@ impl Transport {
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
-        body: Option<(B, Mime)>,
+        body: Payload<B>,
     ) -> Result<impl AsyncRead + AsyncWrite>
     where
         B: Into<Body>,

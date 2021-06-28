@@ -16,6 +16,7 @@ use serde_json::{json, Value};
 use crate::{
     errors::{Error, Result},
     tty, Docker,
+    transport::Payload
 };
 
 /// Interface for docker exec instance
@@ -59,7 +60,7 @@ impl<'docker> Exec<'docker> {
         let id = docker
             .post_json(
                 &format!("/containers/{}/exec", container_id.as_ref()),
-                Some((body, mime::APPLICATION_JSON)),
+                Payload::Json(body),
             )
             .await
             .map(|resp: Response| resp.id)?;
@@ -107,13 +108,13 @@ impl<'docker> Exec<'docker> {
                 let body: Body = body_result?.into();
 
                 let exec_id = docker
-                    .post_json(&container_endpoint, Some((body, mime::APPLICATION_JSON)))
+                    .post_json(&container_endpoint, Payload::Json(body))
                     .await
                     .map(|resp: Response| resp.id)?;
 
                 let stream = Box::pin(docker.stream_post(
                     format!("/exec/{}/start", exec_id),
-                    Some(("{}".into(), mime::APPLICATION_JSON)),
+                    Payload::Json("{}".into()),
                     None::<iter::Empty<_>>,
                 ));
 
@@ -149,7 +150,7 @@ impl<'docker> Exec<'docker> {
             async move {
                 let stream = Box::pin(docker.stream_post(
                     endpoint,
-                    Some(("{}".into(), mime::APPLICATION_JSON)),
+                    Payload::Json("{}".into()),
                     None::<iter::Empty<_>>,
                 ));
 
@@ -178,7 +179,7 @@ impl<'docker> Exec<'docker> {
         self.docker
             .post_json(
                 &format!("/exec/{}/resize", &self.id)[..],
-                Some((body, mime::APPLICATION_JSON)),
+                Payload::Json(body),
             )
             .await
     }

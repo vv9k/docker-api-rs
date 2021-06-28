@@ -14,6 +14,7 @@ use serde_json::{json, Value};
 use crate::{
     errors::{Error, Result},
     Docker,
+    transport::Payload
 };
 
 #[cfg(feature = "chrono")]
@@ -41,7 +42,7 @@ impl<'docker> Volumes<'docker> {
         let path = vec!["/volumes/create".to_owned()];
 
         self.docker
-            .post_json(&path.join("?"), Some((body, mime::APPLICATION_JSON)))
+            .post_json(&path.join("?"), Payload::Json(body))
             .await
     }
 

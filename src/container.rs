@@ -10,7 +10,6 @@ use futures_util::{
     TryStreamExt,
 };
 use hyper::Body;
-use mime::Mime;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use url::form_urlencoded;
@@ -104,7 +103,7 @@ impl<'docker> Container<'docker> {
                     "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
                     self.id
                 ),
-                None,
+                Payload::None::<Body>
             )
             .await
     }
@@ -117,9 +116,9 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerAttach>
     pub async fn attach(&self) -> Result<TtyMultiPlexer<'docker>> {
-        let tcp_stream = self.attach_raw().await?;
-
-        Ok(TtyMultiPlexer::new(tcp_stream))
+        self.attach_raw()
+            .await
+            .map(TtyMultiPlexer::new)
     }
 
     /// Returns a set of changes made to the container instance
@@ -167,9 +166,9 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStart>
     pub async fn start(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/start", self.id)[..], None)
-            .await?;
-        Ok(())
+            .post(&format!("/containers/{}/start", self.id)[..], Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Stop the container instance
@@ -184,8 +183,7 @@ impl<'docker> Container<'docker> {
 
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), None).await?;
-        Ok(())
+        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
     }
 
     /// Restart the container instance
@@ -199,8 +197,7 @@ impl<'docker> Container<'docker> {
                 .finish();
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), None).await?;
-        Ok(())
+        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
     }
 
     /// Kill the container instance
@@ -214,8 +211,7 @@ impl<'docker> Container<'docker> {
                 .finish();
             path.push(encoded)
         }
-        self.docker.post(&path.join("?"), None).await?;
-        Ok(())
+        self.docker.post(&path.join("?"), Payload::None::<Body>).await.map(|_| ())
     }
 
     /// Rename the container instance
@@ -228,10 +224,10 @@ impl<'docker> Container<'docker> {
         self.docker
             .post(
                 &format!("/containers/{}/rename?{}", self.id, query)[..],
-                None,
+                Payload::None::<Body>,
             )
-            .await?;
-        Ok(())
+            .await
+            .map(|_| ())
     }
 
     /// Pause the container instance
@@ -239,9 +235,9 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerPause>
     pub async fn pause(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/pause", self.id)[..], None)
-            .await?;
-        Ok(())
+            .post(&format!("/containers/{}/pause", self.id)[..], Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Unpause the container instance
@@ -249,9 +245,9 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerUnpause>
     pub async fn unpause(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/unpause", self.id)[..], None)
-            .await?;
-        Ok(())
+            .post(&format!("/containers/{}/unpause", self.id)[..], Payload::None::<Body>)
+            .await
+            .map(|_| ())
     }
 
     /// Wait until the container stops
@@ -259,7 +255,7 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait>
     pub async fn wait(&self) -> Result<Exit> {
         self.docker
-            .post_json(format!("/containers/{}/wait", self.id), Payload::None)
+            .post_json(format!("/containers/{}/wait", self.id), Payload::None::<Body>)
             .await
     }
 
@@ -271,8 +267,8 @@ impl<'docker> Container<'docker> {
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/containers/{}", self.id)[..])
-            .await?;
-        Ok(())
+            .await
+            .map(|_| ())
     }
 
     /// Delete the container instance (todo: force/v)
@@ -283,8 +279,7 @@ impl<'docker> Container<'docker> {
         if let Some(query) = opts.serialize() {
             path.push(query)
         }
-        self.docker.delete(&path.join("?")).await?;
-        Ok(())
+        self.docker.delete(&path.join("?")).await.map(|_| ())
     }
 
     /// Execute a command in this container
@@ -340,8 +335,8 @@ impl<'docker> Container<'docker> {
         .unwrap();
         let data = ar.into_inner().unwrap();
 
-        self.copy_to(Path::new("/"), data.into()).await?;
-        Ok(())
+        self.copy_to(Path::new("/"), data.into())
+            .await.map(|_| ())
     }
 
     /// Copy a tarball (see `body`) to the container.
@@ -354,15 +349,12 @@ impl<'docker> Container<'docker> {
             .append_pair("path", &path.to_string_lossy())
             .finish();
 
-        let mime = "application/x-tar".parse::<Mime>().unwrap();
-
         self.docker
             .put(
                 &format!("/containers/{}/archive?{}", self.id, path_arg),
-                Some((body, mime)),
+                Payload::XTar(body),
             )
-            .await?;
-        Ok(())
+            .await.map(|_| ())
     }
 }
 
@@ -414,9 +406,7 @@ impl<'docker> Containers<'docker> {
             );
         }
 
-        self.docker
-            .post_json(&path.join("?"), Some((body, mime::APPLICATION_JSON)))
-            .await
+        self.docker.post_json(&path.join("?"), Payload::Json(body)).await
     }
 }
 

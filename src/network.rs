@@ -15,6 +15,7 @@ use url::form_urlencoded;
 use crate::{
     docker::Docker,
     errors::{Error, Result},
+    transport::Payload
 };
 
 #[derive(Debug)]
@@ -58,7 +59,7 @@ impl<'docker> Networks<'docker> {
         let path = vec!["/networks/create".to_owned()];
 
         self.docker
-            .post_json(&path.join("?"), Some((body, mime::APPLICATION_JSON)))
+            .post_json(&path.join("?"), Payload::Json(body))
             .await
     }
 }
@@ -129,7 +130,7 @@ impl<'docker> Network<'docker> {
         self.docker
             .post(
                 &format!("/networks/{}/{}", self.id, segment.as_ref())[..],
-                Some((body, mime::APPLICATION_JSON)),
+                        Payload::Json(body),
             )
             .await?;
         Ok(())
