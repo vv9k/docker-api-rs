@@ -39,7 +39,7 @@ pub enum Payload<B: Into<Body>> {
 }
 
 impl<B: Into<Body>> Payload<B> {
-    pub fn to_inner(self) -> Option<B> {
+    pub fn into_inner(self) -> Option<B> {
         match self {
             Self::None => None,
             Self::Text(b) => Some(b),
@@ -60,10 +60,7 @@ impl<B: Into<Body>> Payload<B> {
     }
 
     pub fn is_none(&self) -> bool {
-        match &self {
-            Self::None => true,
-            _ => false,
-        }
+        matches!(self, Self::None)
     }
 }
 
@@ -275,7 +272,7 @@ impl Transport {
             req = req.header(header::CONTENT_TYPE, &c.to_string()[..]);
         }
 
-        Ok(req.body(body.to_inner().unwrap().into())?)
+        Ok(req.body(body.into_inner().unwrap().into())?)
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
