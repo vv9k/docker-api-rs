@@ -90,6 +90,18 @@ impl<'docker> Image<'docker> {
         let _ = self.docker.post(&path.join("?"), Payload::empty()).await?;
         Ok(())
     }
+
+    /// Return image digest and platform information by contacting the registry.
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/DistributionInspect>
+    pub async fn distribution_inspect(&self) -> Result<DistributionInspectInfo> {
+        self.docker
+            .post_json(
+                &format!("/distribution/{}/json", self.name),
+                Payload::empty(),
+            )
+            .await
+    }
 }
 
 #[derive(Debug)]
@@ -836,6 +848,23 @@ pub struct ErrorDetail {
 pub struct ProgressDetail {
     pub current: Option<u64>,
     pub total: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct Descriptor {
+    media_type: String,
+    digest: String,
+    size: u64,
+    #[serde(rename = "URLs")]
+    urls: Vec<String>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct DistributionInspectInfo {
+    descriptor: Descriptor,
+    platforms: Vec<serde_json::Value>,
 }
 
 #[cfg(test)]
