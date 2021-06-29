@@ -428,32 +428,6 @@ impl<'docker> Containers<'docker> {
     }
 }
 
-/// Options for filtering container list results
-#[derive(Default, Debug)]
-pub struct ContainerListOptions {
-    params: HashMap<&'static str, String>,
-}
-
-impl ContainerListOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> ContainerListOptionsBuilder {
-        ContainerListOptionsBuilder::default()
-    }
-
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
 /// Filter options for container listings
 pub enum ContainerFilter {
     ExitCode(u64),
@@ -462,11 +436,7 @@ pub enum ContainerFilter {
     Label(String, String),
 }
 
-/// Builder interface for `ContainerListOptions`
-#[derive(Default)]
-pub struct ContainerListOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(ContainerList);
 
 impl ContainerListOptionsBuilder {
     pub fn filter<F>(&mut self, filters: F) -> &mut Self
@@ -513,12 +483,6 @@ impl ContainerListOptionsBuilder {
     pub fn sized(&mut self) -> &mut Self {
         self.params.insert("size", "true".to_owned());
         self
-    }
-
-    pub fn build(&self) -> ContainerListOptions {
-        ContainerListOptions {
-            params: self.params.clone(),
-        }
     }
 }
 
@@ -811,37 +775,7 @@ impl ContainerOptionsBuilder {
     }
 }
 
-/// Options for controlling log request results
-#[derive(Default, Debug)]
-pub struct LogsOptions {
-    params: HashMap<&'static str, String>,
-}
-
-impl LogsOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> LogsOptionsBuilder {
-        LogsOptionsBuilder::default()
-    }
-
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
-/// Builder interface for `LogsOptions`
-#[derive(Default)]
-pub struct LogsOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(Logs);
 
 impl LogsOptionsBuilder {
     pub fn follow(&mut self, f: bool) -> &mut Self {
@@ -885,45 +819,9 @@ impl LogsOptionsBuilder {
         self.params.insert("since", timestamp.to_string());
         self
     }
-
-    pub fn build(&self) -> LogsOptions {
-        LogsOptions {
-            params: self.params.clone(),
-        }
-    }
 }
 
-/// Options for controlling log request results
-#[derive(Default, Debug)]
-pub struct RmContainerOptions {
-    params: HashMap<&'static str, String>,
-}
-
-impl RmContainerOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> RmContainerOptionsBuilder {
-        RmContainerOptionsBuilder::default()
-    }
-
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
-/// Builder interface for `LogsOptions`
-#[derive(Default)]
-pub struct RmContainerOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(RmContainer);
 
 impl RmContainerOptionsBuilder {
     pub fn force(&mut self, f: bool) -> &mut Self {
@@ -934,12 +832,6 @@ impl RmContainerOptionsBuilder {
     pub fn volumes(&mut self, s: bool) -> &mut Self {
         self.params.insert("v", s.to_string());
         self
-    }
-
-    pub fn build(&self) -> RmContainerOptions {
-        RmContainerOptions {
-            params: self.params.clone(),
-        }
     }
 }
 

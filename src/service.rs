@@ -131,32 +131,6 @@ impl<'docker> Service<'docker> {
     }
 }
 
-/// Options for filtering services list results
-#[derive(Default, Debug)]
-pub struct ServiceListOptions {
-    params: HashMap<&'static str, String>,
-}
-
-impl ServiceListOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> ServiceListOptionsBuilder {
-        ServiceListOptionsBuilder::default()
-    }
-
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
 /// Filter options for services listings
 pub enum ServiceFilter {
     Id(String),
@@ -166,11 +140,7 @@ pub enum ServiceFilter {
     Name(String),
 }
 
-/// Builder interface for `ServicesListOptions`
-#[derive(Default)]
-pub struct ServiceListOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(ServiceList);
 
 impl ServiceListOptionsBuilder {
     pub fn filter(&mut self, filters: Vec<ServiceFilter>) -> &mut Self {
@@ -196,12 +166,6 @@ impl ServiceListOptionsBuilder {
     pub fn enable_status(&mut self) -> &mut Self {
         self.params.insert("status", "true".to_owned());
         self
-    }
-
-    pub fn build(&self) -> ServiceListOptions {
-        ServiceListOptions {
-            params: self.params.clone(),
-        }
     }
 }
 

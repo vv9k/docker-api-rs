@@ -346,35 +346,7 @@ impl RegistryAuthBuilder {
     }
 }
 
-#[derive(Default, Debug)]
-pub struct TagOptions {
-    pub params: HashMap<&'static str, String>,
-}
-
-impl TagOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> TagOptionsBuilder {
-        TagOptionsBuilder::default()
-    }
-
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct TagOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(Tag);
 
 impl TagOptionsBuilder {
     pub fn repo<R>(&mut self, r: R) -> &mut Self
@@ -391,12 +363,6 @@ impl TagOptionsBuilder {
     {
         self.params.insert("tag", t.into());
         self
-    }
-
-    pub fn build(&self) -> TagOptions {
-        TagOptions {
-            params: self.params.clone(),
-        }
     }
 }
 
@@ -634,34 +600,7 @@ pub enum ImageFilter {
     Label(String, String),
 }
 
-/// Options for filtering image list results
-#[derive(Default, Debug)]
-pub struct ImageListOptions {
-    params: HashMap<&'static str, String>,
-}
-
-impl ImageListOptions {
-    pub fn builder() -> ImageListOptionsBuilder {
-        ImageListOptionsBuilder::default()
-    }
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
-
-/// Builder interface for `ImageListOptions`
-#[derive(Default)]
-pub struct ImageListOptionsBuilder {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!(ImageList);
 
 impl ImageListOptionsBuilder {
     pub fn digests(&mut self, d: bool) -> &mut Self {
@@ -699,12 +638,6 @@ impl ImageListOptionsBuilder {
         self.params
             .insert("filters", serde_json::to_string(&param).unwrap());
         self
-    }
-
-    pub fn build(&self) -> ImageListOptions {
-        ImageListOptions {
-            params: self.params.clone(),
-        }
     }
 }
 

@@ -134,26 +134,10 @@ impl<'docker> Network<'docker> {
     }
 }
 
-/// Options for filtering networks list results
-#[derive(Default, Debug)]
-pub struct NetworkListOptions {
-    params: HashMap<&'static str, String>,
-}
+impl_url_opts_builder!("Options for filtering networks list results" NetworkList);
+// TODO: implement `filters` field on network list
 
-impl NetworkListOptions {
-    /// serialize options as a string. returns None if no options are defined
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
-        }
-    }
-}
+
 
 /// Interface for creating new docker network
 #[derive(Serialize, Debug)]

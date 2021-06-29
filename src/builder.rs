@@ -65,3 +65,50 @@ macro_rules! impl_map_field {
         }
     };
 }
+
+macro_rules! impl_url_opts_builder {
+    ($($docs:literal)* $name:ident) => {
+        paste::item! {
+            $(
+                #[doc= $docs]
+            )*
+            #[derive(Default, Debug)]
+            pub struct [< $name Options >] {
+                params: HashMap<&'static str, String>
+            }
+
+            impl [< $name  Options >] {
+                /// return a new instance of a builder for options
+                pub fn builder() -> [< $name  OptionsBuilder >] {
+                  [< $name  OptionsBuilder >]::default()
+                }
+
+                /// serialize options as a string. returns None if no options are defined
+                pub fn serialize(&self) -> Option<String> {
+                    if self.params.is_empty() {
+                        None
+                    } else {
+                        Some(
+                            form_urlencoded::Serializer::new(String::new())
+                                .extend_pairs(&self.params)
+                                .finish(),
+                        )
+                    }
+                }
+            }
+
+            #[derive(Default, Debug)]
+            pub struct [< $name  OptionsBuilder >] {
+                params: HashMap<&'static str, String>
+            }
+
+            impl [< $name  OptionsBuilder >] {
+                pub fn build(&self) -> [< $name  Options >] {
+                    [< $name Options >] {
+                        params: self.params.clone(),
+                    }
+                }
+            }
+        }
+    };
+}
