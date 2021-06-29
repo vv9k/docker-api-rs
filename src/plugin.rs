@@ -1,3 +1,5 @@
+//! Install, create and manage plugins
+//!
 //! Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Plugin>
 
 use crate::{errors::Result, transport::Payload, Docker};
@@ -139,7 +141,7 @@ impl<'docker> Plugins<'docker> {
     /// Returns information about installed plugins.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginList>
-    pub async fn list(&self, opts: &PluginListOptions) -> Result<Vec<PluginInfo>> {
+    pub async fn list(&self, opts: &PluginListOpts) -> Result<Vec<PluginInfo>> {
         let mut path = vec!["/images/json".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -152,7 +154,7 @@ impl<'docker> Plugins<'docker> {
 
 impl_url_opts_builder!(PluginList);
 
-impl PluginListOptionsBuilder {
+impl PluginListOptsBuilder {
     pub fn filter<F>(&mut self, filters: F) -> &mut Self
     where
         F: IntoIterator<Item = PluginFilter>,

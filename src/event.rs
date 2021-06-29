@@ -1,3 +1,5 @@
+//! Items related to events emitted by Docker
+
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -40,18 +42,18 @@ pub struct Actor {
     pub attributes: HashMap<String, String>,
 }
 
-/// Options for filtering streams of Docker events
+/// Opts for filtering streams of Docker events
 #[derive(Default, Debug)]
-pub struct EventsOptions {
+pub struct EventsOpts {
     params: HashMap<&'static str, String>,
 }
 
-impl EventsOptions {
-    pub fn builder() -> EventsOptionsBuilder {
-        EventsOptionsBuilder::default()
+impl EventsOpts {
+    pub fn builder() -> EventsOptsBuilder {
+        EventsOptsBuilder::default()
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Option<String> {
         if self.params.is_empty() {
             None
@@ -84,7 +86,7 @@ fn event_filter_type_to_string(filter: EventFilterType) -> &'static str {
     }
 }
 
-/// Filter options for image listings
+/// Filter Opts for image listings
 pub enum EventFilter {
     Container(String),
     Event(String),
@@ -96,9 +98,9 @@ pub enum EventFilter {
     Daemon(String),
 }
 
-/// Builder interface for `EventOptions`
+/// Builder interface for `EventOpts`
 #[derive(Default)]
-pub struct EventsOptionsBuilder {
+pub struct EventsOptsBuilder {
     params: HashMap<&'static str, String>,
     events: Vec<String>,
     containers: Vec<String>,
@@ -110,7 +112,7 @@ pub struct EventsOptionsBuilder {
     types: Vec<String>,
 }
 
-impl EventsOptionsBuilder {
+impl EventsOptsBuilder {
     /// Filter events since a given timestamp
     pub fn since(&mut self, ts: &u64) -> &mut Self {
         self.params.insert("since", ts.to_string());
@@ -169,8 +171,8 @@ impl EventsOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> EventsOptions {
-        EventsOptions {
+    pub fn build(&self) -> EventsOpts {
+        EventsOpts {
             params: self.params.clone(),
         }
     }

@@ -1,4 +1,4 @@
-use docker_api::{tty::TtyChunk, Docker, LogsOptions};
+use docker_api::{container::LogsOpts, tty::TtyChunk, Docker};
 use futures::StreamExt;
 use std::{env, str};
 
@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut logs_stream = docker
         .services()
         .get(&id)
-        .logs(&LogsOptions::builder().stdout(true).stderr(true).build());
+        .logs(&LogsOpts::builder().stdout(true).stderr(true).build());
 
     while let Some(log_result) = logs_stream.next().await {
         match log_result {

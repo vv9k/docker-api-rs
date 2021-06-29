@@ -1,4 +1,4 @@
-use docker_api::{tty::TtyChunk, Docker, ExecContainerOptions};
+use docker_api::{tty::TtyChunk, Docker, ExecContainerOpts};
 use futures::StreamExt;
 use std::{env, str};
 
@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nth(1)
         .expect("You need to specify a container id");
 
-    let options = ExecContainerOptions::builder()
+    let options = ExecContainerOpts::builder()
         .cmd(vec![
             "bash",
             "-c",

@@ -82,7 +82,7 @@ impl<'docker> Image<'docker> {
     /// Adds a tag to an image
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageTag>
-    pub async fn tag(&self, opts: &TagOptions) -> Result<()> {
+    pub async fn tag(&self, opts: &TagOpts) -> Result<()> {
         let mut path = vec![format!("/images/{}/tag", self.name)];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -121,7 +121,7 @@ impl<'docker> Images<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageBuild>
     pub fn build(
         &self,
-        opts: &BuildOptions,
+        opts: &BuildOpts,
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
         let mut endpoint = vec!["/build".to_owned()];
         if let Some(query) = opts.serialize() {
@@ -157,7 +157,7 @@ impl<'docker> Images<'docker> {
     /// Lists the docker images on the current docker host
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageList>
-    pub async fn list(&self, opts: &ImageListOptions) -> Result<Vec<ImageInfo>> {
+    pub async fn list(&self, opts: &ImageListOpts) -> Result<Vec<ImageInfo>> {
         let mut path = vec!["/images/json".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -192,7 +192,7 @@ impl<'docker> Images<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImagePull>
     pub fn pull(
         &self,
-        opts: &PullOptions,
+        opts: &PullOpts,
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
         let mut path = vec!["/images/create".to_owned()];
         if let Some(query) = opts.serialize() {
@@ -348,7 +348,7 @@ impl RegistryAuthBuilder {
 
 impl_url_opts_builder!(Tag);
 
-impl TagOptionsBuilder {
+impl TagOptsBuilder {
     pub fn repo<R>(&mut self, r: R) -> &mut Self
     where
         R: Into<String>,
@@ -367,18 +367,18 @@ impl TagOptionsBuilder {
 }
 
 #[derive(Default, Debug)]
-pub struct PullOptions {
+pub struct PullOpts {
     auth: Option<RegistryAuth>,
     params: HashMap<&'static str, String>,
 }
 
-impl PullOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> PullOptionsBuilder {
-        PullOptionsBuilder::default()
+impl PullOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder() -> PullOptsBuilder {
+        PullOptsBuilder::default()
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Option<String> {
         if self.params.is_empty() {
             None
@@ -396,21 +396,21 @@ impl PullOptions {
     }
 }
 
-pub struct PullOptionsBuilder {
+pub struct PullOptsBuilder {
     auth: Option<RegistryAuth>,
     params: HashMap<&'static str, String>,
 }
 
-impl Default for PullOptionsBuilder {
+impl Default for PullOptsBuilder {
     fn default() -> Self {
         let mut params = HashMap::new();
         params.insert("tag", "latest".to_string());
 
-        PullOptionsBuilder { auth: None, params }
+        PullOptsBuilder { auth: None, params }
     }
 }
 
-impl PullOptionsBuilder {
+impl PullOptsBuilder {
     ///  Name of the image to pull. The name may include a tag or digest.
     /// This parameter may only be used when pulling an image.
     /// If an untagged value is provided and no `tag` is provided, _all_
@@ -436,7 +436,7 @@ impl PullOptionsBuilder {
     /// This parameter may only be used when importing an image.
     ///
     /// By default a `latest` tag is added when calling
-    /// [PullOptionsBuilder::default](PullOptionsBuilder::default].
+    /// [PullOptsBuilder::default](PullOptsBuilder::default].
     pub fn repo<R>(&mut self, r: R) -> &mut Self
     where
         R: Into<String>,
@@ -460,8 +460,8 @@ impl PullOptionsBuilder {
         self
     }
 
-    pub fn build(&mut self) -> PullOptions {
-        PullOptions {
+    pub fn build(&mut self) -> PullOpts {
+        PullOpts {
             auth: self.auth.take(),
             params: self.params.clone(),
         }
@@ -469,23 +469,23 @@ impl PullOptionsBuilder {
 }
 
 #[derive(Default, Debug)]
-pub struct BuildOptions {
+pub struct BuildOpts {
     pub path: String,
     params: HashMap<&'static str, String>,
 }
 
-impl BuildOptions {
-    /// return a new instance of a builder for options
+impl BuildOpts {
+    /// return a new instance of a builder for Opts
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
-    pub fn builder<S>(path: S) -> BuildOptionsBuilder
+    pub fn builder<S>(path: S) -> BuildOptsBuilder
     where
         S: Into<String>,
     {
-        BuildOptionsBuilder::new(path)
+        BuildOptsBuilder::new(path)
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Option<String> {
         if self.params.is_empty() {
             None
@@ -500,19 +500,19 @@ impl BuildOptions {
 }
 
 #[derive(Default)]
-pub struct BuildOptionsBuilder {
+pub struct BuildOptsBuilder {
     path: String,
     params: HashMap<&'static str, String>,
 }
 
-impl BuildOptionsBuilder {
+impl BuildOptsBuilder {
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
     pub(crate) fn new<P>(path: P) -> Self
     where
         P: Into<String>,
     {
-        BuildOptionsBuilder {
+        BuildOptsBuilder {
             path: path.into(),
             ..Default::default()
         }
@@ -585,15 +585,15 @@ impl BuildOptionsBuilder {
     // todo: cpuquota
     // todo: buildargs
 
-    pub fn build(&self) -> BuildOptions {
-        BuildOptions {
+    pub fn build(&self) -> BuildOpts {
+        BuildOpts {
             path: self.path.clone(),
             params: self.params.clone(),
         }
     }
 }
 
-/// Filter options for image listings
+/// Filter Opts for image listings
 pub enum ImageFilter {
     Dangling,
     LabelName(String),
@@ -602,7 +602,7 @@ pub enum ImageFilter {
 
 impl_url_opts_builder!(ImageList);
 
-impl ImageListOptionsBuilder {
+impl ImageListOptsBuilder {
     pub fn digests(&mut self, d: bool) -> &mut Self {
         self.params.insert("digests", d.to_string());
         self
@@ -807,30 +807,30 @@ mod tests {
     /// Test registry auth with token
     #[test]
     fn registry_auth_token() {
-        let options = RegistryAuth::token("abc");
+        let opts = RegistryAuth::token("abc");
         assert_eq!(
             base64::encode(r#"{"identitytoken":"abc"}"#),
-            options.serialize()
+            opts.serialize()
         );
     }
 
     /// Test registry auth with username and password
     #[test]
     fn registry_auth_password_simple() {
-        let options = RegistryAuth::builder()
+        let opts = RegistryAuth::builder()
             .username("user_abc")
             .password("password_abc")
             .build();
         assert_eq!(
             base64::encode(r#"{"username":"user_abc","password":"password_abc"}"#),
-            options.serialize()
+            opts.serialize()
         );
     }
 
     /// Test registry auth with all fields
     #[test]
     fn registry_auth_password_all() {
-        let options = RegistryAuth::builder()
+        let opts = RegistryAuth::builder()
             .username("user_abc")
             .password("password_abc")
             .email("email_abc")
@@ -840,7 +840,7 @@ mod tests {
             base64::encode(
                 r#"{"username":"user_abc","password":"password_abc","email":"email_abc","serveraddress":"https://example.org"}"#
             ),
-            options.serialize()
+            opts.serialize()
         );
     }
 }

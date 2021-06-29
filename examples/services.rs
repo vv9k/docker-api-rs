@@ -1,4 +1,4 @@
-use docker_api::{Docker, ServiceListOptions};
+use docker_api::{service::ListOpts, Docker};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -6,7 +6,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::new("tcp://127.0.0.1:80")?;
     match docker
         .services()
-        .list(&ServiceListOptions::builder().enable_status().build())
+        .list(&ListOpts::builder().enable_status().build())
         .await
     {
         Ok(services) => {

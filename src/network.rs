@@ -32,7 +32,7 @@ impl<'docker> Networks<'docker> {
     /// List the docker networks on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
-    pub async fn list(&self, opts: &NetworkListOptions) -> Result<Vec<NetworkDetails>> {
+    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkDetails>> {
         let mut path = vec!["/networks".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -51,7 +51,7 @@ impl<'docker> Networks<'docker> {
     /// Create a new Network instance
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkCreate>
-    pub async fn create(&self, opts: &NetworkCreateOptions) -> Result<NetworkCreateInfo> {
+    pub async fn create(&self, opts: &NetworkCreateOpts) -> Result<NetworkCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/networks/create".to_owned()];
 
@@ -107,18 +107,18 @@ impl<'docker> Network<'docker> {
     /// Connect container to network
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkConnect>
-    pub async fn connect(&self, opts: &ContainerConnectionOptions) -> Result<()> {
+    pub async fn connect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
         self.do_connection("connect", opts).await
     }
 
     /// Disconnect container to network
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkDisconnect>
-    pub async fn disconnect(&self, opts: &ContainerConnectionOptions) -> Result<()> {
+    pub async fn disconnect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
         self.do_connection("disconnect", opts).await
     }
 
-    async fn do_connection<S>(&self, segment: S, opts: &ContainerConnectionOptions) -> Result<()>
+    async fn do_connection<S>(&self, segment: S, opts: &ContainerConnectionOpts) -> Result<()>
     where
         S: AsRef<str>,
     {
@@ -139,43 +139,43 @@ impl_url_opts_builder!("Options for filtering networks list results" NetworkList
 
 /// Interface for creating new docker network
 #[derive(Serialize, Debug)]
-pub struct NetworkCreateOptions {
+pub struct NetworkCreateOpts {
     params: HashMap<&'static str, Value>,
 }
 
-impl NetworkCreateOptions {
-    /// return a new instance of a builder for options
-    pub fn builder<N>(name: N) -> NetworkCreateOptionsBuilder
+impl NetworkCreateOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder<N>(name: N) -> NetworkCreateOptsBuilder
     where
         N: AsRef<str>,
     {
-        NetworkCreateOptionsBuilder::new(name.as_ref())
+        NetworkCreateOptsBuilder::new(name.as_ref())
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 }
 
 #[derive(Default)]
-pub struct NetworkCreateOptionsBuilder {
+pub struct NetworkCreateOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
-impl NetworkCreateOptionsBuilder {
+impl NetworkCreateOptsBuilder {
     pub(crate) fn new(name: &str) -> Self {
         let mut params = HashMap::new();
         params.insert("Name", json!(name));
-        NetworkCreateOptionsBuilder { params }
+        NetworkCreateOptsBuilder { params }
     }
 
     impl_str_field!(driver: D => "Driver");
 
     impl_map_field!(labels: L => "Labels");
 
-    pub fn build(&self) -> NetworkCreateOptions {
-        NetworkCreateOptions {
+    pub fn build(&self) -> NetworkCreateOpts {
+        NetworkCreateOpts {
             params: self.params.clone(),
         }
     }
@@ -183,35 +183,35 @@ impl NetworkCreateOptionsBuilder {
 
 /// Interface for connect container to network
 #[derive(Serialize, Debug)]
-pub struct ContainerConnectionOptions {
+pub struct ContainerConnectionOpts {
     params: HashMap<&'static str, Value>,
 }
 
-impl ContainerConnectionOptions {
-    /// serialize options as a string. returns None if no options are defined
+impl ContainerConnectionOpts {
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
-    /// return a new instance of a builder for options
-    pub fn builder<I>(container_id: I) -> ContainerConnectionOptionsBuilder
+    /// return a new instance of a builder for Opts
+    pub fn builder<I>(container_id: I) -> ContainerConnectionOptsBuilder
     where
         I: AsRef<str>,
     {
-        ContainerConnectionOptionsBuilder::new(container_id.as_ref())
+        ContainerConnectionOptsBuilder::new(container_id.as_ref())
     }
 }
 
 #[derive(Default)]
-pub struct ContainerConnectionOptionsBuilder {
+pub struct ContainerConnectionOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
-impl ContainerConnectionOptionsBuilder {
+impl ContainerConnectionOptsBuilder {
     pub(crate) fn new(container_id: &str) -> Self {
         let mut params = HashMap::new();
         params.insert("Container", json!(container_id));
-        ContainerConnectionOptionsBuilder { params }
+        ContainerConnectionOptsBuilder { params }
     }
 
     pub fn aliases<A, S>(&mut self, aliases: A) -> &mut Self
@@ -231,8 +231,8 @@ impl ContainerConnectionOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> ContainerConnectionOptions {
-        ContainerConnectionOptions {
+    pub fn build(&self) -> ContainerConnectionOpts {
+        ContainerConnectionOpts {
             params: self.params.clone(),
         }
     }

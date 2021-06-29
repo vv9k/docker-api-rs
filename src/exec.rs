@@ -40,7 +40,7 @@ impl<'docker> Exec<'docker> {
     pub async fn create<C>(
         docker: &'docker Docker,
         container_id: C,
-        opts: &ExecContainerOptions,
+        opts: &ExecContainerOpts,
     ) -> Result<Exec<'docker>>
     where
         C: AsRef<str>,
@@ -78,7 +78,7 @@ impl<'docker> Exec<'docker> {
     pub(crate) fn create_and_start<C>(
         docker: &'docker Docker,
         container_id: C,
-        opts: &ExecContainerOptions,
+        opts: &ExecContainerOpts,
     ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker
     where
         C: AsRef<str>,
@@ -166,7 +166,7 @@ impl<'docker> Exec<'docker> {
     /// with `tty` enabled.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ExecResize>
-    pub async fn resize(&self, opts: &ExecResizeOptions) -> Result<()> {
+    pub async fn resize(&self, opts: &ExecResizeOpts) -> Result<()> {
         let body: Body = opts.serialize()?.into();
 
         self.docker
@@ -179,16 +179,16 @@ impl<'docker> Exec<'docker> {
 }
 
 #[derive(Serialize, Debug)]
-pub struct ExecContainerOptions {
+pub struct ExecContainerOpts {
     params: HashMap<&'static str, Vec<String>>,
     params_str: HashMap<&'static str, String>,
     params_bool: HashMap<&'static str, bool>,
 }
 
-impl ExecContainerOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> ExecContainerOptionsBuilder {
-        ExecContainerOptionsBuilder::default()
+impl ExecContainerOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder() -> ExecContainerOptsBuilder {
+        ExecContainerOptsBuilder::default()
     }
 
     pub fn serialize(&self) -> Result<String> {
@@ -220,13 +220,13 @@ impl ExecContainerOptions {
 }
 
 #[derive(Default)]
-pub struct ExecContainerOptionsBuilder {
+pub struct ExecContainerOptsBuilder {
     params: HashMap<&'static str, Vec<String>>,
     params_str: HashMap<&'static str, String>,
     params_bool: HashMap<&'static str, bool>,
 }
 
-impl ExecContainerOptionsBuilder {
+impl ExecContainerOptsBuilder {
     /// Command to run, as an array of strings
     pub fn cmd<I, S>(&mut self, cmds: I) -> &mut Self
     where
@@ -308,8 +308,8 @@ impl ExecContainerOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> ExecContainerOptions {
-        ExecContainerOptions {
+    pub fn build(&self) -> ExecContainerOpts {
+        ExecContainerOpts {
             params: self.params.clone(),
             params_str: self.params_str.clone(),
             params_bool: self.params_bool.clone(),
@@ -319,31 +319,31 @@ impl ExecContainerOptionsBuilder {
 
 /// Interface for creating volumes
 #[derive(Serialize, Debug)]
-pub struct ExecResizeOptions {
+pub struct ExecResizeOpts {
     params: HashMap<&'static str, Value>,
 }
 
-impl ExecResizeOptions {
-    /// serialize options as a string. returns None if no options are defined
+impl ExecResizeOpts {
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
-    /// return a new instance of a builder for options
-    pub fn builder() -> ExecResizeOptionsBuilder {
-        ExecResizeOptionsBuilder::new()
+    /// return a new instance of a builder for Opts
+    pub fn builder() -> ExecResizeOptsBuilder {
+        ExecResizeOptsBuilder::new()
     }
 }
 
 #[derive(Default)]
-pub struct ExecResizeOptionsBuilder {
+pub struct ExecResizeOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
-impl ExecResizeOptionsBuilder {
+impl ExecResizeOptsBuilder {
     pub(crate) fn new() -> Self {
         let params = HashMap::new();
-        ExecResizeOptionsBuilder { params }
+        ExecResizeOptsBuilder { params }
     }
 
     pub fn height(&mut self, height: u64) -> &mut Self {
@@ -356,8 +356,8 @@ impl ExecResizeOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> ExecResizeOptions {
-        ExecResizeOptions {
+    pub fn build(&self) -> ExecResizeOpts {
+        ExecResizeOpts {
             params: self.params.clone(),
         }
     }

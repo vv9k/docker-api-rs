@@ -1,4 +1,4 @@
-use docker_api::{Docker, NetworkCreateOptions};
+use docker_api::{network::NetworkCreateOpts, Docker};
 use std::env;
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match docker
         .networks()
         .create(
-            &NetworkCreateOptions::builder(network_name)
+            &NetworkCreateOpts::builder(network_name)
                 .driver("bridge")
                 .build(),
         )

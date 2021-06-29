@@ -1,4 +1,4 @@
-use docker_api::{ContainerConnectionOptions, Docker};
+use docker_api::{network::ContainerConnectionOpts, Docker};
 use std::env;
 
 async fn network_disconnect(
@@ -9,7 +9,7 @@ async fn network_disconnect(
     if let Err(e) = docker
         .networks()
         .get(network_id)
-        .disconnect(&ContainerConnectionOptions::builder(container_id).build())
+        .disconnect(&ContainerConnectionOpts::builder(container_id).build())
         .await
     {
         eprintln!("Error: {}", e)

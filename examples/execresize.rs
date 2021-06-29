@@ -1,4 +1,4 @@
-use docker_api::{Docker, Exec, ExecContainerOptions, ExecResizeOptions};
+use docker_api::{exec::ExecResizeOpts, Docker, Exec, ExecContainerOpts};
 use std::env;
 
 #[tokio::main]
@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let height: u64 = args.next().map_or(Ok(0), |s| s.parse::<u64>())?;
 
     // Create an exec instance
-    let exec_opts = ExecContainerOptions::builder()
+    let exec_opts = ExecContainerOpts::builder()
         .cmd(vec!["echo", "123"])
         .attach_stdout(true)
         .attach_stderr(true)
@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let exec = Exec::create(&docker, &id, &exec_opts).await?;
 
     // Resize its window with given parameters
-    let resize_opts = ExecResizeOptions::builder()
+    let resize_opts = ExecResizeOpts::builder()
         .width(width)
         .height(height)
         .build();

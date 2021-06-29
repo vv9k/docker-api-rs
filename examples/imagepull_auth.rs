@@ -1,6 +1,9 @@
 // cargo run --example imagepull_auth busybox username password
 
-use docker_api::{Docker, PullOptions, RegistryAuth};
+use docker_api::{
+    image::{PullOpts, RegistryAuth},
+    Docker,
+};
 use futures::StreamExt;
 use std::env;
 
@@ -20,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut stream = docker
         .images()
-        .pull(&PullOptions::builder().image(img).auth(auth).build());
+        .pull(&PullOpts::builder().image(img).auth(auth).build());
 
     while let Some(pull_result) = stream.next().await {
         match pull_result {

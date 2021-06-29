@@ -1,4 +1,4 @@
-use docker_api::{Docker, VolumeCreateOptions};
+use docker_api::{volume::VolumeCreateOpts, Docker};
 use std::{collections::HashMap, env};
 
 #[tokio::main]
@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match docker
         .volumes()
         .create(
-            &VolumeCreateOptions::builder()
+            &VolumeCreateOpts::builder()
                 .name(&volume_name)
                 .labels(&labels)
                 .build(),

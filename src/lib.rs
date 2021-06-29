@@ -39,22 +39,14 @@ mod tarball;
 mod datetime;
 
 pub use crate::{
-    container::{
-        Container, ContainerFilter, ContainerListOptions, ContainerOptions, Containers,
-        LogsOptions, RmContainerOptions,
-    },
+    container::{Container, Containers},
     docker::Docker,
     errors::{Error, Result},
-    exec::{Exec, ExecContainerOptions, ExecResizeOptions},
-    image::{
-        BuildOptions, Image, ImageFilter, ImageListOptions, Images, PullOptions, RegistryAuth,
-        TagOptions,
-    },
-    network::{
-        ContainerConnectionOptions, Network, NetworkCreateOptions, NetworkListOptions, Networks,
-    },
-    plugin::{Plugin, PluginFilter, PluginInfo, PluginListOptions, Plugins},
-    service::{Service, ServiceFilter, ServiceListOptions, ServiceOptions, Services},
+    exec::{Exec, ExecContainerOpts},
+    image::{Image, Images},
+    network::{Network, Networks},
+    plugin::{Plugin, Plugins},
+    service::{Service, Services},
     transport::Transport,
-    volume::{Volume, VolumeCreateOptions, Volumes},
+    volume::{Volume, Volumes},
 };

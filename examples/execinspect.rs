@@ -1,4 +1,4 @@
-use docker_api::{Docker, Exec, ExecContainerOptions};
+use docker_api::{Docker, Exec, ExecContainerOpts};
 use futures::StreamExt;
 use std::env;
 
@@ -13,8 +13,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cmd = args.collect::<Vec<String>>();
     println!("{} {:?}", id, cmd);
 
-    // Create options with specified command
-    let opts = ExecContainerOptions::builder()
+    // Create Opts with specified command
+    let opts = ExecContainerOpts::builder()
         .cmd(cmd)
         .attach_stdout(true)
         .attach_stderr(true)

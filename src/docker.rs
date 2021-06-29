@@ -16,7 +16,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use crate::{
     container::Containers,
     errors::{Error, Result},
-    event::{Event, EventsOptions},
+    event::{Event, EventsOpts},
     image::Images,
     network::Networks,
     service::Services,
@@ -219,7 +219,7 @@ impl Docker {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents>
     pub fn events<'docker>(
         &'docker self,
-        opts: &EventsOptions,
+        opts: &EventsOpts,
     ) -> impl Stream<Item = Result<Event>> + Unpin + 'docker {
         let mut path = vec!["/events".to_owned()];
         if let Some(query) = opts.serialize() {

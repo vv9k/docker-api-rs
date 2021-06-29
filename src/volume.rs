@@ -34,7 +34,7 @@ impl<'docker> Volumes<'docker> {
     /// Creates a new docker volume.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeCreate>
-    pub async fn create(&self, opts: &VolumeCreateOptions) -> Result<VolumeCreateInfo> {
+    pub async fn create(&self, opts: &VolumeCreateOpts) -> Result<VolumeCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/volumes/create".to_owned()];
 
@@ -99,39 +99,39 @@ impl<'docker> Volume<'docker> {
 
 /// Interface for creating volumes
 #[derive(Serialize, Debug)]
-pub struct VolumeCreateOptions {
+pub struct VolumeCreateOpts {
     params: HashMap<&'static str, Value>,
 }
 
-impl VolumeCreateOptions {
-    /// serialize options as a string. returns None if no options are defined
+impl VolumeCreateOpts {
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
-    /// return a new instance of a builder for options
-    pub fn builder() -> VolumeCreateOptionsBuilder {
-        VolumeCreateOptionsBuilder::new()
+    /// return a new instance of a builder for Opts
+    pub fn builder() -> VolumeCreateOptsBuilder {
+        VolumeCreateOptsBuilder::new()
     }
 }
 
 #[derive(Default)]
-pub struct VolumeCreateOptionsBuilder {
+pub struct VolumeCreateOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
-impl VolumeCreateOptionsBuilder {
+impl VolumeCreateOptsBuilder {
     pub(crate) fn new() -> Self {
         let params = HashMap::new();
-        VolumeCreateOptionsBuilder { params }
+        VolumeCreateOptsBuilder { params }
     }
 
     impl_str_field!(name: N => "Name");
 
     impl_map_field!(labels: L => "Labels");
 
-    pub fn build(&self) -> VolumeCreateOptions {
-        VolumeCreateOptions {
+    pub fn build(&self) -> VolumeCreateOpts {
+        VolumeCreateOpts {
             params: self.params.clone(),
         }
     }

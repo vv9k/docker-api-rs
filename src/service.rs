@@ -3,7 +3,7 @@
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
 
 use crate::{
-    container::LogsOptions,
+    container::LogsOpts,
     docker::Docker,
     errors::{Error, Result},
     image::RegistryAuth,
@@ -39,7 +39,7 @@ impl<'docker> Services<'docker> {
     /// Lists the docker services on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceList>
-    pub async fn list(&self, opts: &ServiceListOptions) -> Result<Vec<ServiceInfo>> {
+    pub async fn list(&self, opts: &ListOpts) -> Result<Vec<ServiceInfo>> {
         let mut path = vec!["/services".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
@@ -79,10 +79,10 @@ impl<'docker> Service<'docker> {
         }
     }
 
-    /// Creates a new service from ServiceOptions
+    /// Creates a new service from ServiceOpts
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceCreate>
-    pub async fn create(&self, opts: &ServiceOptions) -> Result<ServiceCreateInfo> {
+    pub async fn create(&self, opts: &ServiceOpts) -> Result<ServiceCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let path = vec!["/service/create".to_owned()];
 
@@ -118,7 +118,7 @@ impl<'docker> Service<'docker> {
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceLogs>
     pub fn logs(
         &self,
-        opts: &LogsOptions,
+        opts: &LogsOpts,
     ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
         let mut path = vec![format!("/services/{}/logs", self.name)];
         if let Some(query) = opts.serialize() {
@@ -131,7 +131,7 @@ impl<'docker> Service<'docker> {
     }
 }
 
-/// Filter options for services listings
+/// Filter Opts for services listings
 pub enum ServiceFilter {
     Id(String),
     Label(String),
@@ -140,9 +140,9 @@ pub enum ServiceFilter {
     Name(String),
 }
 
-impl_url_opts_builder!(ServiceList);
+impl_url_opts_builder!(List);
 
-impl ServiceListOptionsBuilder {
+impl ListOptsBuilder {
     pub fn filter(&mut self, filters: Vec<ServiceFilter>) -> &mut Self {
         let mut param = HashMap::new();
         for f in filters {
@@ -170,18 +170,18 @@ impl ServiceListOptionsBuilder {
 }
 
 #[derive(Default, Debug)]
-pub struct ServiceOptions {
+pub struct ServiceOpts {
     auth: Option<RegistryAuth>,
     params: HashMap<&'static str, Value>,
 }
 
-impl ServiceOptions {
-    /// return a new instance of a builder for options
-    pub fn builder() -> ServiceOptionsBuilder {
-        ServiceOptionsBuilder::default()
+impl ServiceOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder() -> ServiceOptsBuilder {
+        ServiceOptsBuilder::default()
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
@@ -192,12 +192,12 @@ impl ServiceOptions {
 }
 
 #[derive(Default)]
-pub struct ServiceOptionsBuilder {
+pub struct ServiceOptsBuilder {
     auth: Option<RegistryAuth>,
     params: HashMap<&'static str, Result<Value>>,
 }
 
-impl ServiceOptionsBuilder {
+impl ServiceOptsBuilder {
     pub fn name<S>(&mut self, name: S) -> &mut Self
     where
         S: AsRef<str>,
@@ -264,13 +264,13 @@ impl ServiceOptionsBuilder {
         self
     }
 
-    pub fn build(&mut self) -> Result<ServiceOptions> {
+    pub fn build(&mut self) -> Result<ServiceOpts> {
         let params = std::mem::take(&mut self.params);
         let mut new_params = HashMap::new();
         for (k, v) in params.into_iter() {
             new_params.insert(k, v?);
         }
-        Ok(ServiceOptions {
+        Ok(ServiceOpts {
             auth: self.auth.take(),
             params: new_params,
         })

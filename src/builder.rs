@@ -73,17 +73,17 @@ macro_rules! impl_url_opts_builder {
                 #[doc= $docs]
             )*
             #[derive(Default, Debug)]
-            pub struct [< $name Options >] {
+            pub struct [< $name Opts >] {
                 params: HashMap<&'static str, String>
             }
 
-            impl [< $name  Options >] {
-                /// return a new instance of a builder for options
-                pub fn builder() -> [< $name  OptionsBuilder >] {
-                  [< $name  OptionsBuilder >]::default()
+            impl [< $name  Opts >] {
+                /// return a new instance of a builder for Opts
+                pub fn builder() -> [< $name  OptsBuilder >] {
+                  [< $name  OptsBuilder >]::default()
                 }
 
-                /// serialize options as a string. returns None if no options are defined
+                /// serialize Opts as a string. returns None if no Opts are defined
                 pub fn serialize(&self) -> Option<String> {
                     if self.params.is_empty() {
                         None
@@ -98,13 +98,13 @@ macro_rules! impl_url_opts_builder {
             }
 
             #[derive(Default, Debug)]
-            pub struct [< $name  OptionsBuilder >] {
+            pub struct [< $name  OptsBuilder >] {
                 params: HashMap<&'static str, String>
             }
 
-            impl [< $name  OptionsBuilder >] {
-                pub fn build(&self) -> [< $name  Options >] {
-                    [< $name Options >] {
+            impl [< $name  OptsBuilder >] {
+                pub fn build(&self) -> [< $name  Opts >] {
+                    [< $name Opts >] {
                         params: self.params.clone(),
                     }
                 }

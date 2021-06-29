@@ -1,4 +1,4 @@
-use docker_api::{ContainerConnectionOptions, Docker};
+use docker_api::{network::ContainerConnectionOpts, Docker};
 use std::env;
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         (Some(container_id), Some(network_id)) => {
             if let Err(e) = networks
                 .get(&network_id)
-                .connect(&ContainerConnectionOptions::builder(&container_id).build())
+                .connect(&ContainerConnectionOpts::builder(&container_id).build())
                 .await
             {
                 eprintln!("Error: {}", e)

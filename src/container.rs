@@ -17,7 +17,7 @@ use url::form_urlencoded;
 use crate::{
     docker::Docker,
     errors::{Error, Result},
-    exec::{Exec, ExecContainerOptions},
+    exec::{Exec, ExecContainerOpts},
     image::ContainerConfig,
     network::NetworkSettings,
     transport::Payload,
@@ -83,7 +83,7 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs>
     pub fn logs(
         &self,
-        opts: &LogsOptions,
+        opts: &LogsOpts,
     ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
         let mut path = vec![format!("/containers/{}/logs", self.id)];
         if let Some(query) = opts.serialize() {
@@ -277,7 +277,7 @@ impl<'docker> Container<'docker> {
 
     /// Delete the container instance
     ///
-    /// Use remove instead to use the force/v options.
+    /// Use remove instead to use the force/v Opts.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerDelete>
     pub async fn delete(&self) -> Result<()> {
@@ -290,7 +290,7 @@ impl<'docker> Container<'docker> {
     /// Delete the container instance (todo: force/v)
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove>
-    pub async fn remove(&self, opts: &RmContainerOptions) -> Result<()> {
+    pub async fn remove(&self, opts: &RmContainerOpts) -> Result<()> {
         let mut path = vec![format!("/containers/{}", self.id)];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -303,7 +303,7 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Exec>
     pub fn exec(
         &'docker self,
-        opts: &ExecContainerOptions,
+        opts: &ExecContainerOpts,
     ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
         Exec::create_and_start(self.docker, &self.id, opts)
     }
@@ -390,7 +390,7 @@ impl<'docker> Containers<'docker> {
     /// Lists the container instances on the docker host
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerList>
-    pub async fn list(&self, opts: &ContainerListOptions) -> Result<Vec<ContainerInfo>> {
+    pub async fn list(&self, opts: &ContainerListOpts) -> Result<Vec<ContainerInfo>> {
         let mut path = vec!["/containers/json".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -409,7 +409,7 @@ impl<'docker> Containers<'docker> {
     }
 
     /// Returns a builder interface for creating a new container instance
-    pub async fn create(&self, opts: &ContainerOptions) -> Result<ContainerCreateInfo> {
+    pub async fn create(&self, opts: &ContainerOpts) -> Result<ContainerCreateInfo> {
         let body: Body = opts.serialize()?.into();
         let mut path = vec!["/containers/create".to_owned()];
 
@@ -427,7 +427,7 @@ impl<'docker> Containers<'docker> {
     }
 }
 
-/// Filter options for container listings
+/// Filter Opts for container listings
 pub enum ContainerFilter {
     ExitCode(u64),
     Status(String),
@@ -437,7 +437,7 @@ pub enum ContainerFilter {
 
 impl_url_opts_builder!(ContainerList);
 
-impl ContainerListOptionsBuilder {
+impl ContainerListOptsBuilder {
     pub fn filter<F>(&mut self, filters: F) -> &mut Self
     where
         F: IntoIterator<Item = ContainerFilter>,
@@ -487,7 +487,7 @@ impl ContainerListOptionsBuilder {
 
 /// Interface for building a new docker container from an existing image
 #[derive(Serialize, Debug)]
-pub struct ContainerOptions {
+pub struct ContainerOpts {
     pub name: Option<String>,
     params: HashMap<&'static str, Value>,
 }
@@ -517,16 +517,16 @@ where
     }
 }
 
-impl ContainerOptions {
-    /// return a new instance of a builder for options
-    pub fn builder<N>(name: N) -> ContainerOptionsBuilder
+impl ContainerOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder<N>(name: N) -> ContainerOptsBuilder
     where
         N: AsRef<str>,
     {
-        ContainerOptionsBuilder::new(name.as_ref())
+        ContainerOptsBuilder::new(name.as_ref())
     }
 
-    /// serialize options as a string. returns None if no options are defined
+    /// serialize Opts as a string. returns None if no Opts are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.to_json()).map_err(Error::from)
     }
@@ -555,17 +555,17 @@ impl ContainerOptions {
 }
 
 #[derive(Default)]
-pub struct ContainerOptionsBuilder {
+pub struct ContainerOptsBuilder {
     name: Option<String>,
     params: HashMap<&'static str, Value>,
 }
 
-impl ContainerOptionsBuilder {
+impl ContainerOptsBuilder {
     pub(crate) fn new(image: &str) -> Self {
         let mut params = HashMap::new();
 
         params.insert("Image", Value::String(image.to_owned()));
-        ContainerOptionsBuilder { name: None, params }
+        ContainerOptsBuilder { name: None, params }
     }
 
     pub fn name<N>(&mut self, name: N) -> &mut Self
@@ -766,8 +766,8 @@ impl ContainerOptionsBuilder {
 
     impl_str_field!(user: U => "User");
 
-    pub fn build(&self) -> ContainerOptions {
-        ContainerOptions {
+    pub fn build(&self) -> ContainerOpts {
+        ContainerOpts {
             name: self.name.clone(),
             params: self.params.clone(),
         }
@@ -776,7 +776,7 @@ impl ContainerOptionsBuilder {
 
 impl_url_opts_builder!(Logs);
 
-impl LogsOptionsBuilder {
+impl LogsOptsBuilder {
     pub fn follow(&mut self, f: bool) -> &mut Self {
         self.params.insert("follow", f.to_string());
         self
@@ -822,7 +822,7 @@ impl LogsOptionsBuilder {
 
 impl_url_opts_builder!(RmContainer);
 
-impl RmContainerOptionsBuilder {
+impl RmContainerOptsBuilder {
     pub fn force(&mut self, f: bool) -> &mut Self {
         self.params.insert("force", f.to_string());
         self
@@ -1214,7 +1214,7 @@ mod tests {
 
     #[test]
     fn container_options_simple() {
-        let builder = ContainerOptionsBuilder::new("test_image");
+        let builder = ContainerOptsBuilder::new("test_image");
         let options = builder.build();
 
         assert_eq!(
@@ -1225,7 +1225,7 @@ mod tests {
 
     #[test]
     fn container_options_env() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .env(vec!["foo", "bar"])
             .build();
 
@@ -1242,7 +1242,7 @@ mod tests {
             .map(|s| String::from(*s))
             .collect();
 
-        let options = ContainerOptionsBuilder::new("test_image").env(&env).build();
+        let options = ContainerOptsBuilder::new("test_image").env(&env).build();
 
         assert_eq!(
             r#"{"Env":["foo","bar","baz"],"HostConfig":{},"Image":"test_image"}"#,
@@ -1252,7 +1252,7 @@ mod tests {
 
     #[test]
     fn container_options_user() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .user("alice")
             .build();
 
@@ -1264,7 +1264,7 @@ mod tests {
 
     #[test]
     fn container_options_host_config() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .network_mode("host")
             .auto_remove(true)
             .privileged(true)
@@ -1278,7 +1278,7 @@ mod tests {
 
     #[test]
     fn container_options_expose() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .expose(80, "tcp", 8080)
             .build();
         assert_eq!(
@@ -1286,7 +1286,7 @@ mod tests {
             options.serialize().unwrap()
         );
         // try exposing two
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .expose(80, "tcp", 8080)
             .expose(81, "tcp", 8081)
             .build();
@@ -1298,7 +1298,7 @@ mod tests {
 
     #[test]
     fn container_options_publish() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .publish(80, "tcp")
             .build();
         assert_eq!(
@@ -1306,7 +1306,7 @@ mod tests {
             options.serialize().unwrap()
         );
         // try exposing two
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .publish(80, "tcp")
             .publish(81, "tcp")
             .build();
@@ -1319,7 +1319,7 @@ mod tests {
     /// Test container option PublishAllPorts
     #[test]
     fn container_options_publish_all_ports() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .publish_all_ports()
             .build();
 
@@ -1329,10 +1329,10 @@ mod tests {
         );
     }
 
-    /// Test container options that are nested 3 levels deep.
+    /// Test container Opts that are nested 3 levels deep.
     #[test]
     fn container_options_nested() {
-        let options = ContainerOptionsBuilder::new("test_image")
+        let options = ContainerOptsBuilder::new("test_image")
             .log_driver("fluentd")
             .build();
 
@@ -1345,7 +1345,7 @@ mod tests {
     /// Test the restart policy settings
     #[test]
     fn container_options_restart_policy() {
-        let mut options = ContainerOptionsBuilder::new("test_image")
+        let mut options = ContainerOptsBuilder::new("test_image")
             .restart_policy("on-failure", 10)
             .build();
 
@@ -1354,7 +1354,7 @@ mod tests {
             options.serialize().unwrap()
         );
 
-        options = ContainerOptionsBuilder::new("test_image")
+        options = ContainerOptsBuilder::new("test_image")
             .restart_policy("always", 0)
             .build();
 
@@ -1370,7 +1370,7 @@ mod tests {
         let timestamp = chrono::NaiveDateTime::from_timestamp(2_147_483_647, 0);
         let since = chrono::DateTime::<chrono::Utc>::from_utc(timestamp, chrono::Utc);
 
-        let options = LogsOptionsBuilder::default()
+        let options = LogsOptsBuilder::default()
             .follow(true)
             .stdout(true)
             .stderr(true)
@@ -1391,8 +1391,8 @@ mod tests {
 
     #[cfg(not(feature = "chrono"))]
     #[test]
-    fn logs_options() {
-        let options = LogsOptionsBuilder::default()
+    fn logs_Opts() {
+        let options = LogsOptsBuilder::default()
             .follow(true)
             .stdout(true)
             .stderr(true)

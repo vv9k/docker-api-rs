@@ -1,6 +1,6 @@
 // cargo run --example imagetag img repo tag
 
-use docker_api::{Docker, Image, TagOptions};
+use docker_api::{image::TagOpts, Docker, Image};
 use std::env;
 
 #[tokio::main]
@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let tag = env::args().nth(3).expect("You need to specify a tag name");
 
-    let tag_opts = TagOptions::builder().repo(repo).tag(tag).build();
+    let tag_opts = TagOpts::builder().repo(repo).tag(tag).build();
 
     let image = Image::new(&docker, img);
 

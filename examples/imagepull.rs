@@ -1,6 +1,6 @@
 // cargo run --example imagepull busybox
 
-use docker_api::{Docker, PullOptions};
+use docker_api::{image::PullOpts, Docker};
 use futures::StreamExt;
 use std::env;
 
@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut stream = docker
         .images()
-        .pull(&PullOptions::builder().image(img).build());
+        .pull(&PullOpts::builder().image(img).build());
 
     while let Some(pull_result) = stream.next().await {
         match pull_result {
