@@ -10,7 +10,7 @@ Add the following to your `Cargo.toml` file
 
 ```toml
 [dependencies]
-docker-api = "0.2"
+docker-api = "0.1"
 ```
 
 ## usage

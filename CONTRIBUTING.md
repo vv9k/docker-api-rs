@@ -13,7 +13,7 @@ Contributing to docker-api isn't limited to just filing bugs, users are more tha
 3. Run the following
 
 ```sh
-$ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/docker-api.git
+$ git clone https://github.com/YOUR-GITHUB-PROFILE-NAME/docker-api-rs.git
 $ cd docker-api
 ```
 
@@ -64,4 +64,4 @@ $ cargo +nightly fmt --all
 
 
 ### Finding issues to fix
-After you've forked and cloned our repo, you can find issues to work on by heading over to our [issues list](https://github.com/wojciechkepka/docker-api/issues)
+After you've forked and cloned our repo, you can find issues to work on by heading over to our [issues list](https://github.com/wojciechkepka/docker-api-rs/issues)
