@@ -191,7 +191,6 @@ impl ExecContainerOptions {
         ExecContainerOptionsBuilder::default()
     }
 
-    /// serialize options as a string. returns None if no options are defined
     pub fn serialize(&self) -> Result<String> {
         let mut body = serde_json::Map::new();
 

@@ -165,45 +165,56 @@ impl Docker {
         }
     }
 
-    /// Exports an interface for interacting with docker images
+    /// Exports an interface for interacting with Docker images
     pub fn images(&'_ self) -> Images<'_> {
         Images::new(self)
     }
 
-    /// Exports an interface for interacting with docker containers
+    /// Exports an interface for interacting with Docker containers
     pub fn containers(&'_ self) -> Containers<'_> {
         Containers::new(self)
     }
 
-    /// Exports an interface for interacting with docker services
+    /// Exports an interface for interacting with Docker services
     pub fn services(&'_ self) -> Services<'_> {
         Services::new(self)
     }
 
+    /// Exports an interface for interacting with Docker networks
     pub fn networks(&'_ self) -> Networks<'_> {
         Networks::new(self)
     }
 
+    /// Exports an interface for interacting with Docker volumes
     pub fn volumes(&'_ self) -> Volumes<'_> {
         Volumes::new(self)
     }
 
-    /// Returns version information associated with the docker daemon
+    /// Returns the version of Docker that is running and various information about the system that
+    /// Docker is running on.
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemVersion>
     pub async fn version(&self) -> Result<Version> {
         self.get_json("/version").await
     }
 
-    /// Returns information associated with the docker daemon
+    /// Returns system information about Docker instance that is running
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemInfo>
     pub async fn info(&self) -> Result<Info> {
         self.get_json("/info").await
     }
 
-    /// Returns a simple ping response indicating the docker daemon is accessible
+    /// This is a dummy endpoint you can use to test if the server is accessible.
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemPingHead>
     pub async fn ping(&self) -> Result<String> {
         self.get("/_ping").await
     }
 
     /// Returns a stream of docker events
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents>
     pub fn events<'docker>(
         &'docker self,
         opts: &EventsOptions,
@@ -229,9 +240,11 @@ impl Docker {
         )
     }
 
+    //####################################################################################################
     //
     // Utility functions to make requests
     //
+    //####################################################################################################
 
     pub(crate) async fn get(&self, endpoint: &str) -> Result<String> {
         self.transport
