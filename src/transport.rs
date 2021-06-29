@@ -13,9 +13,9 @@ use hyper::{
 };
 #[cfg(feature = "tls")]
 use hyper_openssl::HttpsConnector;
-#[cfg(feature = "unix-socket")]
+#[cfg(unix)]
 use hyperlocal::UnixConnector;
-#[cfg(feature = "unix-socket")]
+#[cfg(unix)]
 use hyperlocal::Uri as DomainUri;
 use pin_project::pin_project;
 use serde::{Deserialize, Serialize};
@@ -116,7 +116,7 @@ pub enum Transport {
         host: String,
     },
     /// A Unix domain socket
-    #[cfg(feature = "unix-socket")]
+    #[cfg(unix)]
     Unix {
         client: Client<UnixConnector>,
         path: String,
@@ -287,7 +287,7 @@ impl Transport {
                     .method(method)
                     .uri(&format!("{}{}", host, endpoint.as_ref()))
             }
-            #[cfg(feature = "unix-socket")]
+            #[cfg(unix)]
             Transport::Unix { path, .. } => {
                 let uri = DomainUri::new(&path, endpoint.as_ref());
                 builder.method(method).uri(uri)
@@ -321,7 +321,7 @@ impl Transport {
             Transport::Tcp { ref client, .. } => Ok(client.request(req).await?),
             #[cfg(feature = "tls")]
             Transport::EncryptedTcp { ref client, .. } => Ok(client.request(req).await?),
-            #[cfg(feature = "unix-socket")]
+            #[cfg(unix)]
             Transport::Unix { ref client, .. } => Ok(client.request(req).await?),
         }
     }

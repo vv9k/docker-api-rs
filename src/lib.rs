@@ -1,6 +1,6 @@
-//! docker-api is a multi-transport utility for maneuvering [docker](https://www.docker.com/) containers
+//! docker-api is a rust interface to [Docker](https://www.docker.com/) containers
 //!
-//! # examples
+//! # example
 //!
 //! ```no_run
 //! # async {

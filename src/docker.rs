@@ -32,7 +32,7 @@ use hyper_openssl::HttpsConnector;
 #[cfg(feature = "tls")]
 use openssl::ssl::{SslConnector, SslFiletype, SslMethod};
 
-#[cfg(feature = "unix-socket")]
+#[cfg(unix)]
 use hyperlocal::UnixConnector;
 
 /// Entrypoint interface for communicating with docker daemon
@@ -75,7 +75,7 @@ impl Docker {
     /// on provided `uri`.
     ///
     /// Supported schemes are:
-    ///  - `unix://` with feature `unix-socket` enabled, otherwise returns an Error
+    ///  - `unix://` only works when build target is `unix`, otherwise returns an Error
     ///  - `tcp://`
     ///  - `http://`
     ///
@@ -89,7 +89,7 @@ impl Docker {
         let mut it = uri.split("://");
 
         match it.next() {
-            #[cfg(feature = "unix-socket")]
+            #[cfg(unix)]
             Some("unix") => {
                 if let Some(path) = it.next() {
                     Ok(Docker::unix(path))
@@ -97,7 +97,7 @@ impl Docker {
                     Err(Error::MissingAuthority)
                 }
             }
-            #[cfg(not(feature = "unix-socket"))]
+            #[cfg(not(unix))]
             Some("unix") => Err(Error::UnsupportedScheme("unix".to_string())),
             Some("tcp") | Some("http") => {
                 if let Some(host) = it.next() {
@@ -116,7 +116,7 @@ impl Docker {
     ///
     /// `socket_path` is the part of URI that comes after the `unix://`. For example a URI `unix:///run/docker.sock` has a
     /// `socket_path` == "/run/docker.sock".
-    #[cfg(feature = "unix-socket")]
+    #[cfg(unix)]
     pub fn unix<P>(socket_path: P) -> Docker
     where
         P: Into<String>,
@@ -463,11 +463,11 @@ mod tests {
         let d = Docker::new("http://127.0.0.1:80");
         d.unwrap();
 
-        #[cfg(feature = "unix-socket")]
+        #[cfg(unix)]
         let d = Docker::new("unix://127.0.0.1:80");
         d.unwrap();
 
-        #[cfg(not(feature = "unix-socket"))]
+        #[cfg(not(unix))]
         {
             let d = Docker::new("unix://127.0.0.1:80");
             assert!(d.is_err());
