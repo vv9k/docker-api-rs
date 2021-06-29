@@ -9,7 +9,7 @@ use futures_util::{
 use hyper::{
     body::Bytes,
     client::{Client, HttpConnector},
-    header, Body, Method, Request, StatusCode,
+    header, Body, Method, Request, Response, StatusCode,
 };
 #[cfg(feature = "tls")]
 use hyper_openssl::HttpsConnector;
@@ -20,15 +20,45 @@ use hyperlocal::Uri as DomainUri;
 use pin_project::pin_project;
 use serde::{Deserialize, Serialize};
 use std::{
-    fmt, io, iter,
+    io,
+    iter::IntoIterator,
     pin::Pin,
     task::{Context, Poll},
 };
 
-static JSON_WHITESPACE: &[u8] = b"\r\n";
+#[derive(Debug, Default, Clone)]
+pub struct Headers(Vec<(&'static str, String)>);
 
-pub(crate) type Headers = Option<Vec<(&'static str, String)>>;
-// pub(crate) type Payload = Option<(Body, Mime)>;
+impl Headers {
+    pub fn none() -> Option<Headers> {
+        None
+    }
+
+    pub fn add<V>(&mut self, key: &'static str, val: V)
+    where
+        V: Into<String>,
+    {
+        self.0.push((key, val.into()))
+    }
+
+    pub fn single<V>(key: &'static str, val: V) -> Self
+    where
+        V: Into<String>,
+    {
+        let mut h = Self::default();
+        h.add(key, val);
+        h
+    }
+}
+
+impl IntoIterator for Headers {
+    type Item = (&'static str, String);
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
 
 pub enum Payload<B: Into<Body>> {
     None,
@@ -36,6 +66,12 @@ pub enum Payload<B: Into<Body>> {
     Json(B),
     XTar(B),
     Tar(B),
+}
+
+impl Payload<Body> {
+    pub fn empty() -> Self {
+        Payload::None
+    }
 }
 
 impl<B: Into<Body>> Payload<B> {
@@ -66,7 +102,7 @@ impl<B: Into<Body>> Payload<B> {
 
 /// Transports are types which define the means of communication
 /// with the docker daemon
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Transport {
     /// A network tcp interface
     Tcp {
@@ -87,30 +123,25 @@ pub enum Transport {
     },
 }
 
-impl fmt::Debug for Transport {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Transport::Tcp { ref host, .. } => write!(f, "Tcp({})", host),
-            #[cfg(feature = "tls")]
-            Transport::EncryptedTcp { ref host, .. } => write!(f, "EncryptedTcp({})", host),
-            #[cfg(feature = "unix-socket")]
-            Transport::Unix { ref path, .. } => write!(f, "Unix({})", path),
+impl Transport {
+    pub fn remote_addr(&self) -> &str {
+        match &self {
+            Self::Tcp { ref host, .. } => host.as_str(),
+            Self::EncryptedTcp { ref host, .. } => host.as_str(),
+            Self::Unix { ref path, .. } => path.as_str(),
         }
     }
-}
 
-impl Transport {
     /// Make a request and return the whole response in a `String`
-    pub async fn request<B, H>(
+    pub async fn request<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> Result<String>
     where
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)>,
     {
         let body = self.get_body(method, endpoint, body, headers).await?;
         let bytes = hyper::body::to_bytes(body).await?;
@@ -119,16 +150,57 @@ impl Transport {
         Ok(string)
     }
 
-    async fn get_body<B, H>(
+    pub fn stream_chunks<'transport, B>(
+        &'transport self,
+        method: Method,
+        endpoint: impl AsRef<str> + 'transport,
+        body: Payload<B>,
+        headers: Option<Headers>,
+    ) -> impl Stream<Item = Result<Bytes>> + 'transport
+    where
+        B: Into<Body> + 'transport,
+    {
+        self.get_chunk_stream(method, endpoint, body, headers)
+            .try_flatten_stream()
+    }
+
+    pub fn stream_json_chunks<'transport, B>(
+        &'transport self,
+        method: Method,
+        endpoint: impl AsRef<str> + 'transport,
+        body: Payload<B>,
+        headers: Option<Headers>,
+    ) -> impl Stream<Item = Result<Bytes>> + 'transport
+    where
+        B: Into<Body> + 'transport,
+    {
+        self.get_json_chunk_stream(method, endpoint, body, headers)
+            .try_flatten_stream()
+    }
+
+    pub async fn stream_upgrade<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+    ) -> Result<impl AsyncRead + AsyncWrite>
+    where
+        B: Into<Body>,
+    {
+        let tokio_multiplexer = self.stream_upgrade_tokio(method, endpoint, body).await?;
+
+        Ok(Compat { tokio_multiplexer })
+    }
+
+    async fn get_body<B>(
+        &self,
+        method: Method,
+        endpoint: impl AsRef<str>,
+        body: Payload<B>,
+        headers: Option<Headers>,
     ) -> Result<Body>
     where
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)>,
     {
         let req = self
             .build_request(method, endpoint, body, headers, Request::builder())
@@ -161,95 +233,62 @@ impl Transport {
         }
     }
 
-    async fn get_chunk_stream<B, H>(
+    async fn get_chunk_stream<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> Result<impl Stream<Item = Result<Bytes>>>
     where
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)>,
     {
         let body = self.get_body(method, endpoint, body, headers).await?;
 
         Ok(stream_body(body))
     }
 
-    pub fn stream_chunks<'stream, B, H>(
-        &'stream self,
-        method: Method,
-        endpoint: impl AsRef<str> + 'stream,
-        body: Payload<B>,
-        headers: Option<H>,
-    ) -> impl Stream<Item = Result<Bytes>> + 'stream
-    where
-        B: Into<Body> + 'stream,
-        H: IntoIterator<Item = (&'static str, String)> + 'stream,
-    {
-        self.get_chunk_stream(method, endpoint, body, headers)
-            .try_flatten_stream()
-    }
-
-    async fn get_json_chunk_stream<B, H>(
+    async fn get_json_chunk_stream<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> Result<impl Stream<Item = Result<Bytes>>>
     where
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)>,
     {
         let body = self.get_body(method, endpoint, body, headers).await?;
 
         Ok(stream_json_body(body))
     }
 
-    pub fn stream_json_chunks<'stream, B, H>(
-        &'stream self,
-        method: Method,
-        endpoint: impl AsRef<str> + 'stream,
-        body: Payload<B>,
-        headers: Option<H>,
-    ) -> impl Stream<Item = Result<Bytes>> + 'stream
-    where
-        B: Into<Body> + 'stream,
-        H: IntoIterator<Item = (&'static str, String)> + 'stream,
-    {
-        self.get_json_chunk_stream(method, endpoint, body, headers)
-            .try_flatten_stream()
-    }
-
     /// Builds an HTTP request.
-    fn build_request<B, H>(
+    fn build_request<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
         builder: hyper::http::request::Builder,
     ) -> Result<Request<Body>>
     where
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)>,
     {
-        let req = match *self {
-            Transport::Tcp { ref host, .. } => {
+        let req = match self {
+            Transport::Tcp { host, .. } => {
                 builder
                     .method(method)
                     .uri(&format!("{}{}", host, endpoint.as_ref()))
             }
             #[cfg(feature = "tls")]
-            Transport::EncryptedTcp { ref host, .. } => {
+            Transport::EncryptedTcp { host, .. } => {
                 builder
                     .method(method)
                     .uri(&format!("{}{}", host, endpoint.as_ref()))
             }
             #[cfg(feature = "unix-socket")]
-            Transport::Unix { ref path, .. } => {
+            Transport::Unix { path, .. } => {
                 let uri = DomainUri::new(&path, endpoint.as_ref());
                 builder.method(method).uri(uri)
             }
@@ -262,21 +301,22 @@ impl Transport {
             }
         }
 
+        // early return
         if body.is_none() {
             return Ok(req.body(Body::empty())?);
         }
 
         let mime = body.mime_type();
-
         if let Some(c) = mime {
             req = req.header(header::CONTENT_TYPE, &c.to_string()[..]);
         }
 
+        // it's ok to unwrap, we check that the body is not none
         Ok(req.body(body.into_inner().unwrap().into())?)
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
-    async fn send_request(&self, req: Request<hyper::Body>) -> Result<hyper::Response<Body>> {
+    async fn send_request(&self, req: Request<Body>) -> Result<Response<Body>> {
         match self {
             Transport::Tcp { ref client, .. } => Ok(client.request(req).await?),
             #[cfg(feature = "tls")]
@@ -305,7 +345,7 @@ impl Transport {
                 method,
                 endpoint,
                 body,
-                None::<iter::Empty<_>>,
+                Headers::none(),
                 Request::builder()
                     .header(header::CONNECTION, "Upgrade")
                     .header(header::UPGRADE, "tcp"),
@@ -318,20 +358,6 @@ impl Transport {
             StatusCode::SWITCHING_PROTOCOLS => Ok(hyper::upgrade::on(response).await?),
             _ => Err(Error::ConnectionNotUpgraded),
         }
-    }
-
-    pub async fn stream_upgrade<B>(
-        &self,
-        method: Method,
-        endpoint: impl AsRef<str>,
-        body: Payload<B>,
-    ) -> Result<impl AsyncRead + AsyncWrite>
-    where
-        B: Into<Body>,
-    {
-        let tokio_multiplexer = self.stream_upgrade_tokio(method, endpoint, body).await?;
-
-        Ok(Compat { tokio_multiplexer })
     }
 
     /// Extract the error message content from an HTTP response that
@@ -399,6 +425,8 @@ fn stream_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
 
     stream::unfold(body, unfold)
 }
+
+static JSON_WHITESPACE: &[u8] = b"\r\n";
 
 fn stream_json_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
     async fn unfold(mut body: Body) -> Option<(Result<Bytes>, Body)> {

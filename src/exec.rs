@@ -2,11 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Exec>
 
-use std::{
-    collections::{BTreeMap, HashMap},
-    hash::Hash,
-    iter,
-};
+use std::collections::HashMap;
 
 use futures_util::{stream::Stream, TryFutureExt};
 use hyper::Body;
@@ -15,7 +11,7 @@ use serde_json::{json, Value};
 
 use crate::{
     errors::{Error, Result},
-    transport::Payload,
+    transport::{Headers, Payload},
     tty, Docker,
 };
 
@@ -115,7 +111,7 @@ impl<'docker> Exec<'docker> {
                 let stream = Box::pin(docker.stream_post(
                     format!("/exec/{}/start", exec_id),
                     Payload::Json("{}"),
-                    None::<iter::Empty<_>>,
+                    Headers::none(),
                 ));
 
                 Ok(tty::decode(stream))
@@ -148,11 +144,8 @@ impl<'docker> Exec<'docker> {
         let endpoint = format!("/exec/{}/start", &self.id);
         Box::pin(
             async move {
-                let stream = Box::pin(docker.stream_post(
-                    endpoint,
-                    Payload::Json("{}"),
-                    None::<iter::Empty<_>>,
-                ));
+                let stream =
+                    Box::pin(docker.stream_post(endpoint, Payload::Json("{}"), Headers::none()));
 
                 Ok(tty::decode(stream))
             }
@@ -335,23 +328,6 @@ impl ExecResizeOptions {
     /// serialize options as a string. returns None if no options are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
-    }
-
-    pub fn parse_from<'a, K, V>(
-        &self,
-        params: &'a HashMap<K, V>,
-        body: &mut BTreeMap<String, Value>,
-    ) where
-        &'a HashMap<K, V>: IntoIterator,
-        K: ToString + Eq + Hash,
-        V: Serialize,
-    {
-        for (k, v) in params.iter() {
-            let key = k.to_string();
-            let value = serde_json::to_value(v).unwrap();
-
-            body.insert(key, value);
-        }
     }
 
     /// return a new instance of a builder for options

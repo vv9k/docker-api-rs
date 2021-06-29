@@ -103,7 +103,7 @@ impl<'docker> Container<'docker> {
                     "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
                     self.id
                 ),
-                Payload::None::<Body>,
+                Payload::empty(),
             )
             .await
     }
@@ -166,7 +166,7 @@ impl<'docker> Container<'docker> {
         self.docker
             .post(
                 &format!("/containers/{}/start", self.id)[..],
-                Payload::None::<Body>,
+                Payload::empty(),
             )
             .await
             .map(|_| ())
@@ -185,7 +185,7 @@ impl<'docker> Container<'docker> {
             path.push(encoded)
         }
         self.docker
-            .post(&path.join("?"), Payload::None::<Body>)
+            .post(&path.join("?"), Payload::empty())
             .await
             .map(|_| ())
     }
@@ -202,7 +202,7 @@ impl<'docker> Container<'docker> {
             path.push(encoded)
         }
         self.docker
-            .post(&path.join("?"), Payload::None::<Body>)
+            .post(&path.join("?"), Payload::empty())
             .await
             .map(|_| ())
     }
@@ -219,7 +219,7 @@ impl<'docker> Container<'docker> {
             path.push(encoded)
         }
         self.docker
-            .post(&path.join("?"), Payload::None::<Body>)
+            .post(&path.join("?"), Payload::empty())
             .await
             .map(|_| ())
     }
@@ -234,7 +234,7 @@ impl<'docker> Container<'docker> {
         self.docker
             .post(
                 &format!("/containers/{}/rename?{}", self.id, query)[..],
-                Payload::None::<Body>,
+                Payload::empty(),
             )
             .await
             .map(|_| ())
@@ -247,7 +247,7 @@ impl<'docker> Container<'docker> {
         self.docker
             .post(
                 &format!("/containers/{}/pause", self.id)[..],
-                Payload::None::<Body>,
+                Payload::empty(),
             )
             .await
             .map(|_| ())
@@ -260,7 +260,7 @@ impl<'docker> Container<'docker> {
         self.docker
             .post(
                 &format!("/containers/{}/unpause", self.id)[..],
-                Payload::None::<Body>,
+                Payload::empty(),
             )
             .await
             .map(|_| ())
@@ -271,10 +271,7 @@ impl<'docker> Container<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait>
     pub async fn wait(&self) -> Result<Exit> {
         self.docker
-            .post_json(
-                format!("/containers/{}/wait", self.id),
-                Payload::None::<Body>,
-            )
+            .post_json(format!("/containers/{}/wait", self.id), Payload::empty())
             .await
     }
 

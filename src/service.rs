@@ -7,7 +7,7 @@ use crate::{
     docker::Docker,
     errors::{Error, Result},
     image::RegistryAuth,
-    transport::Payload,
+    transport::{Headers, Payload},
     tty,
 };
 
@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::iter;
 use url::form_urlencoded;
 
 #[cfg(feature = "chrono")]
@@ -89,7 +88,7 @@ impl<'docker> Service<'docker> {
 
         let headers = opts
             .auth_header()
-            .map(|a| iter::once(("X-Registry-Auth", a)));
+            .map(|a| Headers::single("X-Registry-Auth", a));
 
         self.docker
             .post_json_headers(&path.join("?"), Payload::Json(body), headers)

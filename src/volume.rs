@@ -2,10 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Volume>
 
-use std::{
-    collections::{BTreeMap, HashMap},
-    hash::Hash,
-};
+use std::{collections::HashMap, hash::Hash};
 
 use hyper::Body;
 use serde::{Deserialize, Serialize};
@@ -110,23 +107,6 @@ impl VolumeCreateOptions {
     /// serialize options as a string. returns None if no options are defined
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
-    }
-
-    pub fn parse_from<'a, K, V>(
-        &self,
-        params: &'a HashMap<K, V>,
-        body: &mut BTreeMap<String, Value>,
-    ) where
-        &'a HashMap<K, V>: IntoIterator,
-        K: ToString + Eq + Hash,
-        V: Serialize,
-    {
-        for (k, v) in params.iter() {
-            let key = k.to_string();
-            let value = serde_json::to_value(v).unwrap();
-
-            body.insert(key, value);
-        }
     }
 
     /// return a new instance of a builder for options

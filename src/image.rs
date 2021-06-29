@@ -2,14 +2,18 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Image>
 
-use std::{collections::HashMap, io::Read, iter};
+use std::{collections::HashMap, io::Read};
 
 use futures_util::{stream::Stream, TryFutureExt, TryStreamExt};
-use hyper::Body;
 use serde::{Deserialize, Serialize};
 use url::form_urlencoded;
 
-use crate::{docker::Docker, errors::Result, tarball, transport::Payload};
+use crate::{
+    docker::Docker,
+    errors::Result,
+    tarball,
+    transport::{Headers, Payload},
+};
 
 #[cfg(feature = "chrono")]
 use crate::datetime::datetime_from_unix_timestamp;
@@ -83,10 +87,7 @@ impl<'docker> Image<'docker> {
         if let Some(query) = opts.serialize() {
             path.push(query)
         }
-        let _ = self
-            .docker
-            .post(&path.join("?"), Payload::None::<Body>)
-            .await?;
+        let _ = self.docker.post(&path.join("?"), Payload::empty()).await?;
         Ok(())
     }
 }
@@ -132,7 +133,7 @@ impl<'docker> Images<'docker> {
                 let value_stream = docker.stream_post_into(
                     endpoint.join("?"),
                     Payload::Tar(bytes),
-                    None::<iter::Empty<_>>,
+                    Headers::none(),
                 );
 
                 Ok(value_stream)
@@ -187,11 +188,11 @@ impl<'docker> Images<'docker> {
         }
         let headers = opts
             .auth_header()
-            .map(|a| iter::once(("X-Registry-Auth", a)));
+            .map(|a| Headers::single("X-Registry-Auth", a));
 
         Box::pin(
             self.docker
-                .stream_post_into(path.join("?"), Payload::None::<Body>, headers),
+                .stream_post_into(path.join("?"), Payload::empty(), headers),
         )
     }
 
@@ -229,7 +230,7 @@ impl<'docker> Images<'docker> {
                 let value_stream = self.docker.stream_post_into(
                     "/images/load",
                     Payload::Tar(bytes),
-                    None::<iter::Empty<_>>,
+                    Headers::none(),
                 );
                 Ok(value_stream)
             }

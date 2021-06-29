@@ -237,14 +237,14 @@ impl Docker {
 
     pub(crate) async fn get(&self, endpoint: &str) -> Result<String> {
         self.transport
-            .request(Method::GET, endpoint, Payload::None::<&[u8]>, Headers::None)
+            .request(Method::GET, endpoint, Payload::empty(), Headers::none())
             .await
     }
 
     pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request(Method::GET, endpoint, Payload::None::<&[u8]>, Headers::None)
+            .request(Method::GET, endpoint, Payload::empty(), Headers::none())
             .await?;
         trace!("{}", raw_string);
 
@@ -256,7 +256,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request(Method::POST, endpoint, body, Headers::None)
+            .request(Method::POST, endpoint, body, Headers::none())
             .await
     }
 
@@ -265,7 +265,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request(Method::PUT, endpoint, body, Headers::None)
+            .request(Method::PUT, endpoint, body, Headers::none())
             .await
     }
 
@@ -280,23 +280,22 @@ impl Docker {
     {
         let raw_string = self
             .transport
-            .request(Method::POST, endpoint, body, Headers::None)
+            .request(Method::POST, endpoint, body, Headers::none())
             .await?;
         trace!("{}", raw_string);
 
         Ok(serde_json::from_str::<T>(&&raw_string)?)
     }
 
-    pub(crate) async fn post_json_headers<'a, B, H, T>(
+    pub(crate) async fn post_json_headers<'a, B, T>(
         &self,
         endpoint: impl AsRef<str>,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> Result<T>
     where
         T: DeserializeOwned,
         B: Into<Body>,
-        H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
         let raw_string = self
             .transport
@@ -309,24 +308,14 @@ impl Docker {
 
     pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.transport
-            .request(
-                Method::DELETE,
-                endpoint,
-                Payload::None::<Body>,
-                Headers::None,
-            )
+            .request(Method::DELETE, endpoint, Payload::empty(), Headers::none())
             .await
     }
 
     pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request(
-                Method::DELETE,
-                endpoint,
-                Payload::None::<Body>,
-                Headers::None,
-            )
+            .request(Method::DELETE, endpoint, Payload::empty(), Headers::none())
             .await?;
         trace!("{}", raw_string);
 
@@ -336,30 +325,28 @@ impl Docker {
     /// Send a streaming post request.
     ///
     /// Use stream_post_into_values if the endpoint returns JSON values
-    pub(crate) fn stream_post<'a, B, H>(
+    pub(crate) fn stream_post<'a, B>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> impl Stream<Item = Result<Bytes>> + 'a
     where
         B: Into<Body> + 'a,
-        H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
         self.transport
             .stream_chunks(Method::POST, endpoint, body, headers)
     }
 
     /// Send a streaming post request.
-    fn stream_json_post<'a, B, H>(
+    fn stream_json_post<'a, B>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> impl Stream<Item = Result<Bytes>> + 'a
     where
         B: Into<Body> + 'a,
-        H: IntoIterator<Item = (&'static str, String)> + 'a,
     {
         self.transport
             .stream_json_chunks(Method::POST, endpoint, body, headers)
@@ -368,15 +355,14 @@ impl Docker {
     /// Send a streaming post request that returns a stream of JSON values
     ///
     /// When a received chunk does not contain a full JSON reads more chunks from the stream
-    pub(crate) fn stream_post_into<'a, B, H, T>(
+    pub(crate) fn stream_post_into<'a, B, T>(
         &'a self,
         endpoint: impl AsRef<str> + 'a,
         body: Payload<B>,
-        headers: Option<H>,
+        headers: Option<Headers>,
     ) -> impl Stream<Item = Result<T>> + 'a
     where
         B: Into<Body> + 'a,
-        H: IntoIterator<Item = (&'static str, String)> + 'a,
         T: DeserializeOwned,
     {
         self.stream_json_post(endpoint, body, headers)
@@ -397,9 +383,8 @@ impl Docker {
         &'a self,
         endpoint: impl AsRef<str> + Unpin + 'a,
     ) -> impl Stream<Item = Result<Bytes>> + 'a {
-        let headers = Some(Vec::default());
         self.transport
-            .stream_chunks(Method::GET, endpoint, Payload::None::<Body>, headers)
+            .stream_chunks(Method::GET, endpoint, Payload::empty(), Headers::none())
     }
 
     pub(crate) async fn stream_post_upgrade<'a, B>(
