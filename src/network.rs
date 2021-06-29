@@ -137,8 +137,6 @@ impl<'docker> Network<'docker> {
 impl_url_opts_builder!("Options for filtering networks list results" NetworkList);
 // TODO: implement `filters` field on network list
 
-
-
 /// Interface for creating new docker network
 #[derive(Serialize, Debug)]
 pub struct NetworkCreateOptions {

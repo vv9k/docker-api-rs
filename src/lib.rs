@@ -29,6 +29,7 @@ pub mod event;
 pub mod exec;
 pub mod image;
 pub mod network;
+pub mod plugin;
 pub mod service;
 pub mod volume;
 
@@ -52,6 +53,7 @@ pub use crate::{
     network::{
         ContainerConnectionOptions, Network, NetworkCreateOptions, NetworkListOptions, Networks,
     },
+    plugin::{Plugin, PluginFilter, PluginInfo, PluginListOptions, Plugins},
     service::{Service, ServiceFilter, ServiceListOptions, ServiceOptions, Services},
     transport::Transport,
     volume::{Volume, VolumeCreateOptions, Volumes},

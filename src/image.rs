@@ -64,7 +64,7 @@ impl<'docker> Image<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune>
     pub async fn delete(&self) -> Result<Vec<Status>> {
         self.docker
-            .delete_json::<Vec<Status>>(&format!("/images/{}", self.name)[..])
+            .delete_json(&format!("/images/{}", self.name)[..])
             .await
     }
 
@@ -790,7 +790,7 @@ pub struct Descriptor {
     digest: String,
     size: u64,
     #[serde(rename = "URLs")]
-    urls: Vec<String>
+    urls: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
