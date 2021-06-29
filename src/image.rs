@@ -291,7 +291,7 @@ impl RegistryAuth {
     pub fn serialize(&self) -> String {
         serde_json::to_string(self)
             .map(|c| base64::encode_config(&c, base64::URL_SAFE))
-            .unwrap()
+            .unwrap_or_default()
     }
 }
 
@@ -338,8 +338,8 @@ impl RegistryAuthBuilder {
 
     pub fn build(&self) -> RegistryAuth {
         RegistryAuth::Password {
-            username: self.username.clone().unwrap_or_else(String::new),
-            password: self.password.clone().unwrap_or_else(String::new),
+            username: self.username.clone().unwrap_or_default(),
+            password: self.password.clone().unwrap_or_default(),
             email: self.email.clone(),
             server_address: self.server_address.clone(),
         }
@@ -636,7 +636,7 @@ impl ImageListOptionsBuilder {
         // structure is a a json encoded object mapping string keys to a list
         // of string values
         self.params
-            .insert("filters", serde_json::to_string(&param).unwrap());
+            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
         self
     }
 }

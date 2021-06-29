@@ -162,8 +162,10 @@ impl EventsOptionsBuilder {
                 }
             };
         }
-        self.params
-            .insert("filters", serde_json::to_string(&params).unwrap());
+        self.params.insert(
+            "filters",
+            serde_json::to_string(&params).unwrap_or_default(),
+        );
         self
     }
 

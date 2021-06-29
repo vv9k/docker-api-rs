@@ -6,7 +6,7 @@ use std::{
 };
 use tar::Builder;
 
-// todo: this is pretty involved. (re)factor this into its own crate
+/// Writes a gunzip encoded tarball to `buf` from entries found in `path`.
 pub fn dir<W>(buf: W, path: &str) -> io::Result<()>
 where
     W: Write,
@@ -34,8 +34,10 @@ where
 
     {
         let base_path = Path::new(path).canonicalize()?;
-        // todo: don't unwrap
-        let mut base_path_str = base_path.to_str().unwrap().to_owned();
+        let mut base_path_str = base_path
+            .to_str()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "invalid base path"))?
+            .to_owned();
         if let Some(last) = base_path_str.chars().last() {
             if last != MAIN_SEPARATOR {
                 base_path_str.push(MAIN_SEPARATOR)
@@ -44,10 +46,11 @@ where
 
         let mut append = |path: &Path| {
             let canonical = path.canonicalize()?;
-            // todo: don't unwrap
             let relativized = canonical
                 .to_str()
-                .unwrap()
+                .ok_or_else(|| {
+                    io::Error::new(io::ErrorKind::InvalidInput, "invalid canonicalized path")
+                })?
                 .trim_start_matches(&base_path_str[..]);
             if path.is_dir() {
                 archive.append_dir(Path::new(relativized), &canonical)?

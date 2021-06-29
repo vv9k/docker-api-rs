@@ -168,7 +168,7 @@ impl PluginListOptionsBuilder {
         // structure is a a json encoded object mapping string keys to a list
         // of string values
         self.params
-            .insert("filters", serde_json::to_string(&param).unwrap());
+            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
         self
     }
 }

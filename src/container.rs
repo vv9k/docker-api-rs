@@ -19,7 +19,7 @@ use crate::{
     errors::{Error, Result},
     exec::{Exec, ExecContainerOptions},
     image::ContainerConfig,
-    network::{NetworkSettings},
+    network::NetworkSettings,
     transport::Payload,
     tty::{self, Multiplexer as TtyMultiPlexer},
 };
@@ -347,9 +347,8 @@ impl<'docker> Container<'docker> {
                 .skip(1)
                 .collect::<std::path::PathBuf>(),
             bytes,
-        )
-        .unwrap();
-        let data = ar.into_inner().unwrap();
+        )?;
+        let data = ar.into_inner()?;
 
         self.copy_to(Path::new("/"), data.into()).await.map(|_| ())
     }
@@ -455,7 +454,7 @@ impl ContainerListOptionsBuilder {
         // structure is a a json encoded object mapping string keys to a list
         // of string values
         self.params
-            .insert("filters", serde_json::to_string(&param).unwrap());
+            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
         self
     }
 
@@ -500,21 +499,23 @@ where
     V: Serialize,
     I: Iterator<Item = &'a str>,
 {
-    let local_key = key_path.next().unwrap();
+    if let Some(local_key) = key_path.next() {
+        if key_path.peek().is_some() {
+            if let Some(node) = parent_node.as_object_mut() {
+                let node = node
+                    .entry(local_key.to_string())
+                    .or_insert(Value::Object(Map::new()));
 
-    if key_path.peek().is_some() {
-        let node = parent_node
-            .as_object_mut()
-            .unwrap()
-            .entry(local_key.to_string())
-            .or_insert(Value::Object(Map::new()));
-
-        insert(key_path, value, node);
-    } else {
-        parent_node
-            .as_object_mut()
-            .unwrap()
-            .insert(local_key.to_string(), serde_json::to_value(value).unwrap());
+                insert(key_path, value, node);
+            }
+        } else {
+            if let Some(node) = parent_node.as_object_mut() {
+                node.insert(
+                    local_key.to_string(),
+                    serde_json::to_value(value).unwrap_or_default(),
+                );
+            }
+        }
     }
 }
 

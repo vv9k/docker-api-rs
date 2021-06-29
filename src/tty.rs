@@ -62,7 +62,7 @@ where
     }
 
     let size_bytes = &header_bytes[4..];
-    let data_length = u32::from_be_bytes(size_bytes.try_into().unwrap());
+    let data_length = u32::from_be_bytes(size_bytes.try_into().ok()?);
 
     let mut data = vec![0u8; data_length as usize];
 

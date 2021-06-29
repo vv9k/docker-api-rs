@@ -90,8 +90,8 @@ impl<B: Into<Body>> Payload<B> {
             Self::None => None,
             Self::Text(_) => None,
             Self::Json(_) => Some(mime::APPLICATION_JSON),
-            Self::XTar(_) => Some("application/x-tar".parse().unwrap()),
-            Self::Tar(_) => Some("application/tar".parse().unwrap()),
+            Self::XTar(_) => Some("application/x-tar".parse().expect("parsed mime")),
+            Self::Tar(_) => Some("application/tar".parse().expect("parsed mime")),
         }
     }
 
