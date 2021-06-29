@@ -508,13 +508,11 @@ where
 
                 insert(key_path, value, node);
             }
-        } else {
-            if let Some(node) = parent_node.as_object_mut() {
-                node.insert(
-                    local_key.to_string(),
-                    serde_json::to_value(value).unwrap_or_default(),
-                );
-            }
+        } else if let Some(node) = parent_node.as_object_mut() {
+            node.insert(
+                local_key.to_string(),
+                serde_json::to_value(value).unwrap_or_default(),
+            );
         }
     }
 }
