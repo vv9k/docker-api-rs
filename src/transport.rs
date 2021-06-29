@@ -127,6 +127,7 @@ impl Transport {
     pub fn remote_addr(&self) -> &str {
         match &self {
             Self::Tcp { ref host, .. } => host.as_str(),
+            #[cfg(feature = "tls")]
             Self::EncryptedTcp { ref host, .. } => host.as_str(),
             Self::Unix { ref path, .. } => path.as_str(),
         }

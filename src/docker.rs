@@ -2,7 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
 
-use std::{io, path::Path};
+use std::io;
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
@@ -28,9 +28,11 @@ use crate::{
 use chrono::{DateTime, Utc};
 
 #[cfg(feature = "tls")]
-use hyper_openssl::HttpsConnector;
-#[cfg(feature = "tls")]
-use openssl::ssl::{SslConnector, SslFiletype, SslMethod};
+use {
+    hyper_openssl::HttpsConnector,
+    openssl::ssl::{SslConnector, SslFiletype, SslMethod},
+    std::path::Path,
+};
 
 #[cfg(unix)]
 use hyperlocal::UnixConnector;
