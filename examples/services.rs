@@ -1,9 +1,9 @@
 use docker_api::{Docker, ServiceListOptions};
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
-    let docker = Docker::new("tcp://127.0.0.1:80").unwrap();
+    let docker = Docker::new("tcp://127.0.0.1:80")?;
     match docker
         .services()
         .list(&ServiceListOptions::builder().enable_status().build())
@@ -16,4 +16,6 @@ async fn main() {
         }
         Err(e) => eprintln!("Error: {}", e),
     }
+
+    Ok(())
 }

@@ -1,6 +1,6 @@
 use docker_api::{tty::TtyChunk, Docker};
 use futures::StreamExt;
-use std::env;
+use std::{env, str};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -25,8 +25,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn print_chunk(chunk: TtyChunk) {
     match chunk {
-        TtyChunk::StdOut(bytes) => println!("Stdout: {}", std::str::from_utf8(&bytes).unwrap()),
-        TtyChunk::StdErr(bytes) => eprintln!("Stdout: {}", std::str::from_utf8(&bytes).unwrap()),
+        TtyChunk::StdOut(bytes) => {
+            println!("Stdout: {}", str::from_utf8(&bytes).unwrap_or_default())
+        }
+        TtyChunk::StdErr(bytes) => {
+            eprintln!("Stdout: {}", str::from_utf8(&bytes).unwrap_or_default())
+        }
         TtyChunk::StdIn(_) => unreachable!(),
     }
 }

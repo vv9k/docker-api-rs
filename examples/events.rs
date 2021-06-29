@@ -2,8 +2,8 @@ use docker_api::Docker;
 use futures::StreamExt;
 
 #[tokio::main]
-async fn main() {
-    let docker = Docker::new("tcp://127.0.0.1:80").unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let docker = Docker::new("tcp://127.0.0.1:80")?;
     println!("listening for events");
 
     while let Some(event_result) = docker.events(&Default::default()).next().await {
@@ -12,4 +12,6 @@ async fn main() {
             Err(e) => eprintln!("Error: {}", e),
         }
     }
+
+    Ok(())
 }

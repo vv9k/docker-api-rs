@@ -2,8 +2,8 @@ use docker_api::{ContainerConnectionOptions, Docker};
 use std::env;
 
 #[tokio::main]
-async fn main() {
-    let docker = Docker::new("tcp://127.0.0.1:80").unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let docker = Docker::new("tcp://127.0.0.1:80")?;
     let networks = docker.networks();
 
     match (env::args().nth(1), env::args().nth(2)) {
@@ -18,4 +18,6 @@ async fn main() {
         }
         _ => eprintln!("please provide a container_id and network_id"),
     }
+
+    Ok(())
 }
