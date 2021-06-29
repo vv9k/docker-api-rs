@@ -25,6 +25,7 @@ mod builder;
 
 pub mod container;
 pub mod docker;
+pub mod event;
 pub mod exec;
 pub mod image;
 pub mod network;
@@ -41,7 +42,7 @@ pub use crate::{
         Container, ContainerFilter, ContainerListOptions, ContainerOptions, Containers,
         LogsOptions, RmContainerOptions,
     },
-    docker::{Docker, EventsOptions},
+    docker::Docker,
     errors::{Error, Result},
     exec::{Exec, ExecContainerOptions, ExecResizeOptions},
     image::{
