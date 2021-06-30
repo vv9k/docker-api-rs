@@ -9,7 +9,7 @@ use futures_util::{
     stream::Stream,
     TryStreamExt,
 };
-use hyper::{body::Bytes, client::HttpConnector, Body, Client, Method};
+use hyper::{body::Bytes, client::HttpConnector, Body, Client, Method, Response};
 use log::trace;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -333,6 +333,13 @@ impl Docker {
         trace!("{}", raw_string);
 
         Ok(serde_json::from_str::<T>(&raw_string)?)
+    }
+
+    pub(crate) async fn head_response(&self, endpoint: &str) -> Result<Response<Body>> {
+         self
+            .transport
+            .get_response(Method::HEAD, endpoint, Payload::empty(), Headers::none())
+            .await
     }
 
     /// Send a streaming post request.

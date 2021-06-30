@@ -132,7 +132,6 @@ impl Transport {
             Self::Unix { ref path, .. } => path.as_str(),
         }
     }
-
     /// Make a request and return the whole response in a `String`
     pub async fn request<B>(
         &self,
@@ -193,6 +192,23 @@ impl Transport {
         Ok(Compat { tokio_multiplexer })
     }
 
+    pub(crate) async fn get_response<B>(
+        &self,
+        method: Method,
+        endpoint: impl AsRef<str>,
+        body: Payload<B>,
+        headers: Option<Headers>,
+    ) -> Result<Response<Body>>
+    where
+        B: Into<Body>,
+    {
+        let req = self
+            .build_request(method, endpoint, body, headers, Request::builder())
+            .expect("Failed to build request!");
+
+        self.send_request(req).await
+    }
+
     async fn get_body<B>(
         &self,
         method: Method,
@@ -203,11 +219,7 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let req = self
-            .build_request(method, endpoint, body, headers, Request::builder())
-            .expect("Failed to build request!");
-
-        let response = self.send_request(req).await?;
+        let response = self.get_response(method, endpoint, body, headers).await?;
 
         let status = response.status();
 

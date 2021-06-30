@@ -2,7 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Container>
 
-use std::{collections::HashMap, hash::Hash, io, iter::Peekable, path::Path, time::Duration};
+use std::{collections::HashMap, hash::Hash, io, iter::Peekable, path::Path, str, time::Duration};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
@@ -64,7 +64,8 @@ impl<'docker> Container<'docker> {
             .await
     }
 
-    /// Returns a `top` view of information about the container process
+    /// Returns a `top` view of information about the container process.
+    /// On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerTop>
     pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
@@ -370,6 +371,44 @@ impl<'docker> Container<'docker> {
             )
             .await
             .map(|_| ())
+    }
+
+    /// Get information about files in a container.
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchiveInfo>
+    pub async fn stat_file<P>(&self, path: P) -> Result<String>
+    where
+        P: AsRef<Path>,
+    {
+        static PATH_STAT_HEADER: &str = "X-Docker-Container-Path-Stat";
+        let path_arg = form_urlencoded::Serializer::new(String::new())
+            .append_pair("path", &path.as_ref().to_string_lossy())
+            .finish();
+
+        let resp = self
+            .docker
+            .head_response(&format!("/containers/{}/archive?{}", self.id, path_arg))
+            .await?;
+        if let Some(header) = resp.headers().get(PATH_STAT_HEADER) {
+            let header = header.to_str().map_err(|e| {
+                Error::InvalidResponse(format!("response header was invalid - {}", e))
+            })?;
+
+            base64::decode(header)
+                .map_err(|e| Error::InvalidResponse(format!("expected header to be valid base64 - {}", e)))
+                .and_then(|s| {
+                    str::from_utf8(s.as_slice())
+                    .map(str::to_string)
+                    .map_err(|e| {
+                        Error::InvalidResponse(format!("expected header to be valid utf8 - {}", e))
+                    })
+                })
+        } else {
+            Err(Error::InvalidResponse(format!(
+                "missing `{}` header",
+                PATH_STAT_HEADER
+            )))
+        }
     }
 }
 
@@ -1184,7 +1223,7 @@ pub struct BlkioStat {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Change {
-    pub kind: u64,
+    pub kind: u8,
     pub path: String,
 }
 
