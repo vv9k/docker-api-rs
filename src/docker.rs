@@ -9,19 +9,21 @@ use futures_util::{
     stream::Stream,
     TryStreamExt,
 };
-use hyper::{body::Bytes, client::HttpConnector, Body, Client, Method, Response};
+use hyper::{body::Bytes, Body, Client, Method, Response};
 use log::trace;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
-    container::Containers,
+    api::{
+        container::Containers,
+        event::{Event, EventsOpts},
+        image::Images,
+        network::Networks,
+        service::Services,
+        volume::Volumes,
+    },
+    conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
-    event::{Event, EventsOpts},
-    image::Images,
-    network::Networks,
-    service::Services,
-    transport::{Headers, Payload, Transport},
-    volume::Volumes,
 };
 
 #[cfg(feature = "chrono")]
@@ -41,13 +43,6 @@ use hyperlocal::UnixConnector;
 #[derive(Debug, Clone)]
 pub struct Docker {
     transport: Transport,
-}
-
-fn get_http_connector() -> HttpConnector {
-    let mut http = HttpConnector::new();
-    http.enforce_http(false);
-
-    http
 }
 
 #[cfg(feature = "tls")]

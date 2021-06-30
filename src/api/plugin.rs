@@ -2,7 +2,7 @@
 //!
 //! Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Plugin>
 
-use crate::{errors::Result, transport::Payload, util::url_encoded_pair, Docker};
+use crate::{conn::Payload, errors::Result, util::url::encoded_pair, Docker};
 
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::Path};
@@ -40,7 +40,7 @@ impl<'docker> Plugin<'docker> {
     async fn _remove(&self, force: bool) -> Result<PluginInfo> {
         let mut path = format!("/plugins/{}", self.name);
         if force {
-            let query = url_encoded_pair("force", force);
+            let query = encoded_pair("force", force);
             path.push('?');
             path.push_str(&query);
         }
@@ -67,7 +67,7 @@ impl<'docker> Plugin<'docker> {
     pub async fn enable(&self, timeout: Option<u64>) -> Result<()> {
         let mut path = format!("/plugins/{}/enable", self.name);
         if let Some(timeout) = timeout {
-            let query = url_encoded_pair("timeout", timeout);
+            let query = encoded_pair("timeout", timeout);
             path.push('?');
             path.push_str(&query);
         }

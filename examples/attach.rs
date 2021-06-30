@@ -1,4 +1,4 @@
-use docker_api::{tty::TtyChunk, Docker};
+use docker_api::{conn::TtyChunk, Docker};
 use futures::StreamExt;
 use std::{env, str};
 

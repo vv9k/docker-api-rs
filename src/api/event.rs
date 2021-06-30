@@ -1,12 +1,12 @@
 //! Items related to events emitted by Docker
 
-use crate::util::url_encoded_pairs;
+use crate::util::url::encoded_pairs;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[cfg(feature = "chrono")]
-use crate::datetime::{datetime_from_nano_timestamp, datetime_from_unix_timestamp};
+use crate::util::datetime::{datetime_from_nano_timestamp, datetime_from_unix_timestamp};
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
@@ -58,7 +58,7 @@ impl EventsOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(url_encoded_pairs(&self.params))
+            Some(encoded_pairs(&self.params))
         }
     }
 }

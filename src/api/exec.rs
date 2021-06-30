@@ -10,9 +10,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
+    conn::{tty, Headers, Payload},
     errors::{Error, Result},
-    transport::{Headers, Payload},
-    tty, Docker,
+    Docker,
 };
 
 /// Interface for docker exec instance

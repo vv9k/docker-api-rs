@@ -14,18 +14,19 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 use crate::{
+    api::{
+        exec::{Exec, ExecContainerOpts},
+        image::ContainerConfig,
+        network::NetworkSettings,
+    },
+    conn::{tty, Multiplexer as TtyMultiPlexer, Payload, TtyChunk},
     docker::Docker,
     errors::{Error, Result},
-    exec::{Exec, ExecContainerOpts},
-    image::ContainerConfig,
-    network::NetworkSettings,
-    transport::Payload,
-    tty::{self, Multiplexer as TtyMultiPlexer},
-    util::url_encoded_pair,
+    util::url::encoded_pair,
 };
 
 #[cfg(feature = "chrono")]
-use crate::datetime::datetime_from_unix_timestamp;
+use crate::util::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
@@ -71,7 +72,7 @@ impl<'docker> Container<'docker> {
     pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
         let mut path = vec![format!("/containers/{}/top", self.id)];
         if let Some(ref args) = psargs {
-            let encoded = url_encoded_pair("ps_args", args);
+            let encoded = encoded_pair("ps_args", args);
             path.push(encoded)
         }
         self.docker.get_json(&path.join("?")).await
@@ -80,10 +81,7 @@ impl<'docker> Container<'docker> {
     /// Returns a stream of logs emitted but the container instance
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs>
-    pub fn logs(
-        &self,
-        opts: &LogsOpts,
-    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
+    pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
         let mut path = vec![format!("/containers/{}/logs", self.id)];
         if let Some(query) = opts.serialize() {
             path.push(query)
@@ -177,7 +175,7 @@ impl<'docker> Container<'docker> {
     pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/stop", self.id)];
         if let Some(w) = wait {
-            let encoded = url_encoded_pair("t", w.as_secs());
+            let encoded = encoded_pair("t", w.as_secs());
 
             path.push(encoded)
         }
@@ -193,7 +191,7 @@ impl<'docker> Container<'docker> {
     pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/restart", self.id)];
         if let Some(w) = wait {
-            let encoded = url_encoded_pair("t", w.as_secs());
+            let encoded = encoded_pair("t", w.as_secs());
             path.push(encoded)
         }
         self.docker
@@ -208,7 +206,7 @@ impl<'docker> Container<'docker> {
     pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/kill", self.id)];
         if let Some(sig) = signal {
-            let encoded = url_encoded_pair("signal", sig);
+            let encoded = encoded_pair("signal", sig);
             path.push(encoded)
         }
         self.docker
@@ -221,7 +219,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename>
     pub async fn rename(&self, name: &str) -> Result<()> {
-        let query = url_encoded_pair("name", name);
+        let query = encoded_pair("name", name);
         self.docker
             .post(
                 &format!("/containers/{}/rename?{}", self.id, query)[..],
@@ -310,7 +308,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive>
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
-        let path_arg = url_encoded_pair("path", path.to_string_lossy());
+        let path_arg = encoded_pair("path", path.to_string_lossy());
 
         let endpoint = format!("/containers/{}/archive?{}", self.id, path_arg);
         self.docker.stream_get(endpoint).map_ok(|c| c.to_vec())
@@ -348,7 +346,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
     pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
-        let path_arg = url_encoded_pair("path", path.to_string_lossy());
+        let path_arg = encoded_pair("path", path.to_string_lossy());
 
         self.docker
             .put(
@@ -367,7 +365,7 @@ impl<'docker> Container<'docker> {
         P: AsRef<Path>,
     {
         static PATH_STAT_HEADER: &str = "X-Docker-Container-Path-Stat";
-        let path_arg = url_encoded_pair("path", path.as_ref().to_string_lossy());
+        let path_arg = encoded_pair("path", path.as_ref().to_string_lossy());
 
         let resp = self
             .docker
@@ -442,7 +440,7 @@ impl<'docker> Containers<'docker> {
         let mut path = vec!["/containers/create".to_owned()];
 
         if let Some(ref name) = opts.name {
-            path.push(url_encoded_pair("name", name));
+            path.push(encoded_pair("name", name));
         }
 
         self.docker

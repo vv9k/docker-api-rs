@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::{
+    conn::Payload,
     docker::Docker,
     errors::{Error, Result},
-    transport::Payload,
 };
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use docker_api::{container::LogsOpts, tty::TtyChunk, Docker};
+use docker_api::{conn::TtyChunk, container::LogsOpts, Docker};
 use futures::StreamExt;
 use std::{env, str};
 

@@ -3,12 +3,10 @@
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
 
 use crate::{
-    container::LogsOpts,
+    api::{container::LogsOpts, image::RegistryAuth},
+    conn::{tty, Headers, Payload},
     docker::Docker,
     errors::{Error, Result},
-    image::RegistryAuth,
-    transport::{Headers, Payload},
-    tty,
 };
 
 use futures_util::stream::Stream;

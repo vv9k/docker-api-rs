@@ -17,37 +17,26 @@
 //! # };
 //! ```
 
-pub mod errors;
-pub mod transport;
-pub mod tty;
 #[macro_use]
 mod builder;
 mod util;
 
-pub mod container;
+pub mod api;
+pub mod conn;
 pub mod docker;
-pub mod event;
-pub mod exec;
-pub mod image;
-pub mod network;
-pub mod plugin;
-pub mod service;
-pub mod volume;
-
-mod tarball;
-
-#[cfg(feature = "chrono")]
-mod datetime;
+pub mod errors;
 
 pub use crate::{
-    container::{Container, Containers},
+    api::{
+        container::{self, Container, Containers},
+        exec::{self, Exec, ExecContainerOpts},
+        image::{self, Image, Images},
+        network::{self, Network, Networks},
+        plugin::{self, Plugin, Plugins},
+        service::{self, Service, Services},
+        volume::{self, Volume, Volumes},
+    },
+    conn::Transport,
     docker::Docker,
     errors::{Error, Result},
-    exec::{Exec, ExecContainerOpts},
-    image::{Image, Images},
-    network::{Network, Networks},
-    plugin::{Plugin, Plugins},
-    service::{Service, Services},
-    transport::Transport,
-    volume::{Volume, Volumes},
 };

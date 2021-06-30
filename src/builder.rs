@@ -89,7 +89,7 @@ macro_rules! impl_url_opts_builder {
                         None
                     } else {
                         Some(
-                            crate::util::url_encoded_pairs(&self.params)
+                            crate::util::url::encoded_pairs(&self.params)
                         )
                     }
                 }
