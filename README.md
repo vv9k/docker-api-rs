@@ -1,6 +1,6 @@
 # docker-api
 
-[![GitHub Actions](https://github.com/wojciechkepka/docker-api-rs/workflows/Main/badge.svg)](https://github.com/wojciechkepka/docker-api-rs/actions) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Released API docs](https://docs.rs/docker-api-rs/badge.svg)](http://docs.rs/docker-api-rs)
+[![GitHub Actions](https://github.com/wojciechkepka/docker-api-rs/workflows/Main/badge.svg)](https://github.com/wojciechkepka/docker-api-rs/actions) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Released API docs](https://docs.rs/docker-api/badge.svg)](http://docs.rs/docker-api)
 
 > a rust interface to [Docker](https://www.docker.com/) containers
 

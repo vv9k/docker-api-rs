@@ -1,3 +1,5 @@
+//! All api endpoints like containers, images, networks...
+
 pub mod container;
 pub mod event;
 pub mod exec;
@@ -6,8 +8,6 @@ pub mod network;
 pub mod plugin;
 pub mod service;
 pub mod volume;
-
-
 
 pub use container::*;
 pub use event::*;
