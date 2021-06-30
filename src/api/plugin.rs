@@ -17,7 +17,7 @@ pub struct Plugin<'docker> {
 }
 
 impl<'docker> Plugin<'docker> {
-    /// Exports an interface for operations that may be performed against a named image.
+    /// Exports an interface for operations that may be performed against a plugin.
     pub fn new<S>(docker: &'docker Docker, name: S) -> Self
     where
         S: Into<String>,
@@ -137,7 +137,7 @@ impl<'docker> Plugins<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginList>
     pub async fn list(&self, opts: &PluginListOpts) -> Result<Vec<PluginInfo>> {
-        let mut path = vec!["/images/json".to_owned()];
+        let mut path = vec!["/plugins".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
         }
