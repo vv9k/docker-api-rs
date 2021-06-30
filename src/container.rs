@@ -12,7 +12,6 @@ use futures_util::{
 use hyper::Body;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
-use url::form_urlencoded;
 
 use crate::{
     docker::Docker,
@@ -22,6 +21,7 @@ use crate::{
     network::NetworkSettings,
     transport::Payload,
     tty::{self, Multiplexer as TtyMultiPlexer},
+    util::url_encoded_pair,
 };
 
 #[cfg(feature = "chrono")]
@@ -71,9 +71,7 @@ impl<'docker> Container<'docker> {
     pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
         let mut path = vec![format!("/containers/{}/top", self.id)];
         if let Some(ref args) = psargs {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .append_pair("ps_args", args)
-                .finish();
+            let encoded = url_encoded_pair("ps_args", args);
             path.push(encoded)
         }
         self.docker.get_json(&path.join("?")).await
@@ -179,9 +177,7 @@ impl<'docker> Container<'docker> {
     pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/stop", self.id)];
         if let Some(w) = wait {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .append_pair("t", &w.as_secs().to_string())
-                .finish();
+            let encoded = url_encoded_pair("t", w.as_secs());
 
             path.push(encoded)
         }
@@ -197,9 +193,7 @@ impl<'docker> Container<'docker> {
     pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/restart", self.id)];
         if let Some(w) = wait {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .append_pair("t", &w.as_secs().to_string())
-                .finish();
+            let encoded = url_encoded_pair("t", w.as_secs());
             path.push(encoded)
         }
         self.docker
@@ -214,9 +208,7 @@ impl<'docker> Container<'docker> {
     pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/kill", self.id)];
         if let Some(sig) = signal {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .append_pair("signal", &sig.to_owned())
-                .finish();
+            let encoded = url_encoded_pair("signal", sig);
             path.push(encoded)
         }
         self.docker
@@ -229,9 +221,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename>
     pub async fn rename(&self, name: &str) -> Result<()> {
-        let query = form_urlencoded::Serializer::new(String::new())
-            .append_pair("name", name)
-            .finish();
+        let query = url_encoded_pair("name", name);
         self.docker
             .post(
                 &format!("/containers/{}/rename?{}", self.id, query)[..],
@@ -320,9 +310,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive>
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
-        let path_arg = form_urlencoded::Serializer::new(String::new())
-            .append_pair("path", &path.to_string_lossy())
-            .finish();
+        let path_arg = url_encoded_pair("path", path.to_string_lossy());
 
         let endpoint = format!("/containers/{}/archive?{}", self.id, path_arg);
         self.docker.stream_get(endpoint).map_ok(|c| c.to_vec())
@@ -360,9 +348,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
     pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
-        let path_arg = form_urlencoded::Serializer::new(String::new())
-            .append_pair("path", &path.to_string_lossy())
-            .finish();
+        let path_arg = url_encoded_pair("path", path.to_string_lossy());
 
         self.docker
             .put(
@@ -381,9 +367,7 @@ impl<'docker> Container<'docker> {
         P: AsRef<Path>,
     {
         static PATH_STAT_HEADER: &str = "X-Docker-Container-Path-Stat";
-        let path_arg = form_urlencoded::Serializer::new(String::new())
-            .append_pair("path", &path.as_ref().to_string_lossy())
-            .finish();
+        let path_arg = url_encoded_pair("path", path.as_ref().to_string_lossy());
 
         let resp = self
             .docker
@@ -395,13 +379,18 @@ impl<'docker> Container<'docker> {
             })?;
 
             base64::decode(header)
-                .map_err(|e| Error::InvalidResponse(format!("expected header to be valid base64 - {}", e)))
+                .map_err(|e| {
+                    Error::InvalidResponse(format!("expected header to be valid base64 - {}", e))
+                })
                 .and_then(|s| {
                     str::from_utf8(s.as_slice())
-                    .map(str::to_string)
-                    .map_err(|e| {
-                        Error::InvalidResponse(format!("expected header to be valid utf8 - {}", e))
-                    })
+                        .map(str::to_string)
+                        .map_err(|e| {
+                            Error::InvalidResponse(format!(
+                                "expected header to be valid utf8 - {}",
+                                e
+                            ))
+                        })
                 })
         } else {
             Err(Error::InvalidResponse(format!(
@@ -453,11 +442,7 @@ impl<'docker> Containers<'docker> {
         let mut path = vec!["/containers/create".to_owned()];
 
         if let Some(ref name) = opts.name {
-            path.push(
-                form_urlencoded::Serializer::new(String::new())
-                    .append_pair("name", name)
-                    .finish(),
-            );
+            path.push(url_encoded_pair("name", name));
         }
 
         self.docker

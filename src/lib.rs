@@ -22,6 +22,7 @@ pub mod transport;
 pub mod tty;
 #[macro_use]
 mod builder;
+mod util;
 
 pub mod container;
 pub mod docker;

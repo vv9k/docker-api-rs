@@ -6,13 +6,13 @@ use std::{collections::HashMap, io::Read};
 
 use futures_util::{stream::Stream, TryFutureExt, TryStreamExt};
 use serde::{Deserialize, Serialize};
-use url::form_urlencoded;
 
 use crate::{
     docker::Docker,
     errors::Result,
     tarball,
     transport::{Headers, Payload},
+    util::{url_encoded_pair, url_encoded_pairs},
 };
 
 #[cfg(feature = "chrono")]
@@ -179,9 +179,7 @@ impl<'docker> Images<'docker> {
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageSearch>
     pub async fn search(&self, term: &str) -> Result<Vec<SearchResult>> {
-        let query = form_urlencoded::Serializer::new(String::new())
-            .append_pair("term", term)
-            .finish();
+        let query = url_encoded_pair("term", term);
         self.docker
             .get_json::<Vec<SearchResult>>(&format!("/images/search?{}", query)[..])
             .await
@@ -214,9 +212,7 @@ impl<'docker> Images<'docker> {
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageGetAll>
     pub fn export(&self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         let params = names.iter().map(|n| ("names", *n));
-        let query = form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(params)
-            .finish();
+        let query = url_encoded_pairs(params);
         self.docker
             .stream_get(format!("/images/get?{}", query))
             .map_ok(|c| c.to_vec())
@@ -383,11 +379,7 @@ impl PullOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
+            Some(url_encoded_pairs(&self.params))
         }
     }
 
@@ -490,11 +482,7 @@ impl BuildOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(
-                form_urlencoded::Serializer::new(String::new())
-                    .extend_pairs(&self.params)
-                    .finish(),
-            )
+            Some(url_encoded_pairs(&self.params))
         }
     }
 }

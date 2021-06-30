@@ -17,7 +17,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::hash::Hash;
-use url::form_urlencoded;
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};

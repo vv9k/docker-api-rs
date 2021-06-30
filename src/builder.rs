@@ -89,9 +89,7 @@ macro_rules! impl_url_opts_builder {
                         None
                     } else {
                         Some(
-                            form_urlencoded::Serializer::new(String::new())
-                                .extend_pairs(&self.params)
-                                .finish(),
+                            crate::util::url_encoded_pairs(&self.params)
                         )
                     }
                 }

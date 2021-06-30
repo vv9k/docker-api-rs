@@ -336,8 +336,7 @@ impl Docker {
     }
 
     pub(crate) async fn head_response(&self, endpoint: &str) -> Result<Response<Body>> {
-         self
-            .transport
+        self.transport
             .get_response(Method::HEAD, endpoint, Payload::empty(), Headers::none())
             .await
     }

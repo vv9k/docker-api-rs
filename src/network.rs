@@ -7,7 +7,6 @@ use std::{collections::HashMap, hash::Hash};
 use hyper::Body;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use url::form_urlencoded;
 
 use crate::{
     docker::Docker,
