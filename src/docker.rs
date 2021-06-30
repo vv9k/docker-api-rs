@@ -26,45 +26,19 @@ use crate::{
     errors::{Error, Result},
 };
 
-#[cfg(feature = "chrono")]
-use chrono::{DateTime, Utc};
-
 #[cfg(feature = "tls")]
-use {
-    hyper_openssl::HttpsConnector,
-    openssl::ssl::{SslConnector, SslFiletype, SslMethod},
-    std::path::Path,
-};
+use {crate::conn::get_https_connector, std::path::Path};
 
 #[cfg(unix)]
-use hyperlocal::UnixConnector;
+use crate::conn::get_unix_connector;
+
+#[cfg(feature = "chrono")]
+use chrono::{DateTime, Utc};
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
 pub struct Docker {
     transport: Transport,
-}
-
-#[cfg(feature = "tls")]
-fn get_docker_for_tcp_tls(host: String, cert_path: &Path, verify: bool) -> Result<Docker> {
-    let http = get_http_connector();
-    let mut connector = SslConnector::builder(SslMethod::tls())?;
-    connector.set_cipher_list("DEFAULT")?;
-    let cert = cert_path.join("cert.pem");
-    let key = cert_path.join("key.pem");
-    connector.set_certificate_file(cert.as_path(), SslFiletype::PEM)?;
-    connector.set_private_key_file(key.as_path(), SslFiletype::PEM)?;
-    if verify {
-        let ca = cert_path.join("ca.pem");
-        connector.set_ca_file(ca.as_path())?;
-    }
-
-    Ok(Docker {
-        transport: Transport::EncryptedTcp {
-            client: Client::builder().build(HttpsConnector::with_connector(http, connector)?),
-            host: format!("https://{}", host),
-        },
-    })
 }
 
 impl Docker {
@@ -77,7 +51,7 @@ impl Docker {
     ///  - `http://`
     ///
     ///  To create a Docker instance utilizing TLS use explicit [Docker::tls](Docker::tls)
-    ///  constructor.
+    ///  constructor (this requires `tls` feature enabled).
     pub fn new<U>(uri: U) -> Result<Docker>
     where
         U: AsRef<str>,
@@ -122,7 +96,7 @@ impl Docker {
             transport: Transport::Unix {
                 client: Client::builder()
                     .pool_max_idle_per_host(0)
-                    .build(UnixConnector),
+                    .build(get_unix_connector()),
                 path: socket_path.into(),
             },
         }
@@ -138,10 +112,15 @@ impl Docker {
     /// added (`ca.pem`) to the connector.
     pub fn tls<H, P>(host: H, cert_path: P, verify: bool) -> Result<Docker>
     where
-        H: Into<String>,
+        H: AsRef<str>,
         P: AsRef<Path>,
     {
-        get_docker_for_tcp_tls(host.into(), cert_path.as_ref(), verify)
+        Ok(Docker {
+            transport: Transport::EncryptedTcp {
+                client: Client::builder().build(get_https_connector(cert_path.as_ref(), verify)?),
+                host: format!("https://{}", host.as_ref()),
+            },
+        })
     }
 
     /// Creates a new docker instance for a docker host listening on a given TCP socket `host`.
@@ -151,13 +130,13 @@ impl Docker {
     /// TLS is supported with feature `tls` enabled through [Docker::tls](Docker::tls) constructor.
     pub fn tcp<H>(host: H) -> Docker
     where
-        H: Into<String>,
+        H: AsRef<str>,
     {
         let http = get_http_connector();
         Docker {
             transport: Transport::Tcp {
                 client: Client::builder().build(http),
-                host: format!("tcp://{}", host.into()),
+                host: format!("tcp://{}", host.as_ref()),
             },
         }
     }
