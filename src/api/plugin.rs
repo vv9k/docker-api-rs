@@ -1,6 +1,6 @@
 //! Install, create and manage plugins
 //!
-//! Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Plugin>
+//! [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Plugin)
 
 use crate::{conn::Payload, errors::Result, util::url::encoded_pair, Docker};
 
@@ -12,7 +12,7 @@ impl_api_ty!(Plugin => name: N);
 impl<'docker> Plugin<'docker> {
     /// Inspects a named plugin's details.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginInspect>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginInspect)
     pub async fn inspect(&self) -> Result<PluginInfo> {
         self.docker
             .get_json(&format!("/plugins/{}/json", self.name)[..])
@@ -31,21 +31,21 @@ impl<'docker> Plugin<'docker> {
 
     /// Removes a plugin.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginDelete>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginDelete)
     pub async fn remove(&self) -> Result<PluginInfo> {
         self._remove(false).await
     }
 
     /// Forcefully remove a plugin. This may result in issues if the plugin is in use by a container.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginDelete>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginDelete)
     pub async fn force_remove(&self) -> Result<PluginInfo> {
         self._remove(true).await
     }
 
     /// Enable a plugin.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginEnable>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginEnable)
     pub async fn enable(&self, timeout: Option<u64>) -> Result<()> {
         let mut path = format!("/plugins/{}/enable", self.name);
         if let Some(timeout) = timeout {
@@ -59,7 +59,7 @@ impl<'docker> Plugin<'docker> {
 
     /// Disable a plugin.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginDisable>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginDisable)
     pub async fn disable(&self) -> Result<()> {
         self.docker
             .post(&format!("/plugins/{}/disable", self.name), Payload::empty())
@@ -69,7 +69,7 @@ impl<'docker> Plugin<'docker> {
 
     /// Push a plugin to the registry.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginPush>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginPush)
     pub async fn push(&self) -> Result<()> {
         self.docker
             .post(&format!("/plugins/{}/push", self.name), Payload::empty())
@@ -80,7 +80,7 @@ impl<'docker> Plugin<'docker> {
     /// Create a plugin from a tar archive on the file system. The `path` parameter is a path
     /// to the tar containing plugin rootfs and manifest.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginCreate>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginCreate)
     pub async fn create<P>(&self, path: P) -> Result<()>
     where
         P: AsRef<Path>,
@@ -98,7 +98,7 @@ impl<'docker> Plugin<'docker> {
 impl<'docker> Plugins<'docker> {
     /// Returns information about installed plugins.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginList>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginList)
     pub async fn list(&self, opts: &PluginListOpts) -> Result<Vec<PluginInfo>> {
         let mut path = vec!["/plugins".to_owned()];
         if let Some(query) = opts.serialize() {

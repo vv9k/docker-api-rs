@@ -35,7 +35,7 @@ impl_api_ty!(Container => id: I);
 impl<'docker> Container<'docker> {
     /// Inspects the current docker container instance's details
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerInspect>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerInspect)
     pub async fn inspect(&self) -> Result<ContainerDetails> {
         self.docker
             .get_json::<ContainerDetails>(&format!("/containers/{}/json", self.id)[..])
@@ -45,7 +45,7 @@ impl<'docker> Container<'docker> {
     /// Returns a `top` view of information about the container process.
     /// On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerTop>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerTop)
     pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
         let mut path = vec![format!("/containers/{}/top", self.id)];
         if let Some(ref args) = psargs {
@@ -57,7 +57,7 @@ impl<'docker> Container<'docker> {
 
     /// Returns a stream of logs emitted but the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs)
     pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
         let mut path = vec![format!("/containers/{}/logs", self.id)];
         if let Some(query) = opts.serialize() {
@@ -88,14 +88,14 @@ impl<'docker> Container<'docker> {
     ///
     /// The multiplexer can be split into its read and write halves with the `[split](TtyMultiplexer::split)` method
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerAttach>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerAttach)
     pub async fn attach(&self) -> Result<TtyMultiPlexer<'docker>> {
         self.attach_raw().await.map(TtyMultiPlexer::new)
     }
 
     /// Returns a set of changes made to the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerChanges>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerChanges)
     pub async fn changes(&self) -> Result<Vec<Change>> {
         self.docker
             .get_json::<Vec<Change>>(&format!("/containers/{}/changes", self.id)[..])
@@ -104,7 +104,7 @@ impl<'docker> Container<'docker> {
 
     /// Exports the current docker container into a tarball
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerExport>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerExport)
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         self.docker
             .stream_get(format!("/containers/{}/export", self.id))
@@ -113,7 +113,7 @@ impl<'docker> Container<'docker> {
 
     /// Returns a stream of stats specific to this container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStats>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStats)
     pub fn stats(&self) -> impl Stream<Item = Result<Stats>> + Unpin + 'docker {
         let codec = futures_codec::LinesCodec {};
 
@@ -135,7 +135,7 @@ impl<'docker> Container<'docker> {
 
     /// Start the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStart>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStart)
     pub async fn start(&self) -> Result<()> {
         self.docker
             .post(
@@ -148,7 +148,7 @@ impl<'docker> Container<'docker> {
 
     /// Stop the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerStop>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStop)
     pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/stop", self.id)];
         if let Some(w) = wait {
@@ -164,7 +164,7 @@ impl<'docker> Container<'docker> {
 
     /// Restart the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRestart>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRestart)
     pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/restart", self.id)];
         if let Some(w) = wait {
@@ -179,7 +179,7 @@ impl<'docker> Container<'docker> {
 
     /// Kill the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerKill>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerKill)
     pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
         let mut path = vec![format!("/containers/{}/kill", self.id)];
         if let Some(sig) = signal {
@@ -194,7 +194,7 @@ impl<'docker> Container<'docker> {
 
     /// Rename the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename)
     pub async fn rename(&self, name: &str) -> Result<()> {
         let query = encoded_pair("name", name);
         self.docker
@@ -208,7 +208,7 @@ impl<'docker> Container<'docker> {
 
     /// Pause the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerPause>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerPause)
     pub async fn pause(&self) -> Result<()> {
         self.docker
             .post(
@@ -221,7 +221,7 @@ impl<'docker> Container<'docker> {
 
     /// Unpause the container instance
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerUnpause>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerUnpause)
     pub async fn unpause(&self) -> Result<()> {
         self.docker
             .post(
@@ -234,7 +234,7 @@ impl<'docker> Container<'docker> {
 
     /// Wait until the container stops
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait)
     pub async fn wait(&self) -> Result<Exit> {
         self.docker
             .post_json(format!("/containers/{}/wait", self.id), Payload::empty())
@@ -245,7 +245,7 @@ impl<'docker> Container<'docker> {
     ///
     /// Use remove instead to use the force/v Opts.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerDelete>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerDelete)
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/containers/{}", self.id)[..])
@@ -255,7 +255,7 @@ impl<'docker> Container<'docker> {
 
     /// Delete the container instance (todo: force/v)
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove)
     pub async fn remove(&self, opts: &RmContainerOpts) -> Result<()> {
         let mut path = vec![format!("/containers/{}", self.id)];
         if let Some(query) = opts.serialize() {
@@ -266,7 +266,7 @@ impl<'docker> Container<'docker> {
 
     /// Execute a command in this container
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Exec>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Exec)
     pub fn exec(
         &'docker self,
         opts: &ExecContainerOpts,
@@ -283,7 +283,7 @@ impl<'docker> Container<'docker> {
     /// ends in `/.`  then this indicates that only the contents of the path directory should be
     /// copied.  A symlink is always resolved to its target.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive)
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         let path_arg = encoded_pair("path", path.to_string_lossy());
 
@@ -296,7 +296,7 @@ impl<'docker> Container<'docker> {
     /// The file will be copied at the given location (see `path`) and will be owned by root
     /// with access mask 644.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive)
     pub async fn copy_file_into<P: AsRef<Path>>(&self, path: P, bytes: &[u8]) -> Result<()> {
         let path = path.as_ref();
 
@@ -321,7 +321,7 @@ impl<'docker> Container<'docker> {
     ///
     /// The tarball will be copied to the container and extracted at the given location (see `path`).
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive)
     pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
         let path_arg = encoded_pair("path", path.to_string_lossy());
 
@@ -336,7 +336,7 @@ impl<'docker> Container<'docker> {
 
     /// Get information about files in a container.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchiveInfo>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchiveInfo)
     pub async fn stat_file<P>(&self, path: P) -> Result<String>
     where
         P: AsRef<Path>,
@@ -379,7 +379,7 @@ impl<'docker> Container<'docker> {
 impl<'docker> Containers<'docker> {
     /// Lists the container instances on the docker host
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerList>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerList)
     pub async fn list(&self, opts: &ContainerListOpts) -> Result<Vec<ContainerInfo>> {
         let mut path = vec!["/containers/json".to_owned()];
         if let Some(query) = opts.serialize() {

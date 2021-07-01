@@ -27,7 +27,7 @@ impl_api_ty!(Image => name: N);
 impl<'docker> Image<'docker> {
     /// Inspects a named image's details
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageInspect>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageInspect)
     pub async fn inspect(&self) -> Result<ImageDetails> {
         self.docker
             .get_json(&format!("/images/{}/json", self.name)[..])
@@ -36,7 +36,7 @@ impl<'docker> Image<'docker> {
 
     /// Lists the history of the images set of changes
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageHistory>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageHistory)
     pub async fn history(&self) -> Result<Vec<History>> {
         self.docker
             .get_json(&format!("/images/{}/history", self.name)[..])
@@ -45,7 +45,7 @@ impl<'docker> Image<'docker> {
 
     /// Deletes an image
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune)
     pub async fn delete(&self) -> Result<Vec<Status>> {
         self.docker
             .delete_json(&format!("/images/{}", self.name)[..])
@@ -54,7 +54,7 @@ impl<'docker> Image<'docker> {
 
     /// Export this image to a tarball
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageGet>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageGet)
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + Unpin + 'docker {
         Box::pin(
             self.docker
@@ -65,7 +65,7 @@ impl<'docker> Image<'docker> {
 
     /// Adds a tag to an image
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageTag>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageTag)
     pub async fn tag(&self, opts: &TagOpts) -> Result<()> {
         let mut path = vec![format!("/images/{}/tag", self.name)];
         if let Some(query) = opts.serialize() {
@@ -77,7 +77,7 @@ impl<'docker> Image<'docker> {
 
     /// Return image digest and platform information by contacting the registry.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/DistributionInspect>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/DistributionInspect)
     pub async fn distribution_inspect(&self) -> Result<DistributionInspectInfo> {
         self.docker
             .post_json(
@@ -91,7 +91,7 @@ impl<'docker> Image<'docker> {
 impl<'docker> Images<'docker> {
     /// Builds a new image build by reading a Dockerfile in a target directory
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageBuild>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageBuild)
     pub fn build(
         &self,
         opts: &BuildOpts,
@@ -129,7 +129,7 @@ impl<'docker> Images<'docker> {
 
     /// Lists the docker images on the current docker host
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageList>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageList)
     pub async fn list(&self, opts: &ImageListOpts) -> Result<Vec<ImageInfo>> {
         let mut path = vec!["/images/json".to_owned()];
         if let Some(query) = opts.serialize() {
@@ -142,7 +142,7 @@ impl<'docker> Images<'docker> {
 
     /// Search for docker images by term
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageSearch>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageSearch)
     pub async fn search(&self, term: &str) -> Result<Vec<SearchResult>> {
         let query = encoded_pair("term", term);
         self.docker
@@ -152,7 +152,7 @@ impl<'docker> Images<'docker> {
 
     /// Pull and create a new docker images from an existing image
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImagePull>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePull)
     pub fn pull(
         &self,
         opts: &PullOpts,
@@ -174,7 +174,7 @@ impl<'docker> Images<'docker> {
     /// exports a collection of named images,
     /// either by name, name:tag, or image id, into a tarball
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageGetAll>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageGetAll)
     pub fn export(&self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         let params = names.iter().map(|n| ("names", *n));
         let query = encoded_pairs(params);
@@ -186,7 +186,7 @@ impl<'docker> Images<'docker> {
     /// imports an image or set of images from a given tarball source
     /// source can be uncompressed on compressed via gzip, bzip2 or xz
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageLoad>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageLoad)
     pub fn import<R>(
         self,
         mut tarball: R,

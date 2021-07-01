@@ -3,7 +3,7 @@
 //! Nodes are instances of the Engine participating in a swarm.
 //! Swarm mode must be enabled for these endpoints to work.
 //!
-//! Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Node>
+//! [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Node)
 
 use crate::{errors::Result, util::url::encoded_pair, Docker};
 
@@ -18,7 +18,7 @@ impl_api_ty!(Node => name: N);
 impl<'docker> Node<'docker> {
     /// Inspects a named node's details.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeInspect>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeInspect)
     pub async fn inspect(&self) -> Result<NodeInfo> {
         self.docker
             .get_json(&format!("/nodes/{}", self.name)[..])
@@ -37,14 +37,14 @@ impl<'docker> Node<'docker> {
 
     /// Delete a node.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete)
     pub async fn delete(&self) -> Result<()> {
         self._delete(false).await.map(|_| ())
     }
 
     /// Forcefully delete a node
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete)
     pub async fn force_delete(&self) -> Result<()> {
         self._delete(true).await.map(|_| ())
     }
@@ -53,7 +53,7 @@ impl<'docker> Node<'docker> {
 impl<'docker> Nodes<'docker> {
     /// Returns information about installed plugins.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeList>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeList)
     pub async fn list(&self, opts: &NodeListOpts) -> Result<Vec<NodeInfo>> {
         let mut path = vec!["/nodes".to_owned()];
         if let Some(query) = opts.serialize() {

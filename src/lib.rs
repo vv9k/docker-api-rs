@@ -17,6 +17,15 @@
 //! # };
 //! ```
 
+/// Latest Docker API version supported by this crate.
+pub static VERSION: &str = "v1.41";
+
+macro_rules! version {
+    () => {
+        "v1.41"
+    };
+}
+
 #[macro_use]
 mod builder;
 mod util;

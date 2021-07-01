@@ -111,20 +111,36 @@ macro_rules! impl_url_opts_builder {
     };
 }
 
+/// Necessary to work around https://github.com/rust-lang/rust/issues/52607.
+macro_rules! calculated_doc {
+    (
+        $(
+            #[doc = $doc:expr]
+            $thing:item
+        )*
+    ) => (
+        $(
+            #[doc = $doc]
+            $thing
+        )*
+    );
+}
+
 macro_rules! impl_api_ty {
     ($($docs:literal)* $name:ident => $name_field:ident : $name_field_tt:tt) => {
         paste::item! {
-            $(
-                #[doc= $docs]
-            )*
+            calculated_doc!{
+            #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n[Api Reference](https://docs.docker.com/engine/api/", version!() ,"/#tag/", stringify!($name), ")")]
             #[derive(Debug)]
             pub struct [< $name >]<'docker> {
                 docker: &'docker Docker,
                 $name_field: String,
             }
+            }
             impl<'docker> [< $name >]<'docker> {
                 // TODO: this is possible on nightly, figure out what to do
-                //#[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), "instance")]
+                calculated_doc!{
+                #[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), " instance.")]
                 pub fn new<$name_field_tt>(docker: &'docker Docker, $name_field: $name_field_tt) -> Self
                 where
                     $name_field_tt: Into<String>,
@@ -134,36 +150,43 @@ macro_rules! impl_api_ty {
                         $name_field: $name_field.into(),
                     }
                 }
+                }
 
-                //#[doc = concat!("A getter for ", $name, " ", $name_field)]
+                calculated_doc!{
+                #[doc = concat!("A getter for ", stringify!($name), " ", stringify!($name_field))]
                 pub fn $name_field(&self) -> &str {
                     &self.$name_field
+                }
                 }
 
 
             }
 
 
-            $(
-                #[doc= $docs]
-            )*
+            calculated_doc!{
+            #[doc = concat!("Interface for Docker ", stringify!($name), "s.", stringify!($name), ">")]
             #[derive(Debug)]
             pub struct [< $name s >]<'docker> {
                 docker: &'docker Docker,
             }
+            }
 
             impl<'docker> [< $name s >]<'docker> {
-                //#[doc = concat!("Exports an interface for interacting with Docker ", stringify!($name), "s.")]
+                calculated_doc!{
+                #[doc = concat!("Exports an interface for interacting with Docker ", stringify!($name), "s.")]
                 pub fn new(docker: &'docker Docker) -> Self {
                     [< $name s >] { docker }
                 }
+                }
 
-                /// Returns a reference to a set of operations available to a specific container instance
+                calculated_doc!{
+                #[doc = concat!("Returns a reference to a set of operations available to a specific ", stringify!($name), ".")]
                 pub fn get<$name_field_tt>(&self, $name_field: $name_field_tt) -> [< $name >]<'docker>
                 where
                     $name_field_tt: Into<String>,
                 {
                     [< $name >]::new(self.docker, $name_field)
+                }
                 }
             }
 

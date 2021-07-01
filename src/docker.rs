@@ -169,28 +169,28 @@ impl Docker {
     /// Returns the version of Docker that is running and various information about the system that
     /// Docker is running on.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemVersion>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemVersion)
     pub async fn version(&self) -> Result<Version> {
         self.get_json("/version").await
     }
 
     /// Returns system information about Docker instance that is running
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemInfo>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemInfo)
     pub async fn info(&self) -> Result<Info> {
         self.get_json("/info").await
     }
 
     /// This is a dummy endpoint you can use to test if the server is accessible.
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemPingHead>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemPingHead)
     pub async fn ping(&self) -> Result<String> {
         self.get("/_ping").await
     }
 
     /// Returns a stream of docker events
     ///
-    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents>
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents)
     pub fn events<'docker>(
         &'docker self,
         opts: &EventsOpts,
