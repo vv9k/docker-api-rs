@@ -152,9 +152,7 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let req = self
-            .build_request(method, endpoint, body, headers, Request::builder())
-            .expect("Failed to build request!");
+        let req = self.build_request(method, endpoint, body, headers, Request::builder())?;
 
         self.send_request(req).await
     }
@@ -360,17 +358,15 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let req = self
-            .build_request(
-                method,
-                endpoint,
-                body,
-                Headers::none(),
-                Request::builder()
-                    .header(header::CONNECTION, "Upgrade")
-                    .header(header::UPGRADE, "tcp"),
-            )
-            .expect("Failed to build request!");
+        let req = self.build_request(
+            method,
+            endpoint,
+            body,
+            Headers::none(),
+            Request::builder()
+                .header(header::CONNECTION, "Upgrade")
+                .header(header::UPGRADE, "tcp"),
+        )?;
 
         let response = self.send_request(req).await?;
 
