@@ -1,6 +1,4 @@
 //! Create and manage images.
-//!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Image>
 
 use std::{collections::HashMap, io::Read};
 

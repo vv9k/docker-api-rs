@@ -1,6 +1,4 @@
 //! Install, create and manage plugins
-//!
-//! [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Plugin)
 
 use crate::{conn::Payload, errors::Result, util::url::encoded_pair, Docker};
 

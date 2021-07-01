@@ -1,6 +1,4 @@
 //! Create and manage containers.
-//!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Container>
 
 use std::{collections::HashMap, hash::Hash, io, iter::Peekable, path::Path, str, time::Duration};
 
@@ -19,7 +17,7 @@ use crate::{
         image::ContainerConfig,
         network::NetworkSettings,
     },
-    conn::{tty, Multiplexer as TtyMultiPlexer, Payload, TtyChunk},
+    conn::{tty, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
     docker::Docker,
     errors::{Error, Result},
     util::url::encoded_pair,
@@ -82,15 +80,15 @@ impl<'docker> Container<'docker> {
             .await
     }
 
-    /// Attaches a `[TtyMultiplexer]` to the container.
+    /// Attaches a [`TtyMultiplexer`](TtyMultiplexer) to the container.
     ///
-    /// The `[TtyMultiplexer]` implements Stream for returning Stdout and Stderr chunks. It also implements `[AsyncWrite]` for writing to Stdin.
+    /// The [`TtyMultiplexer`](TtyMultiplexer) implements Stream for returning Stdout and Stderr chunks. It also implements [`AsyncWrite`](futures_util::io::AsyncWrite) for writing to Stdin.
     ///
-    /// The multiplexer can be split into its read and write halves with the `[split](TtyMultiplexer::split)` method
+    /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerAttach)
-    pub async fn attach(&self) -> Result<TtyMultiPlexer<'docker>> {
-        self.attach_raw().await.map(TtyMultiPlexer::new)
+    pub async fn attach(&self) -> Result<TtyMultiplexer<'docker>> {
+        self.attach_raw().await.map(TtyMultiplexer::new)
     }
 
     /// Returns a set of changes made to the container instance
@@ -270,7 +268,7 @@ impl<'docker> Container<'docker> {
     pub fn exec(
         &'docker self,
         opts: &ExecContainerOpts,
-    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
         Exec::create_and_start(self.docker, &self.id, opts)
     }
 

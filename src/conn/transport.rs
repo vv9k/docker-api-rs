@@ -27,13 +27,16 @@ use std::{
 };
 
 #[derive(Debug, Default, Clone)]
-pub struct Headers(Vec<(&'static str, String)>);
+/// Helper structure used as a container for HTTP headers passed to a request
+pub(crate) struct Headers(Vec<(&'static str, String)>);
 
 impl Headers {
+    /// Shortcut for when one does not want headers in a request
     pub fn none() -> Option<Headers> {
         None
     }
 
+    /// Adds a single key=value header pair
     pub fn add<V>(&mut self, key: &'static str, val: V)
     where
         V: Into<String>,
@@ -41,6 +44,8 @@ impl Headers {
         self.0.push((key, val.into()))
     }
 
+    /// Constructs an instance of Headers with initial pair, usually used when there is only
+    /// a need for one header.
     pub fn single<V>(key: &'static str, val: V) -> Self
     where
         V: Into<String>,
@@ -60,7 +65,8 @@ impl IntoIterator for Headers {
     }
 }
 
-pub enum Payload<B: Into<Body>> {
+/// Types of payload that can be sent
+pub(crate) enum Payload<B: Into<Body>> {
     None,
     Text(B),
     Json(B),
@@ -69,12 +75,14 @@ pub enum Payload<B: Into<Body>> {
 }
 
 impl Payload<Body> {
+    /// Creates an empty payload
     pub fn empty() -> Self {
         Payload::None
     }
 }
 
 impl<B: Into<Body>> Payload<B> {
+    /// Extracts the inner body if there is one and returns it
     pub fn into_inner(self) -> Option<B> {
         match self {
             Self::None => None,
@@ -85,6 +93,7 @@ impl<B: Into<Body>> Payload<B> {
         }
     }
 
+    /// Returns the mime type of this payload
     pub fn mime_type(&self) -> Option<mime::Mime> {
         match &self {
             Self::None => None,
@@ -95,6 +104,7 @@ impl<B: Into<Body>> Payload<B> {
         }
     }
 
+    /// Checks if there is no payload
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }
@@ -132,8 +142,8 @@ impl Transport {
             Self::Unix { ref path, .. } => path.as_str(),
         }
     }
-    /// Make a request and return the whole response in a `String`
-    pub async fn request<B>(
+
+    pub(crate) async fn request<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
@@ -150,7 +160,7 @@ impl Transport {
         Ok(string)
     }
 
-    pub fn stream_chunks<'transport, B>(
+    pub(crate) fn stream_chunks<'transport, B>(
         &'transport self,
         method: Method,
         endpoint: impl AsRef<str> + 'transport,
@@ -164,7 +174,7 @@ impl Transport {
             .try_flatten_stream()
     }
 
-    pub fn stream_json_chunks<'transport, B>(
+    pub(crate) fn stream_json_chunks<'transport, B>(
         &'transport self,
         method: Method,
         endpoint: impl AsRef<str> + 'transport,
@@ -178,7 +188,7 @@ impl Transport {
             .try_flatten_stream()
     }
 
-    pub async fn stream_upgrade<B>(
+    pub(crate) async fn stream_upgrade<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,

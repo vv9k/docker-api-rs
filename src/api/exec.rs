@@ -1,6 +1,4 @@
 //! Run new commands inside running containers.
-//!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Exec>
 
 use std::collections::HashMap;
 

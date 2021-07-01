@@ -45,7 +45,6 @@ pub use crate::{
         service::{self, Service, Services},
         volume::{self, Volume, Volumes},
     },
-    conn::Transport,
     docker::Docker,
     errors::{Error, Result},
 };

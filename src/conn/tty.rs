@@ -94,7 +94,7 @@ where
 type TtyReader<'a> = Pin<Box<dyn Stream<Item = Result<TtyChunk>> + Send + 'a>>;
 type TtyWriter<'a> = Pin<Box<dyn AsyncWrite + Send + 'a>>;
 
-/// TTY multiplexer returned by the `attach` method.
+/// TTY multiplexer returned by the [`attach`](crate::Container::attach) method.
 ///
 /// This object can emit a stream of `TtyChunk`s and also implements `AsyncWrite` for streaming bytes to Stdin.
 #[pin_project]

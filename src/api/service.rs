@@ -1,6 +1,4 @@
 //! Manage and inspect services within a swarm.
-//!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
 
 use crate::{
     api::{container::LogsOpts, image::RegistryAuth},

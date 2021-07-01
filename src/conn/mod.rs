@@ -1,7 +1,7 @@
 //! Connection related items
 
-pub mod transport;
-pub mod tty;
+pub(crate) mod transport;
+pub(crate) mod tty;
 
 pub use transport::*;
 pub use tty::*;

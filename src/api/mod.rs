@@ -1,4 +1,16 @@
 //! All api endpoints like containers, images, networks...
+//!
+//! You can either use the items from each module or import directly from `api`. For example:
+//! ```no_run
+//! import docker_api::api::{Port, PortDescription};
+//!
+//! // or
+//!
+//! import docker_api::api::{
+//!     container::Port,
+//!     network::PortDescription,
+//! }
+//! ```
 
 pub mod container;
 pub mod event;

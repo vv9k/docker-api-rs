@@ -2,8 +2,6 @@
 //!
 //! Nodes are instances of the Engine participating in a swarm.
 //! Swarm mode must be enabled for these endpoints to work.
-//!
-//! [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Node)
 
 use crate::{errors::Result, util::url::encoded_pair, Docker};
 

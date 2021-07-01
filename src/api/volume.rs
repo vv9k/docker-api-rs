@@ -1,6 +1,4 @@
 //! Create and manage persistent storage that can be attached to containers.
-//!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Volume>
 
 use std::{collections::HashMap, hash::Hash};
 
