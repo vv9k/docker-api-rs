@@ -1,3 +1,5 @@
+use crate::api::ObjectVersion;
+
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "chrono")]
@@ -23,12 +25,6 @@ pub struct ServiceInfo {
     pub update_status: Option<UpdateStatus>,
     pub service_status: Option<ServiceStatus>,
     pub job_status: Option<JobStatus>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ObjectVersion {
-    pub index: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -5,11 +5,7 @@ use std::collections::HashMap;
 use hyper::Body;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    conn::Payload,
-    errors::{Error, Result},
-    Docker,
-};
+use crate::{conn::Payload, Docker, Result};
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};

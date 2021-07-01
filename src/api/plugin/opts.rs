@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use serde::Serialize;
-
 impl_url_opts_builder!(PluginList);
 
 pub enum PluginFilter {

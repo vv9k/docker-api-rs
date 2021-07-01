@@ -1,3 +1,5 @@
+use crate::api::{ObjectVersion, TlsInfo};
+
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "chrono")]
@@ -52,12 +54,6 @@ impl AsRef<str> for Role {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct ObjectVersion {
-    index: u64,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
 pub struct NodeInfo {
     #[serde(rename = "ID")]
     pub id: String,
@@ -105,14 +101,6 @@ pub struct NodeDescription {
     pub engine: EngineDescription,
     #[serde(rename = "TLSInfo")]
     pub tls_info: TlsInfo,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TlsInfo {
-    pub trust_root: String,
-    pub cert_issuer_subject: String,
-    pub cert_issuer_public_key: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

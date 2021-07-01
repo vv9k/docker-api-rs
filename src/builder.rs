@@ -7,7 +7,7 @@ macro_rules! impl_vec_field {
             pub fn [< $name  >]<[< $ty >], S>(&mut self, $name: $ty)-> &mut Self
             where
                 $ty: IntoIterator<Item = S>,
-                S: AsRef<str> + Serialize
+                S: AsRef<str> + serde::Serialize
             {
                 self.params.insert($docker_name, serde_json::json!($name.into_iter().collect::<Vec<_>>()));
                 self
@@ -39,7 +39,7 @@ macro_rules! impl_str_field {
             )*
             pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
             where
-                $ty: AsRef<str> + Serialize,
+                $ty: AsRef<str> + serde::Serialize,
             {
                 self.params.insert($docker_name, serde_json::json!($name.as_ref()));
                 self
@@ -56,7 +56,7 @@ macro_rules! impl_url_str_field {
             )*
             pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
             where
-                $ty: Into<String> + Serialize,
+                $ty: Into<String> + serde::Serialize,
             {
                 self.params.insert($docker_name, $name.into());
                 self
@@ -103,10 +103,10 @@ macro_rules! impl_map_field {
             pub fn [< $name  >]<[< $ty >], K, V>(&mut self, $name: $ty)-> &mut Self
             where
                 $ty: IntoIterator<Item = (K, V)>,
-                K: AsRef<str> + Serialize + Eq + std::hash::Hash,
-                V: AsRef<str> + Serialize
+                K: AsRef<str> + serde::Serialize + Eq + std::hash::Hash,
+                V: AsRef<str> + serde::Serialize
             {
-                self.params.insert($docker_name, serde_json::json!($name.into_iter().collect::<HashMap<_, _>>()));
+                self.params.insert($docker_name, serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()));
                 self
             }
         }
@@ -116,9 +116,9 @@ macro_rules! impl_map_field {
 macro_rules! impl_json_opts_builder {
     ($($docs:literal)* $name:ident) => {
         paste::item! {
-            #[derive(Serialize, Debug)]
+            #[derive(serde::Serialize, Debug)]
             pub struct [< $name Opts >] {
-                params: HashMap<&'static str, serde_json::Value>,
+                params: std::collections::HashMap<&'static str, serde_json::Value>,
             }
 
             impl [< $name Opts >] {
@@ -126,14 +126,14 @@ macro_rules! impl_json_opts_builder {
                     [< $name OptsBuilder >]::default()
                 }
 
-                pub fn serialize(&self) -> Result<String> {
-                    serde_json::to_string(&self.params).map_err(Error::from)
+                pub fn serialize(&self) -> crate::Result<String> {
+                    serde_json::to_string(&self.params).map_err(crate::Error::from)
                 }
             }
 
             #[derive(Default, Debug)]
             pub struct [< $name OptsBuilder >] {
-                params: HashMap<&'static str, serde_json::Value>,
+                params: std::collections::HashMap<&'static str, serde_json::Value>,
             }
 
             impl [< $name OptsBuilder >] {
@@ -156,9 +156,9 @@ macro_rules! impl_url_opts_builder {
             $(
                 #[doc= $docs]
             )*
-            #[derive(Serialize, Debug $(,$derives)*)]
+            #[derive(serde::Serialize, Debug $(,$derives)*)]
             pub struct [< $name Opts >] {
-                params: HashMap<&'static str, String>
+                params: std::collections::HashMap<&'static str, String>
             }
 
             impl [< $name  Opts >] {
@@ -181,7 +181,7 @@ macro_rules! impl_url_opts_builder {
 
             #[derive(Default, Debug)]
             pub struct [< $name  OptsBuilder >] {
-                params: HashMap<&'static str, String>
+                params: std::collections::HashMap<&'static str, String>
             }
 
             impl [< $name  OptsBuilder >] {

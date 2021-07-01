@@ -1,15 +1,12 @@
 //! Run new commands inside running containers.
 
-use std::collections::HashMap;
-
 use futures_util::{stream::Stream, TryFutureExt};
 use hyper::Body;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     conn::{tty, Headers, Payload},
-    errors::{Error, Result},
-    Docker,
+    Docker, Result,
 };
 
 /// Interface for docker exec instance

@@ -43,6 +43,7 @@ pub use crate::{
         network::{self, Network, Networks},
         plugin::{self, Plugin, Plugins},
         service::{self, Service, Services},
+        swarm::{self, Swarm},
         volume::{self, Volume, Volumes},
     },
     docker::Docker,
