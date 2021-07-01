@@ -118,11 +118,14 @@ macro_rules! impl_json_opts_builder {
 
 macro_rules! impl_url_opts_builder {
     ($($docs:literal)* $name:ident) => {
+        impl_url_opts_builder!{derives = | $($docs)* $name}
+    };
+    (derives = $($derives:ident),* | $($docs:literal)* $name:ident) => {
         paste::item! {
             $(
                 #[doc= $docs]
             )*
-            #[derive(Serialize, Debug)]
+            #[derive(Serialize, Debug $(,$derives)*)]
             pub struct [< $name Opts >] {
                 params: HashMap<&'static str, String>
             }

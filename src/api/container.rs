@@ -411,7 +411,7 @@ pub enum ContainerFilter {
     Label(String, String),
 }
 
-impl_url_opts_builder!(ContainerList);
+impl_url_opts_builder!(derives = Default | ContainerList);
 
 impl ContainerListOptsBuilder {
     pub fn filter<F>(&mut self, filters: F) -> &mut Self

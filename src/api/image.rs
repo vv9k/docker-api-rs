@@ -534,7 +534,7 @@ pub enum ImageFilter {
     Label(String, String),
 }
 
-impl_url_opts_builder!(ImageList);
+impl_url_opts_builder!(derives = Default | ImageList);
 
 impl ImageListOptsBuilder {
     pub fn digests(&mut self, d: bool) -> &mut Self {
