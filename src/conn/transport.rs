@@ -142,8 +142,24 @@ impl Transport {
             Self::Unix { ref path, .. } => path.as_str(),
         }
     }
-
     pub(crate) async fn request<B>(
+        &self,
+        method: Method,
+        endpoint: impl AsRef<str>,
+        body: Payload<B>,
+        headers: Option<Headers>,
+    ) -> Result<Response<Body>>
+    where
+        B: Into<Body>,
+    {
+        let req = self
+            .build_request(method, endpoint, body, headers, Request::builder())
+            .expect("Failed to build request!");
+
+        self.send_request(req).await
+    }
+
+    pub(crate) async fn request_string<B>(
         &self,
         method: Method,
         endpoint: impl AsRef<str>,
@@ -155,9 +171,7 @@ impl Transport {
     {
         let body = self.get_body(method, endpoint, body, headers).await?;
         let bytes = hyper::body::to_bytes(body).await?;
-        let string = String::from_utf8(bytes.to_vec())?;
-
-        Ok(string)
+        String::from_utf8(bytes.to_vec()).map_err(Error::from)
     }
 
     pub(crate) fn stream_chunks<'transport, B>(
@@ -202,23 +216,6 @@ impl Transport {
         Ok(Compat { tokio_multiplexer })
     }
 
-    pub(crate) async fn get_response<B>(
-        &self,
-        method: Method,
-        endpoint: impl AsRef<str>,
-        body: Payload<B>,
-        headers: Option<Headers>,
-    ) -> Result<Response<Body>>
-    where
-        B: Into<Body>,
-    {
-        let req = self
-            .build_request(method, endpoint, body, headers, Request::builder())
-            .expect("Failed to build request!");
-
-        self.send_request(req).await
-    }
-
     async fn get_body<B>(
         &self,
         method: Method,
@@ -229,7 +226,7 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let response = self.get_response(method, endpoint, body, headers).await?;
+        let response = self.request(method, endpoint, body, headers).await?;
 
         let status = response.status();
 

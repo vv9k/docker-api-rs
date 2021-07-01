@@ -2,14 +2,14 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
 
-use std::{collections::HashMap, io};
+use std::{collections::HashMap, convert::TryFrom, io};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
     stream::Stream,
     TryStreamExt,
 };
-use hyper::{body::Bytes, Body, Client, Method, Response};
+use hyper::{body::Bytes, header::HeaderMap, Body, Client, Method, Response};
 use log::trace;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -184,8 +184,10 @@ impl Docker {
     /// This is a dummy endpoint you can use to test if the server is accessible.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemPingHead)
-    pub async fn ping(&self) -> Result<String> {
-        self.get("/_ping").await
+    pub async fn ping(&self) -> Result<PingInfo> {
+        self.get("/_ping")
+            .await
+            .and_then(|resp| PingInfo::try_from(resp.headers()))
     }
 
     /// Returns a stream of Docker events
@@ -229,7 +231,7 @@ impl Docker {
     //
     //####################################################################################################
 
-    pub(crate) async fn get(&self, endpoint: &str) -> Result<String> {
+    pub(crate) async fn get(&self, endpoint: &str) -> Result<Response<Body>> {
         self.transport
             .request(Method::GET, endpoint, Payload::empty(), Headers::none())
             .await
@@ -238,7 +240,7 @@ impl Docker {
     pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request(Method::GET, endpoint, Payload::empty(), Headers::none())
+            .request_string(Method::GET, endpoint, Payload::empty(), Headers::none())
             .await?;
         trace!("{}", raw_string);
 
@@ -250,7 +252,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request(Method::POST, endpoint, body, Headers::none())
+            .request_string(Method::POST, endpoint, body, Headers::none())
             .await
     }
 
@@ -259,7 +261,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request(Method::PUT, endpoint, body, Headers::none())
+            .request_string(Method::PUT, endpoint, body, Headers::none())
             .await
     }
 
@@ -274,7 +276,7 @@ impl Docker {
     {
         let raw_string = self
             .transport
-            .request(Method::POST, endpoint, body, Headers::none())
+            .request_string(Method::POST, endpoint, body, Headers::none())
             .await?;
         trace!("{}", raw_string);
 
@@ -293,7 +295,7 @@ impl Docker {
     {
         let raw_string = self
             .transport
-            .request(Method::POST, endpoint, body, headers)
+            .request_string(Method::POST, endpoint, body, headers)
             .await?;
         trace!("{}", raw_string);
 
@@ -302,14 +304,14 @@ impl Docker {
 
     pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.transport
-            .request(Method::DELETE, endpoint, Payload::empty(), Headers::none())
+            .request_string(Method::DELETE, endpoint, Payload::empty(), Headers::none())
             .await
     }
 
     pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request(Method::DELETE, endpoint, Payload::empty(), Headers::none())
+            .request_string(Method::DELETE, endpoint, Payload::empty(), Headers::none())
             .await?;
         trace!("{}", raw_string);
 
@@ -318,7 +320,7 @@ impl Docker {
 
     pub(crate) async fn head_response(&self, endpoint: &str) -> Result<Response<Body>> {
         self.transport
-            .get_response(Method::HEAD, endpoint, Payload::empty(), Headers::none())
+            .request(Method::HEAD, endpoint, Payload::empty(), Headers::none())
             .await
     }
 
@@ -636,5 +638,56 @@ mod tests {
             Error::UnsupportedScheme(scheme) if scheme.is_empty() => {}
             e => panic!(r#"Expected Error::UnsupportedScheme(""), got {}"#, e),
         }
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct PingInfo {
+    pub api_version: String,
+    pub builder_version: Option<String>,
+    pub docker_experimental: bool,
+    pub cache_control: String,
+    pub pragma: String,
+    pub os_type: String,
+    pub server: String,
+    pub date: String,
+}
+
+impl TryFrom<&HeaderMap> for PingInfo {
+    type Error = Error;
+
+    fn try_from(value: &HeaderMap) -> Result<Self> {
+        macro_rules! extract_str {
+            ($id:literal) => {{
+                if let Some(val) = value.get($id) {
+                    val.to_str().map(ToString::to_string).map_err(|e| {
+                        Error::InvalidResponse(format!(
+                            "failed to convert header to string - {}",
+                            e
+                        ))
+                    })?
+                } else {
+                    return Err(Error::InvalidResponse(format!(
+                        "expected `{}` field in headers",
+                        $id
+                    )));
+                }
+            }};
+        }
+
+        Ok(PingInfo {
+            api_version: extract_str!("api-version"),
+            builder_version: value
+                .get("builder-version")
+                .and_then(|v| v.to_str().map(ToString::to_string).ok()),
+            docker_experimental: extract_str!("docker-experimental").parse().map_err(|e| {
+                Error::InvalidResponse(format!("expected header value to be bool - {}", e))
+            })?,
+            cache_control: extract_str!("cache-control"),
+            pragma: extract_str!("pragma"),
+            os_type: extract_str!("ostype"),
+            date: extract_str!("date"),
+            server: extract_str!("server"),
+        })
     }
 }
