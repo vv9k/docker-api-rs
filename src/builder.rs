@@ -47,6 +47,22 @@ macro_rules! impl_str_field {
         }
     };
 }
+
+macro_rules! impl_str_enum_field {
+    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+        paste::item! {
+            $(
+                #[doc= $docs]
+            )*
+            pub fn [< $name >](&mut self, $name: $ty)-> &mut Self
+            {
+                self.params.insert($docker_name, serde_json::json!($name.as_ref()));
+                self
+            }
+        }
+    };
+}
+
 macro_rules! impl_map_field {
     ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {

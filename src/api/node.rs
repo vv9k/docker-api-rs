@@ -3,7 +3,12 @@
 //! Nodes are instances of the Engine participating in a swarm.
 //! Swarm mode must be enabled for these endpoints to work.
 
-use crate::{errors::Result, util::url::encoded_pair, Docker};
+use crate::{
+    conn::Payload,
+    errors::{Error, Result},
+    util::url::encoded_pair,
+    Docker,
+};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -21,6 +26,15 @@ impl<'docker> Node<'docker> {
         self.docker
             .get_json(&format!("/nodes/{}", self.name)[..])
             .await
+    }
+
+    pub async fn update(&self, opts: &NodeUpdateOpts) -> Result<()> {
+        let query = encoded_pair("version", opts.version.clone());
+        let path = format!("/nodes/{}/update?{}", self.name, query);
+        self.docker
+            .post(&path, Payload::Json(opts.serialize()?))
+            .await
+            .map(|_| ())
     }
 
     async fn _delete(&self, force: bool) -> Result<()> {
@@ -61,6 +75,47 @@ impl<'docker> Nodes<'docker> {
     }
 }
 
+#[derive(Serialize, Debug)]
+pub struct NodeUpdateOpts {
+    version: String,
+    params: HashMap<&'static str, serde_json::Value>,
+}
+
+impl NodeUpdateOpts {
+    /// return a new instance of a builder for Opts
+    pub fn builder<V: Into<String>>(version: V) -> NodeUpdateOptsBuilder {
+        NodeUpdateOptsBuilder::new(version)
+    }
+
+    impl_map_field!(labels: L => "Labels");
+
+    impl_str_field!(name: N => "Name");
+
+    impl_str_enum_field!(role: Role => "Role");
+
+    impl_str_enum_field!(availability: Availability => "Availability");
+
+    pub fn serialize(&self) -> Result<String> {
+        serde_json::to_string(&self.params).map_err(Error::from)
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct NodeUpdateOptsBuilder {
+    version: String,
+    params: HashMap<&'static str, serde_json::Value>,
+}
+
+impl NodeUpdateOptsBuilder {
+    pub fn new<V: Into<String>>(version: V) -> Self {
+        Self {
+            version: version.into(),
+            params: HashMap::new(),
+        }
+    }
+}
+
+#[derive(Serialize, Debug)]
 pub enum Membership {
     Accepted,
     Pending,
@@ -75,6 +130,24 @@ impl AsRef<str> for Membership {
     }
 }
 
+#[derive(Serialize, Debug)]
+pub enum Availability {
+    Active,
+    Pause,
+    Drain,
+}
+
+impl AsRef<str> for Availability {
+    fn as_ref(&self) -> &str {
+        match &self {
+            Availability::Active => "active",
+            Availability::Pause => "pause",
+            Availability::Drain => "drain",
+        }
+    }
+}
+
+#[derive(Serialize, Debug)]
 pub enum Role {
     Manager,
     Worker,
