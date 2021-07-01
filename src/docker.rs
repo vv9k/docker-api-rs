@@ -2,7 +2,7 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
 
-use std::io;
+use std::{collections::HashMap, io};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
@@ -15,12 +15,12 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::{
     api::{
-        container::Containers,
+        container::{Containers, Mount, Port},
         event::{Event, EventsOpts},
         image::Images,
-        network::Networks,
+        network::{NetworkEntry, Networks},
         service::Services,
-        volume::Volumes,
+        volume::{VolumeInfo, Volumes},
     },
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
@@ -188,7 +188,7 @@ impl Docker {
         self.get("/_ping").await
     }
 
-    /// Returns a stream of docker events
+    /// Returns a stream of Docker events
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents)
     pub fn events<'docker>(
@@ -214,6 +214,13 @@ impl Docker {
                     serde_json::from_str(&s).map_err(Error::SerdeJsonError)
                 }),
         )
+    }
+
+    /// Returns data usage of this Docker instance
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemDataUsage)
+    pub async fn data_usage(&self) -> Result<DataUsage> {
+        self.get_json("/system/df").await
     }
 
     //####################################################################################################
@@ -413,26 +420,177 @@ pub struct Version {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Info {
-    pub containers: u64,
-    pub images: u64,
-    pub driver: String,
-    pub docker_root_dir: String,
-    pub driver_status: Vec<Vec<String>>,
     #[serde(rename = "ID")]
     pub id: String,
-    pub kernel_version: String,
-    // pub Labels: Option<???>,
-    pub mem_total: u64,
+    pub containers: usize,
+    pub containers_running: usize,
+    pub containers_paused: usize,
+    pub containers_stopped: usize,
+    pub images: usize,
+    pub driver: String,
+    pub driver_status: Vec<Vec<String>>,
+    pub docker_root_dir: String,
+    // TODO:
+    //pub plugins: PluginsInfo,
     pub memory_limit: bool,
+    pub swap_limit: bool,
+    pub kernel_memory: bool,
+    pub cpu_cfs_period: bool,
+    pub cpu_cfs_quota: bool,
+    #[serde(rename = "CPUShares")]
+    pub cpu_shares: bool,
+    #[serde(rename = "CPUSet")]
+    pub cpu_set: bool,
+    pub pids_limit: bool,
+    pub oom_kill_disable: bool,
+    #[serde(rename = "IPv4Forwarding")]
+    pub ipv4_forwarding: bool,
+    pub bridge_nf_iptables: bool,
+    pub bridge_nf_ip6tables: bool,
+    pub debug: bool,
+    pub n_fd: usize,
+    pub n_goroutines: usize,
+    pub system_time: String,
+    pub logging_driver: String,
+    pub cgroup_driver: String,
+    pub cgroup_version: String,
+    pub n_events_listener: u64,
+    pub kernel_version: String,
+    pub operating_system: String,
+    #[serde(rename = "OSVersion")]
+    pub os_version: String,
+    #[serde(rename = "OSType")]
+    pub os_type: String,
+    pub architecture: String,
     #[serde(rename = "NCPU")]
     pub n_cpu: u64,
-    pub n_events_listener: u64,
-    pub n_goroutines: u64,
+    pub mem_total: u64,
+    pub index_server_address: String,
+    // TODO:
+    //pub registry_config: Option<RegistryServiceConfig>,
+    // TODO:
+    //pub generic_resources: Vec<GenericResource>,
+    pub http_proxy: String,
+    pub https_proxy: String,
+    pub no_proxy: String,
     pub name: String,
-    pub operating_system: String,
-    // pub RegistryConfig:???
-    pub swap_limit: bool,
-    pub system_time: Option<String>,
+    pub labels: Vec<String>,
+    pub experimental_build: bool,
+    pub server_version: String,
+    pub cluster_store: Option<String>,
+    pub cluster_advertise: Option<String>,
+    // TODO:
+    //pub runtimes: Runtimes,
+    pub default_runtime: String,
+    // TODO:
+    //pub swarm: SwarmInfo,
+    pub live_restore_enabled: bool,
+    // TODO: could be an enum
+    pub isolation: String,
+    pub init_binary: String,
+    pub containerd_commit: Commit,
+    pub runc_commit: Commit,
+    pub init_commit: Commit,
+    pub security_options: Vec<String>,
+    pub product_license: Option<String>,
+    pub default_address_pools: Option<Vec<AddressPool>>,
+    pub warnings: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct AddressPool {
+    base: String,
+    size: usize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct Commit {
+    #[serde(rename = "ID")]
+    pub id: String,
+    pub expected: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct DataUsage {
+    pub layer_size: Option<i64>,
+    pub images: Vec<ImageSummary>,
+    pub containers: Vec<ContainerSummary>,
+    pub volumes: Vec<VolumeInfo>,
+    pub build_cache: Option<Vec<BuildCache>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ImageSummary {
+    pub id: String,
+    pub parent_id: String,
+    pub repo_tags: Vec<String>,
+    pub repo_digests: Option<Vec<String>>,
+    pub created: usize,
+    pub size: usize,
+    pub shared_size: usize,
+    pub virtual_size: usize,
+    pub labels: Option<HashMap<String, String>>,
+    pub containers: usize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct SummaryHostConfig {
+    network_mode: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct SummaryNetworkSettings {
+    pub networks: HashMap<String, NetworkEntry>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ContainerSummary {
+    pub id: String,
+    pub names: Vec<String>,
+    pub image: String,
+    #[serde(rename = "ImageID")]
+    pub image_id: String,
+    pub command: String,
+    pub created: i64,
+    pub ports: Vec<Port>,
+    pub size_rw: Option<i64>,
+    pub size_root_fs: Option<i64>,
+    pub labels: Option<HashMap<String, String>>,
+    pub state: String,
+    pub status: String,
+    pub host_config: SummaryHostConfig,
+    pub network_settings: SummaryNetworkSettings,
+    pub mounts: Vec<Mount>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct BuildCache {
+    #[serde(rename = "ID")]
+    pub id: String,
+    pub parent: String,
+    #[serde(rename = "Type")]
+    pub type_: String,
+    pub description: String,
+    pub in_use: bool,
+    pub shared: bool,
+    pub size: usize,
+    #[cfg(feature = "chrono")]
+    pub created_at: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub created_at: String,
+    #[cfg(feature = "chrono")]
+    pub last_used_at: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub last_used_at: String,
+    pub usage_count: usize,
 }
 
 #[cfg(test)]
