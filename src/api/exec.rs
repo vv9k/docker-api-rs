@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use futures_util::{stream::Stream, TryFutureExt};
 use hyper::Body;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 
 use crate::{
     conn::{tty, Headers, Payload},
@@ -176,189 +175,41 @@ impl<'docker> Exec<'docker> {
     }
 }
 
-#[derive(Serialize, Debug)]
-pub struct ExecContainerOpts {
-    params: HashMap<&'static str, Vec<String>>,
-    params_str: HashMap<&'static str, String>,
-    params_bool: HashMap<&'static str, bool>,
-}
-
-impl ExecContainerOpts {
-    /// return a new instance of a builder for Opts
-    pub fn builder() -> ExecContainerOptsBuilder {
-        ExecContainerOptsBuilder::default()
-    }
-
-    pub fn serialize(&self) -> Result<String> {
-        let mut body = serde_json::Map::new();
-
-        for (k, v) in &self.params {
-            body.insert(
-                (*k).to_owned(),
-                serde_json::to_value(v).map_err(Error::SerdeJsonError)?,
-            );
-        }
-
-        for (k, v) in &self.params_str {
-            body.insert(
-                (*k).to_owned(),
-                serde_json::to_value(v).map_err(Error::SerdeJsonError)?,
-            );
-        }
-
-        for (k, v) in &self.params_bool {
-            body.insert(
-                (*k).to_owned(),
-                serde_json::to_value(v).map_err(Error::SerdeJsonError)?,
-            );
-        }
-
-        serde_json::to_string(&body).map_err(Error::from)
-    }
-}
-
-#[derive(Default)]
-pub struct ExecContainerOptsBuilder {
-    params: HashMap<&'static str, Vec<String>>,
-    params_str: HashMap<&'static str, String>,
-    params_bool: HashMap<&'static str, bool>,
-}
+impl_json_opts_builder!(ExecContainer);
 
 impl ExecContainerOptsBuilder {
-    /// Command to run, as an array of strings
-    pub fn cmd<I, S>(&mut self, cmds: I) -> &mut Self
-    where
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
-    {
-        cmds.into_iter().for_each(|cmd| {
-            self.params
-                .entry("Cmd")
-                .or_insert_with(Vec::new)
-                .push(cmd.into());
-        });
-        self
-    }
+    impl_vec_field!( "Command to run, as an array of strings" cmd: C => "Cmd");
 
-    /// A list of environment variables in the form "VAR=value"
-    pub fn env<I, S>(&mut self, envs: I) -> &mut Self
-    where
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
-    {
-        envs.into_iter().for_each(|env| {
-            self.params
-                .entry("Env")
-                .or_insert_with(Vec::new)
-                .push(env.into());
-        });
+    impl_vec_field!(
+    "A list of environment variables in the form 'VAR=value'" env: E => "Env");
 
-        self
-    }
+    impl_field!(
+    "Attach to stdout of the exec command" attach_stdout: bool => "AttachStdout");
 
-    /// Attach to stdout of the exec command
-    pub fn attach_stdout(&mut self, stdout: bool) -> &mut Self {
-        self.params_bool.insert("AttachStdout", stdout);
-        self
-    }
+    impl_field!(
+    "Attach to stderr of the exec command" attach_stderr: bool => "AttachStderr");
 
-    /// Attach to stderr of the exec command
-    pub fn attach_stderr(&mut self, stderr: bool) -> &mut Self {
-        self.params_bool.insert("AttachStderr", stderr);
-        self
-    }
+    impl_str_field!(
+    "Override the key sequence for detaching a container. Format is a single"
+    "character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _."
+    detach_keys: F => "DetachKeys");
 
-    /// Override the key sequence for detaching a container. Format is a single
-    /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
-    pub fn detach_keys<S>(&mut self, format: S) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.params_str.insert("DetachKeys", format.into());
-        self
-    }
+    impl_field!("Allocate a pseudo-TTY" tty: bool => "Tty");
 
-    /// Allocate a pseudo-TTY
-    pub fn tty(&mut self, allocate: bool) -> &mut Self {
-        self.params_bool.insert("Tty", allocate);
-        self
-    }
+    impl_field!(
+    "Runs the exec process with extended privileges. (Default: `false`)"
+    privileged: bool => "Privileged");
 
-    /// Runs the exec process with extended privileges. (Default: `false`)
-    pub fn privileged(&mut self, privileged: bool) -> &mut Self {
-        self.params_bool.insert("Privileged", privileged);
-        self
-    }
+    impl_str_field!(user: S => "User");
 
-    pub fn user<S>(&mut self, user: S) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.params_str.insert("User", user.into());
-        self
-    }
-
-    pub fn working_dir<S>(&mut self, working_dir: S) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.params_str.insert("WorkingDir", working_dir.into());
-        self
-    }
-
-    pub fn build(&self) -> ExecContainerOpts {
-        ExecContainerOpts {
-            params: self.params.clone(),
-            params_str: self.params_str.clone(),
-            params_bool: self.params_bool.clone(),
-        }
-    }
+    impl_str_field!(working_dir: S => "WorkingDir");
 }
 
-/// Interface for creating volumes
-#[derive(Serialize, Debug)]
-pub struct ExecResizeOpts {
-    params: HashMap<&'static str, Value>,
-}
-
-impl ExecResizeOpts {
-    /// serialize Opts as a string. returns None if no Opts are defined
-    pub fn serialize(&self) -> Result<String> {
-        serde_json::to_string(&self.params).map_err(Error::from)
-    }
-
-    /// return a new instance of a builder for Opts
-    pub fn builder() -> ExecResizeOptsBuilder {
-        ExecResizeOptsBuilder::new()
-    }
-}
-
-#[derive(Default)]
-pub struct ExecResizeOptsBuilder {
-    params: HashMap<&'static str, Value>,
-}
+impl_json_opts_builder!(ExecResize);
 
 impl ExecResizeOptsBuilder {
-    pub(crate) fn new() -> Self {
-        let params = HashMap::new();
-        ExecResizeOptsBuilder { params }
-    }
-
-    pub fn height(&mut self, height: u64) -> &mut Self {
-        self.params.insert("Name", json!(height));
-        self
-    }
-
-    pub fn width(&mut self, width: u64) -> &mut Self {
-        self.params.insert("Name", json!(width));
-        self
-    }
-
-    pub fn build(&self) -> ExecResizeOpts {
-        ExecResizeOpts {
-            params: self.params.clone(),
-        }
-    }
+    impl_field!(height: u64 => "Height");
+    impl_field!(width: u64 => "Width");
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

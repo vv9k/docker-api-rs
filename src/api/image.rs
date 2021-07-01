@@ -328,7 +328,7 @@ impl TagOptsBuilder {
 #[derive(Default, Debug)]
 pub struct PullOpts {
     auth: Option<RegistryAuth>,
-    params: HashMap<&'static str, String>,
+    params: HashMap<&'static str, serde_json::Value>,
 }
 
 impl PullOpts {
@@ -342,7 +342,11 @@ impl PullOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(encoded_pairs(&self.params))
+            Some(encoded_pairs(
+                self.params
+                    .iter()
+                    .map(|(k, v)| (k, v.as_str().unwrap_or_default())),
+            ))
         }
     }
 
@@ -353,62 +357,41 @@ impl PullOpts {
 
 pub struct PullOptsBuilder {
     auth: Option<RegistryAuth>,
-    params: HashMap<&'static str, String>,
+    params: HashMap<&'static str, serde_json::Value>,
 }
 
 impl Default for PullOptsBuilder {
     fn default() -> Self {
         let mut params = HashMap::new();
-        params.insert("tag", "latest".to_string());
+        params.insert("tag", serde_json::Value::String("latest".into()));
 
         PullOptsBuilder { auth: None, params }
     }
 }
 
 impl PullOptsBuilder {
-    ///  Name of the image to pull. The name may include a tag or digest.
-    /// This parameter may only be used when pulling an image.
-    /// If an untagged value is provided and no `tag` is provided, _all_
-    /// tags will be pulled
-    /// The pull is cancelled if the HTTP connection is closed.
-    pub fn image<I>(&mut self, img: I) -> &mut Self
-    where
-        I: Into<String>,
-    {
-        self.params.insert("fromImage", img.into());
-        self
-    }
+    impl_str_field!(
+    " Name of the image to pull. The name may include a tag or digest."
+    "This parameter may only be used when pulling an image."
+    "If an untagged value is provided and no `tag` is provided, _all_"
+    "tags will be pulled"
+    "The pull is cancelled if the HTTP connection is closed."
+    image: I => "fromImage");
 
-    pub fn src<S>(&mut self, s: S) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.params.insert("fromSrc", s.into());
-        self
-    }
+    impl_str_field!(src: S => "fromSrc");
 
-    /// Repository name given to an image when it is imported. The repo may include a tag.
-    /// This parameter may only be used when importing an image.
-    ///
-    /// By default a `latest` tag is added when calling
-    /// [PullOptsBuilder::default](PullOptsBuilder::default].
-    pub fn repo<R>(&mut self, r: R) -> &mut Self
-    where
-        R: Into<String>,
-    {
-        self.params.insert("repo", r.into());
-        self
-    }
+    impl_str_field!(
+    "Repository name given to an image when it is imported. The repo may include a tag."
+    "This parameter may only be used when importing an image."
+    ""
+    "By default a `latest` tag is added when calling"
+    "[PullOptsBuilder::default](PullOptsBuilder::default]."
+    repo: S => "repo");
 
-    /// Tag or digest. If empty when pulling an image,
-    /// this causes all tags for the given image to be pulled.
-    pub fn tag<T>(&mut self, t: T) -> &mut Self
-    where
-        T: Into<String>,
-    {
-        self.params.insert("tag", t.into());
-        self
-    }
+    impl_str_field!(
+    "Tag or digest. If empty when pulling an image,"
+    "this causes all tags for the given image to be pulled."
+    tag: T => "tag");
 
     pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
         self.auth = Some(auth);

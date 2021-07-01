@@ -1,10 +1,9 @@
 //! Create and manage persistent storage that can be attached to containers.
 
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use hyper::Body;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 
 use crate::{
     conn::Payload,
@@ -56,44 +55,12 @@ impl<'docker> Volume<'docker> {
     }
 }
 
-/// Interface for creating volumes
-#[derive(Serialize, Debug)]
-pub struct VolumeCreateOpts {
-    params: HashMap<&'static str, Value>,
-}
-
-impl VolumeCreateOpts {
-    /// serialize Opts as a string. returns None if no Opts are defined
-    pub fn serialize(&self) -> Result<String> {
-        serde_json::to_string(&self.params).map_err(Error::from)
-    }
-
-    /// return a new instance of a builder for Opts
-    pub fn builder() -> VolumeCreateOptsBuilder {
-        VolumeCreateOptsBuilder::new()
-    }
-}
-
-#[derive(Default)]
-pub struct VolumeCreateOptsBuilder {
-    params: HashMap<&'static str, Value>,
-}
+impl_json_opts_builder!(VolumeCreate);
 
 impl VolumeCreateOptsBuilder {
-    pub(crate) fn new() -> Self {
-        let params = HashMap::new();
-        VolumeCreateOptsBuilder { params }
-    }
-
     impl_str_field!(name: N => "Name");
 
     impl_map_field!(labels: L => "Labels");
-
-    pub fn build(&self) -> VolumeCreateOpts {
-        VolumeCreateOpts {
-            params: self.params.clone(),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

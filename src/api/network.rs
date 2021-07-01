@@ -1,6 +1,6 @@
 //! Create and manage user-defined networks that containers can be attached to.
 
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use hyper::Body;
 use serde::{Deserialize, Serialize};
