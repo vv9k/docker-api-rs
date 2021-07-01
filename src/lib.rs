@@ -3,7 +3,8 @@
 //! # example
 //!
 //! ```no_run
-//! let docker = docker_api::Docker::new("tcp://127.0.0.1:80")?;
+//! # async {
+//! let docker = docker_api::Docker::new("tcp://127.0.0.1:80").unwrap();
 //!
 //! match docker.images().list(&Default::default()).await {
 //!     Ok(images) => {
@@ -13,6 +14,7 @@
 //!     },
 //!     Err(e) => eprintln!("Something bad happened! {}", e),
 //! }
+//! # };
 //! ```
 
 #[macro_use]
