@@ -308,21 +308,9 @@ impl RegistryAuthBuilder {
 impl_url_opts_builder!(Tag);
 
 impl TagOptsBuilder {
-    pub fn repo<R>(&mut self, r: R) -> &mut Self
-    where
-        R: Into<String>,
-    {
-        self.params.insert("repo", r.into());
-        self
-    }
+    impl_url_str_field!(repo: R => "repo");
 
-    pub fn tag<T>(&mut self, t: T) -> &mut Self
-    where
-        T: Into<String>,
-    {
-        self.params.insert("tag", t.into());
-        self
-    }
+    impl_url_str_field!(tag: T => "tag");
 }
 
 #[derive(Default, Debug)]
@@ -537,23 +525,11 @@ pub enum ImageFilter {
 impl_url_opts_builder!(derives = Default | ImageList);
 
 impl ImageListOptsBuilder {
-    pub fn digests(&mut self, d: bool) -> &mut Self {
-        self.params.insert("digests", d.to_string());
-        self
-    }
+    impl_url_bool_field!(digests => "digests");
 
-    pub fn all(&mut self) -> &mut Self {
-        self.params.insert("all", "true".into());
-        self
-    }
+    impl_url_bool_field!(all => "all");
 
-    pub fn filter_name<F>(&mut self, name: F) -> &mut Self
-    where
-        F: Into<String>,
-    {
-        self.params.insert("filter", name.into());
-        self
-    }
+    impl_url_str_field!(filter_name: F => "filter");
 
     pub fn filter<F>(&mut self, filters: F) -> &mut Self
     where

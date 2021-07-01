@@ -48,6 +48,37 @@ macro_rules! impl_str_field {
     };
 }
 
+macro_rules! impl_url_str_field {
+    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+        paste::item! {
+            $(
+                #[doc= $docs]
+            )*
+            pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
+            where
+                $ty: Into<String> + Serialize,
+            {
+                self.params.insert($docker_name, $name.into());
+                self
+            }
+        }
+    };
+}
+
+macro_rules! impl_url_bool_field {
+    ($($docs:literal)* $name:ident => $docker_name:literal) => {
+        paste::item! {
+            $(
+                #[doc= $docs]
+            )*
+            pub fn [< $name >](&mut self, $name: bool)-> &mut Self {
+                self.params.insert($docker_name, $name.to_string());
+                self
+            }
+        }
+    };
+}
+
 macro_rules! impl_str_enum_field {
     ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {

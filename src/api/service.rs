@@ -176,22 +176,22 @@ impl ServiceOptsBuilder {
     }
 
     pub fn task_template(&mut self, spec: &TaskSpec) -> &mut Self {
-        self.params.insert("TaskTemplate", to_json_value(spec));
+        self.params.insert("TaskTemplate", to_value_result(spec));
         self
     }
 
     pub fn mode(&mut self, mode: &Mode) -> &mut Self {
-        self.params.insert("Mode", to_json_value(mode));
+        self.params.insert("Mode", to_value_result(mode));
         self
     }
 
     pub fn update_config(&mut self, conf: &UpdateConfig) -> &mut Self {
-        self.params.insert("UpdateConfig", to_json_value(conf));
+        self.params.insert("UpdateConfig", to_value_result(conf));
         self
     }
 
     pub fn rollback_config(&mut self, conf: &RollbackConfig) -> &mut Self {
-        self.params.insert("RollbackConfig", to_json_value(conf));
+        self.params.insert("RollbackConfig", to_value_result(conf));
         self
     }
 
@@ -201,7 +201,7 @@ impl ServiceOptsBuilder {
     {
         self.params.insert(
             "Networks",
-            to_json_value(
+            to_value_result(
                 networks
                     .into_iter()
                     .collect::<Vec<NetworkAttachmentConfig>>(),
@@ -211,7 +211,7 @@ impl ServiceOptsBuilder {
     }
 
     pub fn endpoint_spec(&mut self, spec: &EndpointSpec) -> &mut Self {
-        self.params.insert("EndpointSpec", to_json_value(spec));
+        self.params.insert("EndpointSpec", to_value_result(spec));
         self
     }
 
@@ -233,7 +233,7 @@ impl ServiceOptsBuilder {
     }
 }
 
-fn to_json_value<T>(value: T) -> Result<Value>
+fn to_value_result<T>(value: T) -> Result<Value>
 where
     T: Serialize,
 {

@@ -434,31 +434,13 @@ impl ContainerListOptsBuilder {
         self
     }
 
-    pub fn all(&mut self) -> &mut Self {
-        self.params.insert("all", "true".to_owned());
-        self
-    }
+    impl_url_bool_field!("If set to true all containers will be returned" all => "all");
 
-    pub fn since<S>(&mut self, since: S) -> &mut Self
-    where
-        S: Into<String>,
-    {
-        self.params.insert("since", since.into());
-        self
-    }
+    impl_url_str_field!(since: S => "since");
 
-    pub fn before<B>(&mut self, before: B) -> &mut Self
-    where
-        B: Into<String>,
-    {
-        self.params.insert("before", before.into());
-        self
-    }
+    impl_url_str_field!(before: B => "before");
 
-    pub fn sized(&mut self) -> &mut Self {
-        self.params.insert("size", "true".to_owned());
-        self
-    }
+    impl_url_bool_field!("If set to true the sizes of the containers will be returned" sized => "size");
 }
 
 /// Interface for building a new docker container from an existing image
@@ -753,31 +735,15 @@ impl ContainerOptsBuilder {
 impl_url_opts_builder!(Logs);
 
 impl LogsOptsBuilder {
-    pub fn follow(&mut self, f: bool) -> &mut Self {
-        self.params.insert("follow", f.to_string());
-        self
-    }
+    impl_url_bool_field!(follow => "follow");
 
-    pub fn stdout(&mut self, s: bool) -> &mut Self {
-        self.params.insert("stdout", s.to_string());
-        self
-    }
+    impl_url_bool_field!(stdout => "stdout");
 
-    pub fn stderr(&mut self, s: bool) -> &mut Self {
-        self.params.insert("stderr", s.to_string());
-        self
-    }
+    impl_url_bool_field!(stderr => "stderr");
 
-    pub fn timestamps(&mut self, t: bool) -> &mut Self {
-        self.params.insert("timestamps", t.to_string());
-        self
-    }
+    impl_url_bool_field!(timestamps => "timestamps");
 
-    /// how_many can either be "all" or a to_string() of the number
-    pub fn tail(&mut self, how_many: &str) -> &mut Self {
-        self.params.insert("tail", how_many.to_owned());
-        self
-    }
+    impl_url_str_field!(tail: N => "tail");
 
     #[cfg(feature = "chrono")]
     pub fn since<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
@@ -799,15 +765,9 @@ impl LogsOptsBuilder {
 impl_url_opts_builder!(RmContainer);
 
 impl RmContainerOptsBuilder {
-    pub fn force(&mut self, f: bool) -> &mut Self {
-        self.params.insert("force", f.to_string());
-        self
-    }
+    impl_url_bool_field!(force => "force");
 
-    pub fn volumes(&mut self, s: bool) -> &mut Self {
-        self.params.insert("v", s.to_string());
-        self
-    }
+    impl_url_bool_field!(volumes => "v");
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
