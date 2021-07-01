@@ -5,7 +5,7 @@
 //!
 //! Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Node>
 
-use crate::{errors::Result, Docker};
+use crate::{errors::Result, util::url::encoded_pair, Docker};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -41,6 +41,30 @@ impl<'docker> Node<'docker> {
         self.docker
             .get_json(&format!("/nodes/{}", self.name)[..])
             .await
+    }
+
+    async fn _delete(&self, force: bool) -> Result<()> {
+        let mut path = format!("/nodes/{}", self.name);
+        if force {
+            let query = encoded_pair("force", force);
+            path.push('?');
+            path.push_str(&query);
+        }
+        self.docker.delete(&path[..]).await.map(|_| ())
+    }
+
+    /// Delete a node.
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete>
+    pub async fn delete(&self) -> Result<()> {
+        self._delete(false).await.map(|_| ())
+    }
+
+    /// Forcefully delete a node
+    ///
+    /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete>
+    pub async fn force_delete(&self) -> Result<()> {
+        self._delete(true).await.map(|_| ())
     }
 }
 
