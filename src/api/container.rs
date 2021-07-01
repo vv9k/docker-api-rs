@@ -30,32 +30,9 @@ use crate::util::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
-/// Interface for accessing and manipulating a docker container
-///
-/// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Container>
-pub struct Container<'docker> {
-    docker: &'docker Docker,
-    id: String,
-}
+impl_api_ty!(Container => id: I);
 
 impl<'docker> Container<'docker> {
-    /// Exports an interface exposing operations against a container instance
-    pub fn new<S>(docker: &'docker Docker, id: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Container {
-            docker,
-            id: id.into(),
-        }
-    }
-
-    /// a getter for the container id
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-
     /// Inspects the current docker container instance's details
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerInspect>
@@ -399,20 +376,7 @@ impl<'docker> Container<'docker> {
     }
 }
 
-#[derive(Debug)]
-/// Interface for docker containers
-///
-/// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Containers>
-pub struct Containers<'docker> {
-    docker: &'docker Docker,
-}
-
 impl<'docker> Containers<'docker> {
-    /// Exports an interface for interacting with docker containers
-    pub fn new(docker: &'docker Docker) -> Self {
-        Containers { docker }
-    }
-
     /// Lists the container instances on the docker host
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ContainerList>
@@ -424,14 +388,6 @@ impl<'docker> Containers<'docker> {
         self.docker
             .get_json::<Vec<ContainerInfo>>(&path.join("?"))
             .await
-    }
-
-    /// Returns a reference to a set of operations available to a specific container instance
-    pub fn get<N>(&self, name: N) -> Container<'docker>
-    where
-        N: Into<String>,
-    {
-        Container::new(self.docker, name)
     }
 
     /// Returns a builder interface for creating a new container instance

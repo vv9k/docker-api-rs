@@ -14,20 +14,9 @@ use crate::{
     errors::{Error, Result},
 };
 
-#[derive(Debug)]
-/// Interface for docker network
-///
-/// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Network>
-pub struct Networks<'docker> {
-    docker: &'docker Docker,
-}
+impl_api_ty!(Network => id: I);
 
 impl<'docker> Networks<'docker> {
-    /// Exports an interface for interacting with docker Networks
-    pub fn new(docker: &'docker Docker) -> Self {
-        Networks { docker }
-    }
-
     /// List the docker networks on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
@@ -37,14 +26,6 @@ impl<'docker> Networks<'docker> {
             path.push(query);
         }
         self.docker.get_json(&path.join("?")).await
-    }
-
-    /// Returns a reference to a set of operations available to a specific network instance
-    pub fn get<I>(&self, id: I) -> Network<'docker>
-    where
-        I: Into<String>,
-    {
-        Network::new(self.docker, id)
     }
 
     /// Create a new Network instance
@@ -60,30 +41,7 @@ impl<'docker> Networks<'docker> {
     }
 }
 
-#[derive(Debug)]
-/// Interface for accessing and manipulating a docker network
-pub struct Network<'docker> {
-    docker: &'docker Docker,
-    id: String,
-}
-
 impl<'docker> Network<'docker> {
-    /// Exports an interface exposing operations against a network instance
-    pub fn new<S>(docker: &'docker Docker, id: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Network {
-            docker,
-            id: id.into(),
-        }
-    }
-
-    /// a getter for the Network id
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-
     /// Inspects the current docker network instance's details
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkInspect>

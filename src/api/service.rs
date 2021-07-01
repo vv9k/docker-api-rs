@@ -19,20 +19,9 @@ use std::hash::Hash;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
-/// Interface for docker services
-///
-/// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
-pub struct Services<'docker> {
-    docker: &'docker Docker,
-}
+impl_api_ty!(Service => name: N);
 
 impl<'docker> Services<'docker> {
-    /// Exports an interface for interacting with docker services
-    pub fn new(docker: &'docker Docker) -> Self {
-        Services { docker }
-    }
-
     /// Lists the docker services on the current docker host
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceList>
@@ -45,37 +34,9 @@ impl<'docker> Services<'docker> {
             .get_json::<Vec<ServiceInfo>>(&path.join("?"))
             .await
     }
-
-    /// Returns a reference to a set of operations available for a named service
-    pub fn get<N>(&self, name: N) -> Service<'docker>
-    where
-        N: Into<String>,
-    {
-        Service::new(self.docker, name)
-    }
-}
-
-#[derive(Debug)]
-/// Interface for accessing and manipulating a named docker volume
-///
-/// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Service>
-pub struct Service<'docker> {
-    docker: &'docker Docker,
-    name: String,
 }
 
 impl<'docker> Service<'docker> {
-    /// Exports an interface for operations that may be performed against a named service
-    pub fn new<N>(docker: &'docker Docker, name: N) -> Self
-    where
-        N: Into<String>,
-    {
-        Service {
-            docker,
-            name: name.into(),
-        }
-    }
-
     /// Creates a new service from ServiceOpts
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceCreate>

@@ -7,27 +7,9 @@ use crate::{conn::Payload, errors::Result, util::url::encoded_pair, Docker};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::Path};
 
-#[derive(Debug)]
-/// Interface for accessing and manipulating a Docker plugin.
-///
-/// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Plugin>
-pub struct Plugin<'docker> {
-    docker: &'docker Docker,
-    name: String,
-}
+impl_api_ty!(Plugin => name: N);
 
 impl<'docker> Plugin<'docker> {
-    /// Exports an interface for operations that may be performed against a plugin.
-    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Self {
-            docker,
-            name: name.into(),
-        }
-    }
-
     /// Inspects a named plugin's details.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginInspect>
@@ -113,26 +95,7 @@ impl<'docker> Plugin<'docker> {
     }
 }
 
-#[derive(Debug)]
-/// Interface for docker plugins
-pub struct Plugins<'docker> {
-    docker: &'docker Docker,
-}
-
 impl<'docker> Plugins<'docker> {
-    /// Exports an interface for interacting with docker plugins
-    pub fn new(docker: &'docker Docker) -> Self {
-        Self { docker }
-    }
-
-    /// Returns a reference to a set of operations available for a plugin with `name`
-    pub fn get<N>(&self, name: N) -> Plugin<'docker>
-    where
-        N: Into<String>,
-    {
-        Plugin::new(self.docker, name)
-    }
-
     /// Returns information about installed plugins.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/PluginList>

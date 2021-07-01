@@ -22,27 +22,9 @@ use crate::util::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
-/// Interface for accessing and manipulating a named docker image
-///
-/// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Image>
-pub struct Image<'docker> {
-    docker: &'docker Docker,
-    name: String,
-}
+impl_api_ty!(Image => name: N);
 
 impl<'docker> Image<'docker> {
-    /// Exports an interface for operations that may be performed against a named image
-    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Image {
-            docker,
-            name: name.into(),
-        }
-    }
-
     /// Inspects a named image's details
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageInspect>
@@ -106,18 +88,7 @@ impl<'docker> Image<'docker> {
     }
 }
 
-#[derive(Debug)]
-/// Interface for docker images
-pub struct Images<'docker> {
-    docker: &'docker Docker,
-}
-
 impl<'docker> Images<'docker> {
-    /// Exports an interface for interacting with docker images
-    pub fn new(docker: &'docker Docker) -> Self {
-        Images { docker }
-    }
-
     /// Builds a new image build by reading a Dockerfile in a target directory
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ImageBuild>
@@ -167,14 +138,6 @@ impl<'docker> Images<'docker> {
         self.docker
             .get_json::<Vec<ImageInfo>>(&path.join("?"))
             .await
-    }
-
-    /// Returns a reference to a set of operations available for a named image
-    pub fn get<N>(&self, name: N) -> Image<'docker>
-    where
-        N: Into<String>,
-    {
-        Image::new(self.docker, name)
     }
 
     /// Search for docker images by term

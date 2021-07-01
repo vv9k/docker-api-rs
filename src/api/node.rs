@@ -13,27 +13,9 @@ use std::collections::HashMap;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
-/// Interface for accessing and manipulating a Docker node.
-///
-/// Api Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Node>
-pub struct Node<'docker> {
-    docker: &'docker Docker,
-    name: String,
-}
+impl_api_ty!(Node => name: N);
 
 impl<'docker> Node<'docker> {
-    /// Exports an interface for operations that may be performed against a node.
-    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Self {
-            docker,
-            name: name.into(),
-        }
-    }
-
     /// Inspects a named node's details.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeInspect>
@@ -68,26 +50,7 @@ impl<'docker> Node<'docker> {
     }
 }
 
-#[derive(Debug)]
-/// Interface for docker nodes
-pub struct Nodes<'docker> {
-    docker: &'docker Docker,
-}
-
 impl<'docker> Nodes<'docker> {
-    /// Exports an interface for interacting with docker plugins
-    pub fn new(docker: &'docker Docker) -> Self {
-        Self { docker }
-    }
-
-    /// Returns a reference to a set of operations available for a plugin with `name`
-    pub fn get<N>(&self, name: N) -> Node<'docker>
-    where
-        N: Into<String>,
-    {
-        Node::new(self.docker, name)
-    }
-
     /// Returns information about installed plugins.
     ///
     /// Api Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NodeList>
@@ -99,8 +62,6 @@ impl<'docker> Nodes<'docker> {
         self.docker.get_json::<Vec<NodeInfo>>(&path.join("?")).await
     }
 }
-
-impl_url_opts_builder!(NodeList);
 
 pub enum Membership {
     Accepted,
@@ -138,6 +99,8 @@ pub enum NodeFilter {
     NodeLabel(String),
     Role(Role),
 }
+
+impl_url_opts_builder!(NodeList);
 
 impl NodeListOptsBuilder {
     pub fn filter<F>(&mut self, filters: F) -> &mut Self

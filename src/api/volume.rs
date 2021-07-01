@@ -17,20 +17,9 @@ use crate::{
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
-#[derive(Debug)]
-/// Interface for docker volumes
-///
-/// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Volume>
-pub struct Volumes<'docker> {
-    docker: &'docker Docker,
-}
+impl_api_ty!(Volume => name: N);
 
 impl<'docker> Volumes<'docker> {
-    /// Exports an interface for interacting with docker volumes
-    pub fn new(docker: &'docker Docker) -> Self {
-        Volumes { docker }
-    }
-
     /// Creates a new docker volume.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeCreate>
@@ -55,37 +44,9 @@ impl<'docker> Volumes<'docker> {
             None => vec![],
         })
     }
-
-    /// Returns a reference to a set of operations available for a named volume
-    pub fn get<N>(&self, name: N) -> Volume<'docker>
-    where
-        N: Into<String>,
-    {
-        Volume::new(self.docker, name)
-    }
-}
-
-#[derive(Debug)]
-/// Interface for accessing and manipulating a named docker volume
-///
-/// API Reference: <https://docs.docker.com/engine/api/v1.41/#tag/Volume>
-pub struct Volume<'docker> {
-    docker: &'docker Docker,
-    name: String,
 }
 
 impl<'docker> Volume<'docker> {
-    /// Exports an interface for operations that may be performed against a named volume
-    pub fn new<S>(docker: &'docker Docker, name: S) -> Self
-    where
-        S: Into<String>,
-    {
-        Volume {
-            docker,
-            name: name.into(),
-        }
-    }
-
     /// Deletes a volume
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeDelete>
