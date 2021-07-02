@@ -1,4 +1,4 @@
-use crate::api::{Driver, Labels};
+use crate::api::{Config, DriverData, Labels};
 
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str};
@@ -58,7 +58,7 @@ pub struct ContainerDetails {
     #[serde(rename = "ExecIDs")]
     pub exec_ids: Option<Vec<String>>,
     pub host_config: HostConfig,
-    pub graph_driver: Driver,
+    pub graph_driver: DriverData,
     pub mounts: Vec<Mount>,
     pub config: ContainerConfig,
     pub network_settings: NetworkSettings,
@@ -95,6 +95,10 @@ pub struct State {
     pub started_at: String,
     pub status: String,
 }
+
+pub type Sysctls = HashMap<String, String>;
+pub type Tmpfs = HashMap<String, String>;
+pub type StorageOpt = HashMap<String, String>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -162,13 +166,13 @@ pub struct HostConfig {
     pub publish_all_ports: bool,
     pub readonly_rootfs: Option<bool>,
     pub security_opt: Option<Vec<String>>,
-    pub storage_opt: Option<Labels>,
-    pub tmpfs: Option<Labels>,
+    pub storage_opt: Option<StorageOpt>,
+    pub tmpfs: Option<Tmpfs>,
     #[serde(rename = "UTSMode")]
     pub uts_mode: String,
     pub userns_mode: String,
     pub shm_size: u64,
-    pub sysctls: Option<Labels>,
+    pub sysctls: Option<Sysctls>,
     pub runtime: String,
     pub console_size: Option<Vec<u64>>,
     pub isolation: String,
@@ -204,7 +208,7 @@ pub struct LogConfig {
     #[serde(rename = "Type")]
     pub type_: String,
     #[serde(rename = "Config")]
-    pub config: Labels,
+    pub config: Config,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -8,6 +8,10 @@ pub(crate) trait Filter {
 }
 
 pub type Labels = HashMap<String, String>;
+pub type Options = HashMap<String, String>;
+pub type Data = HashMap<String, String>;
+pub type Config = HashMap<String, String>;
+pub type Attributes = HashMap<String, String>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -25,7 +29,14 @@ pub struct TlsInfo {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+pub struct DriverData {
+    pub name: String,
+    pub data: Data,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct Driver {
     pub name: String,
-    pub data: HashMap<String, String>,
+    pub options: Options,
 }

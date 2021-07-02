@@ -142,7 +142,7 @@ impl ContainerOptsBuilder {
     where
         P: AsRef<str>,
     {
-        let mut exposedport: Labels = HashMap::new();
+        let mut exposedport: HashMap<String, String> = HashMap::new();
         exposedport.insert("HostPort".to_string(), hostport.to_string());
 
         // The idea here is to go thought the 'old' port binds and to apply them to the local

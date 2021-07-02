@@ -1,4 +1,4 @@
-use crate::api::{Driver, Labels, ObjectVersion, TlsInfo};
+use crate::api::{Driver, Labels, ObjectVersion, Options, TlsInfo};
 
 use serde::{Deserialize, Serialize};
 
@@ -70,7 +70,7 @@ pub struct ExternalCa {
     pub protocol: String,
     #[serde(rename = "URL")]
     pub url: String,
-    pub options: Labels,
+    pub options: Options,
     #[serde(rename = "CACert")]
     pub ca_cert: String,
 }

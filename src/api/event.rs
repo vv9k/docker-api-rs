@@ -1,6 +1,6 @@
 //! Items related to events emitted by Docker
 
-use crate::{api::Labels, util::url::encoded_pairs};
+use crate::{api::Attributes, util::url::encoded_pairs};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -39,7 +39,7 @@ pub struct Actor {
     #[serde(rename = "ID")]
     pub id: String,
     #[serde(rename = "Attributes")]
-    pub attributes: Labels,
+    pub attributes: Attributes,
 }
 
 /// Opts for filtering streams of Docker events

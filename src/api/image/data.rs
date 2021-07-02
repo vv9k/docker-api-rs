@@ -65,7 +65,7 @@ pub struct ContainerConfig {
     pub domainname: String,
     pub entrypoint: Option<Vec<String>>,
     pub env: Option<Vec<String>>,
-    pub exposed_ports: Option<HashMap<String, Labels>>,
+    pub exposed_ports: Option<HashMap<String, serde_json::Value>>,
     pub hostname: String,
     pub image: String,
     pub labels: Option<Labels>,
@@ -80,7 +80,7 @@ pub struct ContainerConfig {
 }
 
 impl ContainerConfig {
-    pub fn env(&self) -> Labels {
+    pub fn env(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         if let Some(ref vars) = self.env {
             for e in vars {

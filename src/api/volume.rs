@@ -1,6 +1,10 @@
 //! Create and manage persistent storage that can be attached to containers.
 
-use crate::{api::Labels, conn::Payload, Result};
+use crate::{
+    api::{Labels, Options},
+    conn::Payload,
+    Result,
+};
 
 use hyper::Body;
 use serde::{Deserialize, Serialize};
@@ -81,6 +85,6 @@ pub struct VolumeInfo {
     pub labels: Option<Labels>,
     pub name: String,
     pub mountpoint: String,
-    pub options: Option<Labels>,
+    pub options: Option<Options>,
     pub scope: String,
 }
