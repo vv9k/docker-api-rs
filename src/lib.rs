@@ -42,6 +42,7 @@ pub use crate::{
         image::{self, Image, Images},
         network::{self, Network, Networks},
         plugin::{self, Plugin, Plugins},
+        secret::{self, Secret, Secrets},
         service::{self, Service, Services},
         swarm::{self, Swarm},
         volume::{self, Volume, Volumes},
