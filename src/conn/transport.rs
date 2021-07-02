@@ -142,6 +142,7 @@ impl Transport {
             Self::Unix { ref path, .. } => path.as_str(),
         }
     }
+
     pub(crate) async fn request<B>(
         &self,
         method: Method,
@@ -152,7 +153,21 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let req = self.build_request(method, endpoint, body, headers, Request::builder())?;
+        let ep = endpoint.as_ref();
+        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
+        // should be prefixed with the API version as the ones without will stop being supported in future releases
+        let req = self.build_request(
+            method,
+            &format!(
+                "{}{}{}",
+                crate::VERSION,
+                if !ep.starts_with('/') { "/" } else { "" },
+                ep,
+            ),
+            body,
+            headers,
+            Request::builder(),
+        )?;
 
         self.send_request(req).await
     }
