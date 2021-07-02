@@ -10,7 +10,7 @@ pub(crate) trait Filter {
 pub type Labels = HashMap<String, String>;
 pub type Options = HashMap<String, String>;
 pub type Data = HashMap<String, String>;
-pub type Config = HashMap<String, String>;
+pub type ConfigMap = HashMap<String, String>;
 pub type Attributes = HashMap<String, String>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

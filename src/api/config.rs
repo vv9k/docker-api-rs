@@ -1,4 +1,5 @@
-//! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
+//! Configs are application configurations that can be used by services.
+//! Swarm mode must be enabled for these endpoints to work.
 
 use crate::{conn::Payload, Result};
 
@@ -11,7 +12,7 @@ pub mod data {
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    pub struct SecretInfo {
+    pub struct ConfigInfo {
         #[serde(rename = "ID")]
         pub id: String,
         pub version: ObjectVersion,
@@ -23,33 +24,31 @@ pub mod data {
         pub updated_at: DateTime<Utc>,
         #[cfg(not(feature = "chrono"))]
         pub updated_at: String,
-        pub spec: SecretSpec,
+        pub spec: ConfigSpec,
     }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    pub struct SecretSpec {
+    pub struct ConfigSpec {
         pub name: String,
         pub labels: Labels,
         pub data: String,
-        pub driver: Driver,
         pub templating: Driver,
     }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    /// Structure used to create a new secret with [`Secret::create`](Secret::create).
-    pub struct SecretCreate {
+    /// Structure used to create a new config with [`Config::create`](Config::create).
+    pub struct ConfigCreate {
         name: String,
         labels: Labels,
         data: String,
-        driver: Driver,
         templating: Driver,
     }
 
-    impl SecretCreate {
-        /// Create a new secret with name and data. This function will take care of
-        /// encoding the secret's data as base64.
+    impl ConfigCreate {
+        /// Create a new config with name and data. This function will take care of
+        /// encoding the config's data as base64.
         pub fn new<N, D>(name: N, data: D) -> Self
         where
             N: Into<String>,
@@ -59,22 +58,16 @@ pub mod data {
                 name: name.into(),
                 labels: Labels::new(),
                 data: base64::encode(data.as_ref()),
-                driver: Driver::default(),
                 templating: Driver::default(),
             }
         }
 
-        /// Set the driver of this secret.
-        pub fn set_driver(&mut self, driver: Driver) {
-            self.driver = driver;
-        }
-
-        /// Set the templating driver of this secret.
+        /// Set the templating driver of this config.
         pub fn set_templating(&mut self, driver: Driver) {
             self.templating = driver;
         }
 
-        /// Add a label to this secret
+        /// Add a label to this config
         pub fn add_label<K, V>(&mut self, key: K, val: V) -> Option<String>
         where
             K: Into<String>,
@@ -85,7 +78,7 @@ pub mod data {
     }
 
     #[derive(Deserialize)]
-    pub(crate) struct SecretCreateResponse {
+    pub(crate) struct ConfigCreateResponse {
         #[serde(rename = "Id")]
         pub id: String,
     }
@@ -94,9 +87,9 @@ pub mod data {
 pub mod opts {
     use crate::api::Filter;
 
-    impl_url_opts_builder!(SecretList);
+    impl_url_opts_builder!(ConfigList);
 
-    pub enum SecretFilter {
+    pub enum ConfigFilter {
         Id(String),
         LabelKey(String),
         LabelKeyVal(String, String),
@@ -104,9 +97,9 @@ pub mod opts {
         Names(String),
     }
 
-    impl Filter for SecretFilter {
+    impl Filter for ConfigFilter {
         fn query_key_val(&self) -> (&'static str, String) {
-            use SecretFilter::*;
+            use ConfigFilter::*;
             match &self {
                 Id(id) => ("id", id.to_owned()),
                 LabelKey(label) => ("label", label.to_owned()),
@@ -117,63 +110,63 @@ pub mod opts {
         }
     }
 
-    impl SecretListOptsBuilder {
-        impl_filter_func!(SecretFilter);
+    impl ConfigListOptsBuilder {
+        impl_filter_func!(ConfigFilter);
     }
 }
 
 pub use data::*;
 pub use opts::*;
 
-impl_api_ty!(Secret => name: N);
+impl_api_ty!(Config => name: N);
 
-impl<'docker> Secret<'docker> {
-    /// Inspects a secret.
+impl<'docker> Config<'docker> {
+    /// Inspects a config.
     ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretInspect)
-    pub async fn inspect(&self) -> Result<SecretInfo> {
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigInspect)
+    pub async fn inspect(&self) -> Result<ConfigInfo> {
         self.docker
-            .get_json(&format!("/secrets/{}", self.name))
+            .get_json(&format!("/configs/{}", self.name))
             .await
     }
 
-    /// Delete a secret.
+    /// Delete a config.
     ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretDelete)
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigDelete)
     pub async fn delete(&self) -> Result<()> {
         self.docker
-            .delete(&format!("/secrets/{}", self.name))
+            .delete(&format!("/configs/{}", self.name))
             .await
             .map(|_| ())
     }
 
-    // TODO: add Secret::update
+    // TODO: add Config::update
 }
 
-impl<'docker> Secrets<'docker> {
-    /// List secrets.
+impl<'docker> Configs<'docker> {
+    /// List configs.
     ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretList)
-    pub async fn list(&self, opts: &SecretListOpts) -> Result<Vec<SecretInfo>> {
-        let mut path = vec!["/secrets".to_owned()];
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigList)
+    pub async fn list(&self, opts: &ConfigListOpts) -> Result<Vec<ConfigInfo>> {
+        let mut path = vec!["/configs".to_owned()];
         if let Some(query) = opts.serialize() {
             path.push(query);
         }
         self.docker
-            .get_json::<Vec<SecretInfo>>(&path.join("?"))
+            .get_json::<Vec<ConfigInfo>>(&path.join("?"))
             .await
     }
 
-    /// Create a secret. On success returns the id of the newly created secret.
+    /// Create a config. On success returns the id of the newly created secret.
     ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretCreate)
-    pub async fn create(&self, new_secret: &SecretCreate) -> Result<String> {
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigCreate)
+    pub async fn create(&self, new_config: &ConfigCreate) -> Result<String> {
         self.docker
             .post_json(
-                "/secrets/create",
-                Payload::Json(serde_json::to_string(&new_secret)?),
+                "/configs/create",
+                Payload::Json(serde_json::to_string(&new_config)?),
             )
             .await
-            .map(|resp: SecretCreateResponse| resp.id)
+            .map(|resp: ConfigCreateResponse| resp.id)
     }
 }

@@ -1,4 +1,4 @@
-use crate::api::{Config, Labels, Options};
+use crate::api::{ConfigMap, Labels, Options};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -51,7 +51,7 @@ pub struct NetworkEntry {
 #[serde(rename_all = "PascalCase")]
 pub struct Ipam {
     pub driver: String,
-    pub config: Vec<Config>,
+    pub config: Vec<ConfigMap>,
     pub options: Option<Options>,
 }
 

@@ -1,4 +1,4 @@
-use crate::api::{Config, DriverData, Labels};
+use crate::api::{ConfigMap, DriverData, Labels};
 
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str};
@@ -208,7 +208,7 @@ pub struct LogConfig {
     #[serde(rename = "Type")]
     pub type_: String,
     #[serde(rename = "Config")]
-    pub config: Config,
+    pub config: ConfigMap,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

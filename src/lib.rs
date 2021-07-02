@@ -37,6 +37,7 @@ pub mod errors;
 
 pub use crate::{
     api::{
+        config::{self, Config, Configs},
         container::{self, Container, Containers},
         exec::{self, Exec, ExecContainerOpts},
         image::{self, Image, Images},
@@ -45,6 +46,7 @@ pub use crate::{
         secret::{self, Secret, Secrets},
         service::{self, Service, Services},
         swarm::{self, Swarm},
+        task::{self, Task, Tasks},
         volume::{self, Volume, Volumes},
     },
     docker::Docker,
