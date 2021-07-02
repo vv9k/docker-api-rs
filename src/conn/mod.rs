@@ -28,19 +28,13 @@ pub(crate) fn get_https_connector(
     cert_path: &Path,
     verify: bool,
 ) -> Result<HttpsConnector<HttpConnector>> {
-    let http = get_http_connector();
-    let mut connector = SslConnector::builder(SslMethod::tls())?;
-    connector.set_cipher_list("DEFAULT")?;
-    let cert = cert_path.join("cert.pem");
-    let key = cert_path.join("key.pem");
-    connector.set_certificate_file(cert.as_path(), SslFiletype::PEM)?;
-    connector.set_private_key_file(key.as_path(), SslFiletype::PEM)?;
-    if verify {
-        let ca = cert_path.join("ca.pem");
-        connector.set_ca_file(ca.as_path())?;
-    }
+    let mut ssl = SslConnector::builder(SslMethod::tls())?;
+    ssl.set_cipher_list("DEFAULT")?;
+    ssl.set_certificate_file(&cert_path.join("cert.pem"), SslFiletype::PEM)?;
+    ssl.set_private_key_file(&cert_path.join("key.pem"), SslFiletype::PEM)?;
+    verify.then(|| ssl.set_ca_file(&cert_path.join("ca.pem")));
 
-    HttpsConnector::with_connector(http, connector).map_err(Error::from)
+    HttpsConnector::with_connector(get_http_connector(), ssl).map_err(Error::from)
 }
 
 #[cfg(unix)]
