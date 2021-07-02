@@ -34,7 +34,7 @@ pub struct DriverData {
     pub data: Data,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Driver {
     pub name: String,

@@ -1,6 +1,6 @@
 //! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
 
-use crate::Result;
+use crate::{conn::Payload, Result};
 
 pub mod data {
     use crate::api::{Driver, Labels, ObjectVersion};
@@ -34,6 +34,60 @@ pub mod data {
         pub data: String,
         pub driver: Driver,
         pub templating: Driver,
+    }
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    /// Structure used to create a new secret with [`Secret::create`](Secret::create).
+    pub struct SecretCreate {
+        name: String,
+        labels: Labels,
+        data: String,
+        driver: Driver,
+        templating: Driver,
+    }
+
+    impl SecretCreate {
+        /// Create a new secret with name and data. This function will take care of
+        /// encoding the secret's data as base64.
+        pub fn new<N, D>(name: N, data: D) -> Self
+        where
+            N: Into<String>,
+            D: AsRef<str>,
+        {
+            Self {
+                name: name.into(),
+                labels: Labels::new(),
+                data: base64::encode(data.as_ref()),
+                driver: Driver::default(),
+                templating: Driver::default(),
+            }
+        }
+
+        /// Set the driver of this secret.
+        pub fn set_driver(&mut self, driver: Driver) {
+            self.driver = driver;
+        }
+
+        /// Set the templating driver of this secret.
+        pub fn set_templating(&mut self, driver: Driver) {
+            self.templating = driver;
+        }
+
+        /// Add a label to this secret
+        pub fn add_label<K, V>(&mut self, key: K, val: V) -> Option<String>
+        where
+            K: Into<String>,
+            V: Into<String>,
+        {
+            self.labels.insert(key.into(), val.into())
+        }
+    }
+
+    #[derive(Deserialize)]
+    pub(crate) struct SecretCreateResponse {
+        #[serde(rename = "Id")]
+        pub id: String,
     }
 }
 
@@ -107,5 +161,18 @@ impl<'docker> Secrets<'docker> {
         self.docker
             .get_json::<Vec<SecretInfo>>(&path.join("?"))
             .await
+    }
+
+    /// Create a secret. On success returns the id of the newly created secret.
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretCreate)
+    pub async fn create(&self, new_secret: &SecretCreate) -> Result<String> {
+        self.docker
+            .post_json(
+                "/secrets/create",
+                Payload::Json(serde_json::to_string(&new_secret)?),
+            )
+            .await
+            .map(|resp: SecretCreateResponse| resp.id)
     }
 }
