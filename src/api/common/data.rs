@@ -2,11 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
-/// Allows easier construction of filter functions for multiple api endpoints
-pub(crate) trait Filter {
-    fn query_key_val(&self) -> (&'static str, String);
-}
-
 pub type Labels = HashMap<String, String>;
 pub type Options = HashMap<String, String>;
 pub type Data = HashMap<String, String>;
@@ -16,7 +11,7 @@ pub type Attributes = HashMap<String, String>;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ObjectVersion {
-    index: u64,
+    pub index: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

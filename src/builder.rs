@@ -116,31 +116,44 @@ macro_rules! impl_map_field {
 macro_rules! impl_json_opts_builder {
     ($($docs:literal)* $name:ident) => {
         paste::item! {
+            $(
+                #[doc= $docs]
+            )*
             #[derive(serde::Serialize, Debug)]
             pub struct [< $name Opts >] {
                 params: std::collections::HashMap<&'static str, serde_json::Value>,
             }
 
             impl [< $name Opts >] {
+                calculated_doc!{
+                #[doc = concat!("Returns a new instance of a builder for ", stringify!($name), "Opts.")]
                 pub fn builder() -> [< $name OptsBuilder >] {
                     [< $name OptsBuilder >]::default()
                 }
+                }
 
+                /// Serialize options as a JSON String. Returns None if no options are defined.
                 pub fn serialize(&self) -> crate::Result<String> {
                     serde_json::to_string(&self.params).map_err(crate::Error::from)
                 }
             }
 
+            calculated_doc!{
+            #[doc = concat!("A builder struct for ", stringify!($name), "Opts.")]
             #[derive(Default, Debug)]
             pub struct [< $name OptsBuilder >] {
                 params: std::collections::HashMap<&'static str, serde_json::Value>,
             }
+            }
 
             impl [< $name OptsBuilder >] {
+                calculated_doc!{
+                #[doc = concat!("Finish building ", stringify!($name), "Opts.")]
                 pub fn build(&self) -> [< $name Opts >] {
                     [< $name Opts >] {
                         params: self.params.clone(),
                     }
+                }
                 }
             }
         }
@@ -162,12 +175,14 @@ macro_rules! impl_url_opts_builder {
             }
 
             impl [< $name  Opts >] {
-                /// return a new instance of a builder for Opts
+                calculated_doc!{
+                #[doc = concat!("Returns a new instance of a builder for ", stringify!($name), "Opts.")]
                 pub fn builder() -> [< $name  OptsBuilder >] {
                   [< $name  OptsBuilder >]::default()
                 }
+                }
 
-                /// serialize Opts as a string. returns None if no Opts are defined
+                /// Serialize options as a URL query String. Returns None if no options are defined.
                 pub fn serialize(&self) -> Option<String> {
                     if self.params.is_empty() {
                         None
@@ -179,16 +194,22 @@ macro_rules! impl_url_opts_builder {
                 }
             }
 
+            calculated_doc!{
+            #[doc = concat!("A builder struct for ", stringify!($name), "Opts.")]
             #[derive(Default, Debug)]
             pub struct [< $name  OptsBuilder >] {
                 params: std::collections::HashMap<&'static str, String>
             }
+            }
 
             impl [< $name  OptsBuilder >] {
+                calculated_doc!{
+                #[doc = concat!("Finish building ", stringify!($name), "Opts.")]
                 pub fn build(&self) -> [< $name  Opts >] {
                     [< $name Opts >] {
                         params: self.params.clone(),
                     }
+                }
                 }
             }
         }
