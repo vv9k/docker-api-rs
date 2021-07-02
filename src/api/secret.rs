@@ -94,8 +94,6 @@ pub mod data {
 pub mod opts {
     use crate::api::Filter;
 
-    use std::collections::HashMap;
-
     impl_url_opts_builder!(SecretList);
 
     pub enum SecretFilter {
@@ -108,12 +106,13 @@ pub mod opts {
 
     impl Filter for SecretFilter {
         fn query_key_val(&self) -> (&'static str, String) {
+            use SecretFilter::*;
             match &self {
-                SecretFilter::Id(id) => ("id", id.to_owned()),
-                SecretFilter::LabelKey(label) => ("label", label.to_owned()),
-                SecretFilter::LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
-                SecretFilter::Name(name) => ("name", name.to_owned()),
-                SecretFilter::Names(names) => ("names", names.to_owned()),
+                Id(id) => ("id", id.to_owned()),
+                LabelKey(label) => ("label", label.to_owned()),
+                LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+                Name(name) => ("name", name.to_owned()),
+                Names(names) => ("names", names.to_owned()),
             }
         }
     }
@@ -134,7 +133,7 @@ impl<'docker> Secret<'docker> {
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretInspect)
     pub async fn inspect(&self) -> Result<SecretInfo> {
         self.docker
-            .get_json(&format!("/secrets/{}", self.name)[..])
+            .get_json(&format!("/secrets/{}", self.name))
             .await
     }
 

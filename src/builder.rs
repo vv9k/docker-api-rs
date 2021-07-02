@@ -284,7 +284,7 @@ macro_rules! impl_filter_func {
         where
             F: IntoIterator<Item = $filter_ty>,
         {
-            let mut param = HashMap::new();
+            let mut param = std::collections::HashMap::new();
             for (key, val) in filters.into_iter().map(|f| f.query_key_val()) {
                 param.insert(key, val);
             }

@@ -9,13 +9,12 @@ use std::{io, path::Path, str, time::Duration};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
-    stream::Stream,
-    TryStreamExt,
+    Stream, TryStreamExt,
 };
 use hyper::Body;
 
 use crate::{
-    api::{Exec, ExecContainerOpts},
+    api::{Exec, ExecContainerOpts, LogsOpts},
     conn::{tty, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
     util::url::encoded_pair,
     Error, Result,
@@ -46,7 +45,7 @@ impl<'docker> Container<'docker> {
         self.docker.get_json(&path.join("?")).await
     }
 
-    /// Returns a stream of logs emitted but the container instance
+    /// Returns a stream of logs emitted by this container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs)
     pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {

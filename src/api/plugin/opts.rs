@@ -1,7 +1,5 @@
 use crate::api::Filter;
 
-use std::collections::HashMap;
-
 impl_url_opts_builder!(PluginList);
 
 pub enum PluginFilter {

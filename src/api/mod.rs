@@ -11,6 +11,7 @@ pub mod plugin;
 pub mod secret;
 pub mod service;
 pub mod swarm;
+pub mod task;
 pub mod volume;
 
 pub use common::*;
@@ -24,4 +25,5 @@ pub use plugin::*;
 pub use secret::*;
 pub use service::*;
 pub use swarm::*;
+pub use task::*;
 pub use volume::*;
