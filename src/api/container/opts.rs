@@ -1,4 +1,4 @@
-use crate::api::Labels;
+use crate::api::{Filter, Labels};
 
 use std::{collections::HashMap, hash::Hash, iter::Peekable, str, time::Duration};
 
@@ -15,28 +15,21 @@ pub enum ContainerFilter {
     Label(String, String),
 }
 
+impl Filter for ContainerFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        match &self {
+            ContainerFilter::ExitCode(c) => ("exit", c.to_string()),
+            ContainerFilter::Status(s) => ("status", s.to_owned()),
+            ContainerFilter::LabelName(n) => ("label", n.to_owned()),
+            ContainerFilter::Label(n, v) => ("label", format!("{}={}", n, v)),
+        }
+    }
+}
+
 impl_url_opts_builder!(derives = Default | ContainerList);
 
 impl ContainerListOptsBuilder {
-    pub fn filter<F>(&mut self, filters: F) -> &mut Self
-    where
-        F: IntoIterator<Item = ContainerFilter>,
-    {
-        let mut param = HashMap::new();
-        for f in filters {
-            match f {
-                ContainerFilter::ExitCode(c) => param.insert("exit", vec![c.to_string()]),
-                ContainerFilter::Status(s) => param.insert("status", vec![s]),
-                ContainerFilter::LabelName(n) => param.insert("label", vec![n]),
-                ContainerFilter::Label(n, v) => param.insert("label", vec![format!("{}={}", n, v)]),
-            };
-        }
-        // structure is a a json encoded object mapping string keys to a list
-        // of string values
-        self.params
-            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-        self
-    }
+    impl_filter_func!(ContainerFilter);
 
     impl_url_bool_field!("If set to true all containers will be returned" all => "all");
 

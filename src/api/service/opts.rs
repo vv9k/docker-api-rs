@@ -1,5 +1,8 @@
 use super::data::*;
-use crate::{api::image::RegistryAuth, Error, Result};
+use crate::{
+    api::{Filter, RegistryAuth},
+    Error, Result,
+};
 
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -16,28 +19,22 @@ pub enum ServiceFilter {
     Name(String),
 }
 
+impl Filter for ServiceFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        match &self {
+            ServiceFilter::Id(i) => ("id", i.to_owned()),
+            ServiceFilter::Label(l) => ("label", l.to_owned()),
+            ServiceFilter::ReplicatedMode => ("mode", "replicated".to_string()),
+            ServiceFilter::GlobalMode => ("mode", "global".to_string()),
+            ServiceFilter::Name(n) => ("name", n.to_string()),
+        }
+    }
+}
+
 impl_url_opts_builder!(List);
 
 impl ListOptsBuilder {
-    pub fn filter(&mut self, filters: Vec<ServiceFilter>) -> &mut Self {
-        let mut param = HashMap::new();
-        for f in filters {
-            match f {
-                ServiceFilter::Id(i) => param.insert("id", vec![i]),
-                ServiceFilter::Label(l) => param.insert("label", vec![l]),
-                ServiceFilter::ReplicatedMode => {
-                    param.insert("mode", vec!["replicated".to_string()])
-                }
-                ServiceFilter::GlobalMode => param.insert("mode", vec!["global".to_string()]),
-                ServiceFilter::Name(n) => param.insert("name", vec![n.to_string()]),
-            };
-        }
-        // structure is a a json encoded object mapping string keys to a list
-        // of string values
-        self.params
-            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-        self
-    }
+    impl_filter_func!(ServiceFilter);
 
     pub fn enable_status(&mut self) -> &mut Self {
         self.params.insert("status", "true".to_owned());

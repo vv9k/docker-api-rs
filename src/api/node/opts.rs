@@ -1,5 +1,5 @@
 use super::data::{Availability, Membership, Role};
-use crate::{Error, Result};
+use crate::{api::Filter, Error, Result};
 
 use serde::Serialize;
 
@@ -58,30 +58,21 @@ pub enum NodeFilter {
     Role(Role),
 }
 
+impl Filter for NodeFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        match &self {
+            NodeFilter::Id(id) => ("id", id.to_owned()),
+            NodeFilter::Label(label) => ("label", label.to_owned()),
+            NodeFilter::Membership(membership) => ("membership", membership.as_ref().to_string()),
+            NodeFilter::Name(name) => ("name", name.to_owned()),
+            NodeFilter::NodeLabel(node) => ("node.label", node.to_owned()),
+            NodeFilter::Role(role) => ("role", role.as_ref().to_string()),
+        }
+    }
+}
+
 impl_url_opts_builder!(NodeList);
 
 impl NodeListOptsBuilder {
-    pub fn filter<F>(&mut self, filters: F) -> &mut Self
-    where
-        F: IntoIterator<Item = NodeFilter>,
-    {
-        let mut param = HashMap::new();
-        for f in filters {
-            match f {
-                NodeFilter::Id(id) => param.insert("id", vec![id]),
-                NodeFilter::Label(label) => param.insert("label", vec![label]),
-                NodeFilter::Membership(membership) => {
-                    param.insert("membership", vec![membership.as_ref().to_string()])
-                }
-                NodeFilter::Name(name) => param.insert("name", vec![name]),
-                NodeFilter::NodeLabel(node) => param.insert("node.label", vec![node]),
-                NodeFilter::Role(role) => param.insert("role", vec![role.as_ref().to_string()]),
-            };
-        }
-        // structure is a a json encoded object mapping string keys to a list
-        // of string values
-        self.params
-            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-        self
-    }
+    impl_filter_func!(NodeFilter);
 }

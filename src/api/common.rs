@@ -2,6 +2,11 @@ use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
+/// Allows easier construction of filter functions for multiple api endpoints
+pub(crate) trait Filter {
+    fn query_key_val(&self) -> (&'static str, String);
+}
+
 pub type Labels = HashMap<String, String>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

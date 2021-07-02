@@ -1,8 +1,8 @@
+use crate::{api::Filter, util::url::encoded_pairs};
+
 use std::collections::HashMap;
 
 use serde::Serialize;
-
-use crate::util::url::encoded_pairs;
 
 #[derive(Clone, Serialize, Debug)]
 #[serde(untagged)]
@@ -316,6 +316,16 @@ pub enum ImageFilter {
     Label(String, String),
 }
 
+impl Filter for ImageFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        match &self {
+            ImageFilter::Dangling => ("dangling", true.to_string()),
+            ImageFilter::LabelName(n) => ("label", n.to_owned()),
+            ImageFilter::Label(n, v) => ("label", format!("{}={}", n, v)),
+        }
+    }
+}
+
 impl_url_opts_builder!(derives = Default | ImageList);
 
 impl ImageListOptsBuilder {
@@ -325,24 +335,7 @@ impl ImageListOptsBuilder {
 
     impl_url_str_field!(filter_name: F => "filter");
 
-    pub fn filter<F>(&mut self, filters: F) -> &mut Self
-    where
-        F: IntoIterator<Item = ImageFilter>,
-    {
-        let mut param = HashMap::new();
-        for f in filters {
-            match f {
-                ImageFilter::Dangling => param.insert("dangling", vec![true.to_string()]),
-                ImageFilter::LabelName(n) => param.insert("label", vec![n]),
-                ImageFilter::Label(n, v) => param.insert("label", vec![format!("{}={}", n, v)]),
-            };
-        }
-        // structure is a a json encoded object mapping string keys to a list
-        // of string values
-        self.params
-            .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-        self
-    }
+    impl_filter_func!(ImageFilter);
 }
 
 #[cfg(test)]

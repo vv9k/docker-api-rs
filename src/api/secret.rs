@@ -38,6 +38,8 @@ pub mod data {
 }
 
 pub mod opts {
+    use crate::api::Filter;
+
     use std::collections::HashMap;
 
     impl_url_opts_builder!(SecretList);
@@ -50,29 +52,20 @@ pub mod opts {
         Names(String),
     }
 
-    impl SecretListOptsBuilder {
-        pub fn filter<F>(&mut self, filters: F) -> &mut Self
-        where
-            F: IntoIterator<Item = SecretFilter>,
-        {
-            let mut param = HashMap::new();
-            for f in filters {
-                match f {
-                    SecretFilter::Id(id) => param.insert("id", vec![id]),
-                    SecretFilter::LabelKey(key) => param.insert("label", vec![key]),
-                    SecretFilter::LabelKeyVal(key, val) => {
-                        param.insert("label", vec![[key, val].join("=")])
-                    }
-                    SecretFilter::Name(name) => param.insert("name", vec![name]),
-                    SecretFilter::Names(names) => param.insert("names", vec![names]),
-                };
+    impl Filter for SecretFilter {
+        fn query_key_val(&self) -> (&'static str, String) {
+            match &self {
+                SecretFilter::Id(id) => ("id", id.to_owned()),
+                SecretFilter::LabelKey(label) => ("label", label.to_owned()),
+                SecretFilter::LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+                SecretFilter::Name(name) => ("name", name.to_owned()),
+                SecretFilter::Names(names) => ("names", names.to_owned()),
             }
-            // structure is a a json encoded object mapping string keys to a list
-            // of string values
-            self.params
-                .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-            self
         }
+    }
+
+    impl SecretListOptsBuilder {
+        impl_filter_func!(SecretFilter);
     }
 }
 
@@ -94,7 +87,7 @@ impl<'docker> Secret<'docker> {
     /// Delete a secret.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretDelete)
-    pub async fn leave(&self) -> Result<()> {
+    pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/secrets/{}", self.name))
             .await

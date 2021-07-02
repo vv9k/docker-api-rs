@@ -277,3 +277,22 @@ macro_rules! impl_api_ty {
         }
     }
 }
+
+macro_rules! impl_filter_func {
+    ($filter_ty:ident) => {
+        pub fn filter<F>(&mut self, filters: F) -> &mut Self
+        where
+            F: IntoIterator<Item = $filter_ty>,
+        {
+            let mut param = HashMap::new();
+            for (key, val) in filters.into_iter().map(|f| f.query_key_val()) {
+                param.insert(key, val);
+            }
+            // structure is a a json encoded object mapping string keys to a list
+            // of string values
+            self.params
+                .insert("filters", serde_json::to_string(&param).unwrap_or_default());
+            self
+        }
+    };
+}
