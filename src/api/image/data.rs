@@ -1,3 +1,5 @@
+use crate::api::Labels;
+
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -26,7 +28,7 @@ pub struct ImageInfo {
     pub created: u64,
     pub id: String,
     pub parent_id: String,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     pub repo_tags: Option<Vec<String>>,
     pub repo_digests: Option<Vec<String>>,
     pub virtual_size: u64,
@@ -63,10 +65,10 @@ pub struct ContainerConfig {
     pub domainname: String,
     pub entrypoint: Option<Vec<String>>,
     pub env: Option<Vec<String>>,
-    pub exposed_ports: Option<HashMap<String, HashMap<String, String>>>,
+    pub exposed_ports: Option<HashMap<String, Labels>>,
     pub hostname: String,
     pub image: String,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     // pub MacAddress: String,
     pub on_build: Option<Vec<String>>,
     // pub NetworkDisabled: bool,
@@ -78,7 +80,7 @@ pub struct ContainerConfig {
 }
 
 impl ContainerConfig {
-    pub fn env(&self) -> HashMap<String, String> {
+    pub fn env(&self) -> Labels {
         let mut map = HashMap::new();
         if let Some(ref vars) = self.env {
             for e in vars {

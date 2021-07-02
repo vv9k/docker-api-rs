@@ -1,6 +1,4 @@
-use crate::api::{ObjectVersion, TlsInfo};
-
-use std::collections::HashMap;
+use crate::api::{Driver, Labels, ObjectVersion, TlsInfo};
 
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +35,7 @@ pub struct SwarmInfo {
 #[serde(rename_all = "PascalCase")]
 pub struct SwarmSpec {
     pub name: String,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     pub orchestration: Option<Orchestration>,
     pub raft: Raft,
     pub dispatcher: Option<Dispatcher>,
@@ -72,7 +70,7 @@ pub struct ExternalCa {
     pub protocol: String,
     #[serde(rename = "URL")]
     pub url: String,
-    pub options: HashMap<String, String>,
+    pub options: Labels,
     #[serde(rename = "CACert")]
     pub ca_cert: String,
 }
@@ -86,14 +84,7 @@ pub struct EncryptionConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct TaskDefaults {
-    pub log_driver: LogDriver,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct LogDriver {
-    pub name: String,
-    pub options: HashMap<String, String>,
+    pub log_driver: Driver,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

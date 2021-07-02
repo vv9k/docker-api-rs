@@ -21,6 +21,7 @@ use crate::{
         network::{NetworkEntry, Networks},
         service::Services,
         volume::{VolumeInfo, Volumes},
+        Labels,
     },
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
@@ -535,7 +536,7 @@ pub struct ImageSummary {
     pub size: usize,
     pub shared_size: usize,
     pub virtual_size: usize,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     pub containers: usize,
 }
 
@@ -564,7 +565,7 @@ pub struct ContainerSummary {
     pub ports: Vec<Port>,
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     pub state: String,
     pub status: String,
     pub host_config: SummaryHostConfig,

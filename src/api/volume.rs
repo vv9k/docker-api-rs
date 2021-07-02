@@ -1,11 +1,9 @@
 //! Create and manage persistent storage that can be attached to containers.
 
-use std::collections::HashMap;
+use crate::{api::Labels, conn::Payload, Result};
 
 use hyper::Body;
 use serde::{Deserialize, Serialize};
-
-use crate::{conn::Payload, Docker, Result};
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
@@ -80,9 +78,9 @@ pub struct VolumeInfo {
     #[cfg(not(feature = "chrono"))]
     pub created_at: String,
     pub driver: String,
-    pub labels: Option<HashMap<String, String>>,
+    pub labels: Option<Labels>,
     pub name: String,
     pub mountpoint: String,
-    pub options: Option<HashMap<String, String>>,
+    pub options: Option<Labels>,
     pub scope: String,
 }

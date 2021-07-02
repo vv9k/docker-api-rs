@@ -217,7 +217,7 @@ macro_rules! impl_api_ty {
             #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n[Api Reference](https://docs.docker.com/engine/api/", version!() ,"/#tag/", stringify!($name), ")")]
             #[derive(Debug)]
             pub struct [< $name >]<'docker> {
-                docker: &'docker Docker,
+                docker: &'docker crate::Docker,
                 $name_field: String,
             }
             }
@@ -225,7 +225,7 @@ macro_rules! impl_api_ty {
                 // TODO: this is possible on nightly, figure out what to do
                 calculated_doc!{
                 #[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), " instance.")]
-                pub fn new<$name_field_tt>(docker: &'docker Docker, $name_field: $name_field_tt) -> Self
+                pub fn new<$name_field_tt>(docker: &'docker crate::Docker, $name_field: $name_field_tt) -> Self
                 where
                     $name_field_tt: Into<String>,
                 {
@@ -251,14 +251,14 @@ macro_rules! impl_api_ty {
             #[doc = concat!("Interface for Docker ", stringify!($name), "s.", stringify!($name), ">")]
             #[derive(Debug)]
             pub struct [< $name s >]<'docker> {
-                docker: &'docker Docker,
+                docker: &'docker crate::Docker,
             }
             }
 
             impl<'docker> [< $name s >]<'docker> {
                 calculated_doc!{
                 #[doc = concat!("Exports an interface for interacting with Docker ", stringify!($name), "s.")]
-                pub fn new(docker: &'docker Docker) -> Self {
+                pub fn new(docker: &'docker crate::Docker) -> Self {
                     [< $name s >] { docker }
                 }
                 }

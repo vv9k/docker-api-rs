@@ -8,7 +8,7 @@ pub use opts::*;
 
 use hyper::Body;
 
-use crate::{conn::Payload, docker::Docker, errors::Result};
+use crate::{conn::Payload, Result};
 
 impl_api_ty!(Network => id: I);
 

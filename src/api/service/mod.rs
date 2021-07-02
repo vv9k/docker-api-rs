@@ -6,9 +6,9 @@ pub use data::*;
 pub use opts::*;
 
 use crate::{
-    api::container::LogsOpts,
+    api::LogsOpts,
     conn::{tty, Headers, Payload},
-    Docker, Result,
+    Result,
 };
 
 use futures_util::stream::Stream;

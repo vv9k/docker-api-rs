@@ -8,7 +8,7 @@ pub mod opts;
 pub use data::*;
 pub use opts::*;
 
-use crate::{conn::Payload, util::url::encoded_pair, Docker, Result};
+use crate::{conn::Payload, util::url::encoded_pair, Result};
 
 impl_api_ty!(Node => name: N);
 

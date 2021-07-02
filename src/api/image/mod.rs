@@ -11,12 +11,11 @@ use futures_util::{stream::Stream, TryFutureExt, TryStreamExt};
 
 use crate::{
     conn::{Headers, Payload},
-    docker::Docker,
-    errors::Result,
     util::{
         tarball,
         url::{encoded_pair, encoded_pairs},
     },
+    Result,
 };
 
 impl_api_ty!(Image => name: N);

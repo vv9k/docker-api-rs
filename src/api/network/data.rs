@@ -1,7 +1,9 @@
+use crate::api::Labels;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-pub type PortDescription = HashMap<String, Option<Vec<HashMap<String, String>>>>;
+pub type PortDescription = HashMap<String, Option<Vec<Labels>>>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -42,8 +44,8 @@ pub struct NetworkEntry {
 #[serde(rename_all = "PascalCase")]
 pub struct Ipam {
     pub driver: String,
-    pub config: Vec<HashMap<String, String>>,
-    pub options: Option<HashMap<String, String>>,
+    pub config: Vec<Labels>,
+    pub options: Option<Labels>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -60,8 +62,8 @@ pub struct NetworkDetails {
     pub internal: bool,
     pub attachable: bool,
     pub containers: HashMap<String, NetworkContainerDetails>,
-    pub options: Option<HashMap<String, String>>,
-    pub labels: Option<HashMap<String, String>>,
+    pub options: Option<Labels>,
+    pub labels: Option<Labels>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

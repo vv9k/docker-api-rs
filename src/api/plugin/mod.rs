@@ -5,7 +5,7 @@ pub mod opts;
 pub use data::*;
 pub use opts::*;
 
-use crate::{conn::Payload, errors::Result, util::url::encoded_pair, Docker};
+use crate::{conn::Payload, util::url::encoded_pair, Result};
 
 use std::path::Path;
 

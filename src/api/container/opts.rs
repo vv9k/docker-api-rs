@@ -1,3 +1,5 @@
+use crate::api::Labels;
+
 use std::{collections::HashMap, hash::Hash, iter::Peekable, str, time::Duration};
 
 use serde::Serialize;
@@ -147,7 +149,7 @@ impl ContainerOptsBuilder {
     where
         P: AsRef<str>,
     {
-        let mut exposedport: HashMap<String, String> = HashMap::new();
+        let mut exposedport: Labels = HashMap::new();
         exposedport.insert("HostPort".to_string(), hostport.to_string());
 
         // The idea here is to go thought the 'old' port binds and to apply them to the local
@@ -287,7 +289,7 @@ impl ContainerOptsBuilder {
 
     impl_vec_field!(capabilities: C => "HostConfig.CapAdd");
 
-    pub fn devices(&mut self, devices: Vec<HashMap<String, String>>) -> &mut Self {
+    pub fn devices(&mut self, devices: Vec<Labels>) -> &mut Self {
         self.params.insert("HostConfig.Devices", json!(devices));
         self
     }

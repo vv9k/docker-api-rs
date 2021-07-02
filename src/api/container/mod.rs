@@ -15,11 +15,10 @@ use futures_util::{
 use hyper::Body;
 
 use crate::{
-    api::exec::{Exec, ExecContainerOpts},
+    api::{Exec, ExecContainerOpts},
     conn::{tty, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
-    docker::Docker,
-    errors::{Error, Result},
     util::url::encoded_pair,
+    Error, Result,
 };
 
 impl_api_ty!(Container => id: I);
