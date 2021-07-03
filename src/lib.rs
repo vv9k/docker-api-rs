@@ -50,6 +50,7 @@ pub use crate::{
 #[cfg(feature = "swarm")]
 pub use crate::api::{
     config::{self, Config, Configs},
+    node::{self, Node, Nodes},
     plugin::{self, Plugin, Plugins},
     secret::{self, Secret, Secrets},
     service::{self, Service, Services},

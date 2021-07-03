@@ -39,7 +39,7 @@ pub mod data {
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    /// Structure used to create a new secret with [`Secret::create`](Secret::create).
+    /// Structure used to create a new secret with [`Secrets::create`](crate::Secrets::create).
     pub struct SecretCreate {
         name: String,
         labels: Labels,
@@ -152,7 +152,7 @@ impl<'docker> Secret<'docker> {
 }
 
 impl<'docker> Secrets<'docker> {
-    /// List secrets.
+    /// List existing secrets.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretList)
     pub async fn list(&self, opts: &SecretListOpts) -> Result<Vec<SecretInfo>> {
@@ -161,16 +161,16 @@ impl<'docker> Secrets<'docker> {
             .await
     }
 
-    /// Create a secret. On success returns the id of the newly created secret.
+    /// Create a new secret.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretCreate)
-    pub async fn create(&self, new_secret: &SecretCreate) -> Result<String> {
+    pub async fn create(&self, new_secret: &SecretCreate) -> Result<Secret<'_>> {
         self.docker
             .post_json(
                 "/secrets/create",
                 Payload::Json(serde_json::to_string(&new_secret)?),
             )
             .await
-            .map(|resp: SecretCreateResponse| resp.id)
+            .map(|resp: SecretCreateResponse| Secret::new(self.docker, resp.id))
     }
 }

@@ -1,46 +1,4 @@
-//! Items related to events emitted by Docker
-
-use crate::{api::Attributes, util::url::encoded_pairs};
-
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-#[cfg(feature = "chrono")]
-use crate::util::datetime::{datetime_from_nano_timestamp, datetime_from_unix_timestamp};
-#[cfg(feature = "chrono")]
-use chrono::{DateTime, Utc};
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Event {
-    #[serde(rename = "Type")]
-    pub typ: String,
-    #[serde(rename = "Action")]
-    pub action: String,
-    #[serde(rename = "Actor")]
-    pub actor: Actor,
-    pub status: Option<String>,
-    pub id: Option<String>,
-    pub from: Option<String>,
-    #[cfg(feature = "chrono")]
-    #[serde(deserialize_with = "datetime_from_unix_timestamp")]
-    pub time: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub time: u64,
-    #[cfg(feature = "chrono")]
-    #[serde(deserialize_with = "datetime_from_nano_timestamp", rename = "timeNano")]
-    pub time_nano: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    #[serde(rename = "timeNano")]
-    pub time_nano: u64,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Actor {
-    #[serde(rename = "ID")]
-    pub id: String,
-    #[serde(rename = "Attributes")]
-    pub attributes: Attributes,
-}
 
 /// Opts for filtering streams of Docker events
 #[derive(Default, Debug)]
@@ -58,7 +16,7 @@ impl EventsOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(encoded_pairs(&self.params))
+            Some(crate::util::url::encoded_pairs(&self.params))
         }
     }
 }

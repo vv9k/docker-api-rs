@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Configs are application configurations that can be used by services.
 //! Swarm mode must be enabled for these endpoints to work.
 
@@ -38,7 +39,7 @@ pub mod data {
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    /// Structure used to create a new config with [`Config::create`](Config::create).
+    /// Structure used to create a new config with [`Configs::create`](crate::Configs::create).
     pub struct ConfigCreate {
         name: String,
         labels: Labels,
@@ -144,7 +145,7 @@ impl<'docker> Config<'docker> {
 }
 
 impl<'docker> Configs<'docker> {
-    /// List configs.
+    /// List existing configs.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigList)
     pub async fn list(&self, opts: &ConfigListOpts) -> Result<Vec<ConfigInfo>> {
@@ -153,16 +154,16 @@ impl<'docker> Configs<'docker> {
             .await
     }
 
-    /// Create a config. On success returns the id of the newly created secret.
+    /// Create a new config.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigCreate)
-    pub async fn create(&self, new_config: &ConfigCreate) -> Result<String> {
+    pub async fn create(&self, new_config: &ConfigCreate) -> Result<Config<'_>> {
         self.docker
             .post_json(
                 "/configs/create",
                 Payload::Json(serde_json::to_string(&new_config)?),
             )
             .await
-            .map(|resp: ConfigCreateResponse| resp.id)
+            .map(|resp: ConfigCreateResponse| Config::new(self.docker, resp.id))
     }
 }

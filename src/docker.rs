@@ -2,40 +2,29 @@
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
 use crate::{
-    api::{
-        container::{Containers, Mount, Port},
-        event::{Event, EventsOpts},
-        image::Images,
-        network::{NetworkEntry, Networks},
-        volume::{VolumeInfo, Volumes},
-        Labels,
-    },
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
+    Containers, Images, Networks, Volumes,
 };
+
+#[cfg(feature = "swarm")]
+use crate::{Configs, Nodes, Plugins, Secrets, Services, Swarm, Tasks};
+
+#[cfg(feature = "tls")]
+use crate::conn::get_https_connector;
+#[cfg(unix)]
+use crate::conn::get_unix_connector;
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
     stream::Stream,
     TryStreamExt,
 };
-use hyper::{body::Bytes, header::HeaderMap, Body, Client, Method, Response};
+use hyper::{body::Bytes, Body, Client, Method, Response};
 use log::trace;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::de::DeserializeOwned;
 
-use std::{collections::HashMap, convert::TryFrom, io, path::Path};
-
-#[cfg(feature = "swarm")]
-use crate::service::Services;
-
-#[cfg(feature = "tls")]
-use crate::conn::get_https_connector;
-
-#[cfg(unix)]
-use crate::conn::get_unix_connector;
-
-#[cfg(feature = "chrono")]
-use chrono::{DateTime, Utc};
+use std::path::Path;
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
@@ -159,12 +148,6 @@ impl Docker {
         Containers::new(self)
     }
 
-    #[cfg(feature = "swarm")]
-    /// Exports an interface for interacting with Docker services
-    pub fn services(&'_ self) -> Services<'_> {
-        Services::new(self)
-    }
-
     /// Exports an interface for interacting with Docker networks
     pub fn networks(&'_ self) -> Networks<'_> {
         Networks::new(self)
@@ -173,65 +156,6 @@ impl Docker {
     /// Exports an interface for interacting with Docker volumes
     pub fn volumes(&'_ self) -> Volumes<'_> {
         Volumes::new(self)
-    }
-
-    /// Returns the version of Docker that is running and various information about the system that
-    /// Docker is running on.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemVersion)
-    pub async fn version(&self) -> Result<Version> {
-        self.get_json("/version").await
-    }
-
-    /// Returns system information about Docker instance that is running
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemInfo)
-    pub async fn info(&self) -> Result<Info> {
-        self.get_json("/info").await
-    }
-
-    /// This is a dummy endpoint you can use to test if the server is accessible.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemPingHead)
-    pub async fn ping(&self) -> Result<PingInfo> {
-        self.get("/_ping")
-            .await
-            .and_then(|resp| PingInfo::try_from(resp.headers()))
-    }
-
-    /// Returns a stream of Docker events
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemEvents)
-    pub fn events<'docker>(
-        &'docker self,
-        opts: &EventsOpts,
-    ) -> impl Stream<Item = Result<Event>> + Unpin + 'docker {
-        let mut path = vec!["/events".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query);
-        }
-        let reader = Box::pin(
-            self.stream_get(path.join("?"))
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, e)),
-        )
-        .into_async_read();
-
-        let codec = futures_codec::LinesCodec {};
-
-        Box::pin(
-            futures_codec::FramedRead::new(reader, codec)
-                .map_err(Error::IO)
-                .and_then(|s: String| async move {
-                    serde_json::from_str(&s).map_err(Error::SerdeJsonError)
-                }),
-        )
-    }
-
-    /// Returns data usage of this Docker instance
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SystemDataUsage)
-    pub async fn data_usage(&self) -> Result<DataUsage> {
-        self.get_json("/system/df").await
     }
 
     //####################################################################################################
@@ -413,196 +337,42 @@ impl Docker {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Version {
-    pub version: String,
-    pub api_version: String,
-    pub git_commit: String,
-    pub go_version: String,
-    pub os: String,
-    pub arch: String,
-    pub kernel_version: String,
-    #[cfg(feature = "chrono")]
-    pub build_time: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub build_time: String,
-}
+#[cfg(feature = "swarm")]
+impl Docker {
+    /// Exports an interface for interacting with Docker services.
+    pub fn services(&'_ self) -> Services<'_> {
+        Services::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Info {
-    #[serde(rename = "ID")]
-    pub id: String,
-    pub containers: usize,
-    pub containers_running: usize,
-    pub containers_paused: usize,
-    pub containers_stopped: usize,
-    pub images: usize,
-    pub driver: String,
-    pub driver_status: Vec<Vec<String>>,
-    pub docker_root_dir: String,
-    // TODO:
-    //pub plugins: PluginsInfo,
-    pub memory_limit: bool,
-    pub swap_limit: bool,
-    pub kernel_memory: bool,
-    pub cpu_cfs_period: bool,
-    pub cpu_cfs_quota: bool,
-    #[serde(rename = "CPUShares")]
-    pub cpu_shares: bool,
-    #[serde(rename = "CPUSet")]
-    pub cpu_set: bool,
-    pub pids_limit: bool,
-    pub oom_kill_disable: bool,
-    #[serde(rename = "IPv4Forwarding")]
-    pub ipv4_forwarding: bool,
-    pub bridge_nf_iptables: bool,
-    pub bridge_nf_ip6tables: bool,
-    pub debug: bool,
-    pub n_fd: usize,
-    pub n_goroutines: usize,
-    pub system_time: String,
-    pub logging_driver: String,
-    pub cgroup_driver: String,
-    pub cgroup_version: String,
-    pub n_events_listener: u64,
-    pub kernel_version: String,
-    pub operating_system: String,
-    #[serde(rename = "OSVersion")]
-    pub os_version: String,
-    #[serde(rename = "OSType")]
-    pub os_type: String,
-    pub architecture: String,
-    #[serde(rename = "NCPU")]
-    pub n_cpu: u64,
-    pub mem_total: u64,
-    pub index_server_address: String,
-    // TODO:
-    //pub registry_config: Option<RegistryServiceConfig>,
-    // TODO:
-    //pub generic_resources: Vec<GenericResource>,
-    pub http_proxy: String,
-    pub https_proxy: String,
-    pub no_proxy: String,
-    pub name: String,
-    pub labels: Vec<String>,
-    pub experimental_build: bool,
-    pub server_version: String,
-    pub cluster_store: Option<String>,
-    pub cluster_advertise: Option<String>,
-    // TODO:
-    //pub runtimes: Runtimes,
-    pub default_runtime: String,
-    // TODO:
-    //pub swarm: SwarmInfo,
-    pub live_restore_enabled: bool,
-    // TODO: could be an enum
-    pub isolation: String,
-    pub init_binary: String,
-    pub containerd_commit: Commit,
-    pub runc_commit: Commit,
-    pub init_commit: Commit,
-    pub security_options: Vec<String>,
-    pub product_license: Option<String>,
-    pub default_address_pools: Option<Vec<AddressPool>>,
-    pub warnings: Option<Vec<String>>,
-}
+    /// Exports an interface for interacting with Docker configs.
+    pub fn configs(&'_ self) -> Configs<'_> {
+        Configs::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct AddressPool {
-    base: String,
-    size: usize,
-}
+    /// Exports an interface for interacting with Docker tasks.
+    pub fn tasks(&'_ self) -> Tasks<'_> {
+        Tasks::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct Commit {
-    #[serde(rename = "ID")]
-    pub id: String,
-    pub expected: String,
-}
+    /// Exports an interface for interacting with Docker secrets.
+    pub fn secrets(&'_ self) -> Secrets<'_> {
+        Secrets::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct DataUsage {
-    pub layer_size: Option<i64>,
-    pub images: Vec<ImageSummary>,
-    pub containers: Vec<ContainerSummary>,
-    pub volumes: Vec<VolumeInfo>,
-    pub build_cache: Option<Vec<BuildCache>>,
-}
+    /// Exports an interface for interacting with Docker swarm.
+    pub fn swarm(&'_ self) -> Swarm<'_> {
+        Swarm::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ImageSummary {
-    pub id: String,
-    pub parent_id: String,
-    pub repo_tags: Vec<String>,
-    pub repo_digests: Option<Vec<String>>,
-    pub created: usize,
-    pub size: usize,
-    pub shared_size: usize,
-    pub virtual_size: usize,
-    pub labels: Option<Labels>,
-    pub containers: usize,
-}
+    /// Exports an interface for interacting with Docker nodes.
+    pub fn nodes(&'_ self) -> Nodes<'_> {
+        Nodes::new(self)
+    }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct SummaryHostConfig {
-    network_mode: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct SummaryNetworkSettings {
-    pub networks: HashMap<String, NetworkEntry>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ContainerSummary {
-    pub id: String,
-    pub names: Vec<String>,
-    pub image: String,
-    #[serde(rename = "ImageID")]
-    pub image_id: String,
-    pub command: String,
-    pub created: i64,
-    pub ports: Vec<Port>,
-    pub size_rw: Option<i64>,
-    pub size_root_fs: Option<i64>,
-    pub labels: Option<Labels>,
-    pub state: String,
-    pub status: String,
-    pub host_config: SummaryHostConfig,
-    pub network_settings: SummaryNetworkSettings,
-    pub mounts: Vec<Mount>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct BuildCache {
-    #[serde(rename = "ID")]
-    pub id: String,
-    pub parent: String,
-    #[serde(rename = "Type")]
-    pub type_: String,
-    pub description: String,
-    pub in_use: bool,
-    pub shared: bool,
-    pub size: usize,
-    #[cfg(feature = "chrono")]
-    pub created_at: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub created_at: String,
-    #[cfg(feature = "chrono")]
-    pub last_used_at: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub last_used_at: String,
-    pub usage_count: usize,
+    /// Exports an interface for interacting with Docker plugins.
+    pub fn plugins(&'_ self) -> Plugins<'_> {
+        Plugins::new(self)
+    }
 }
 
 #[cfg(test)]
@@ -648,56 +418,5 @@ mod tests {
             Error::UnsupportedScheme(scheme) if scheme.is_empty() => {}
             e => panic!(r#"Expected Error::UnsupportedScheme(""), got {}"#, e),
         }
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct PingInfo {
-    pub api_version: String,
-    pub builder_version: Option<String>,
-    pub docker_experimental: bool,
-    pub cache_control: String,
-    pub pragma: String,
-    pub os_type: String,
-    pub server: String,
-    pub date: String,
-}
-
-impl TryFrom<&HeaderMap> for PingInfo {
-    type Error = Error;
-
-    fn try_from(value: &HeaderMap) -> Result<Self> {
-        macro_rules! extract_str {
-            ($id:literal) => {{
-                if let Some(val) = value.get($id) {
-                    val.to_str().map(ToString::to_string).map_err(|e| {
-                        Error::InvalidResponse(format!(
-                            "failed to convert header to string - {}",
-                            e
-                        ))
-                    })?
-                } else {
-                    return Err(Error::InvalidResponse(format!(
-                        "expected `{}` field in headers",
-                        $id
-                    )));
-                }
-            }};
-        }
-
-        Ok(PingInfo {
-            api_version: extract_str!("api-version"),
-            builder_version: value
-                .get("builder-version")
-                .and_then(|v| v.to_str().map(ToString::to_string).ok()),
-            docker_experimental: extract_str!("docker-experimental").parse().map_err(|e| {
-                Error::InvalidResponse(format!("expected header value to be bool - {}", e))
-            })?,
-            cache_control: extract_str!("cache-control"),
-            pragma: extract_str!("pragma"),
-            os_type: extract_str!("ostype"),
-            date: extract_str!("date"),
-            server: extract_str!("server"),
-        })
     }
 }
