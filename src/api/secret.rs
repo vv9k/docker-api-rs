@@ -1,6 +1,6 @@
 //! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, Result};
+use crate::{conn::Payload, util::url::construct_ep, Result};
 
 pub mod data {
     use crate::api::{Driver, Labels, ObjectVersion};
@@ -155,12 +155,8 @@ impl<'docker> Secrets<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretList)
     pub async fn list(&self, opts: &SecretListOpts) -> Result<Vec<SecretInfo>> {
-        let mut path = vec!["/secrets".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query);
-        }
         self.docker
-            .get_json::<Vec<SecretInfo>>(&path.join("?"))
+            .get_json(&construct_ep("/secrets", opts.serialize()))
             .await
     }
 

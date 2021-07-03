@@ -28,7 +28,7 @@ impl<'docker> Exec<'docker> {
         }
     }
 
-    /// Creates a new exec instance that will be executed in a container with id == container_id
+    /// Creates a new exec instance that will be executed in a container with id == container_id.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerExec)
     pub async fn create<C>(
@@ -45,17 +45,13 @@ impl<'docker> Exec<'docker> {
             id: String,
         }
 
-        let body: Body = opts.serialize()?.into();
-
-        let id = docker
+        docker
             .post_json(
                 &format!("/containers/{}/exec", container_id.as_ref()),
-                Payload::Json(body),
+                Payload::Json(opts.serialize()?),
             )
             .await
-            .map(|resp: Response| resp.id)?;
-
-        Ok(Exec::new(docker, id))
+            .map(|resp: Response| Exec::new(docker, resp.id))
     }
 
     // This exists for Container::exec()
@@ -94,11 +90,8 @@ impl<'docker> Exec<'docker> {
 
         Box::pin(
             async move {
-                // Bubble up the error inside the stream for backwards compatability
-                let body: Body = body_result?.into();
-
                 let exec_id = docker
-                    .post_json(&container_endpoint, Payload::Json(body))
+                    .post_json(&container_endpoint, Payload::Json(body_result?))
                     .await
                     .map(|resp: Response| resp.id)?;
 
@@ -126,7 +119,7 @@ impl<'docker> Exec<'docker> {
         Exec::new(docker, id)
     }
 
-    /// Starts this exec instance returning a multiplexed tty stream
+    /// Starts this exec instance returning a multiplexed tty stream.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ExecStart)
     pub fn start(&self) -> impl Stream<Item = Result<tty::TtyChunk>> + 'docker {
@@ -147,12 +140,12 @@ impl<'docker> Exec<'docker> {
         )
     }
 
-    /// Inspect this exec instance to aquire detailed information
+    /// Inspect this exec instance to aquire detailed information.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ExecInpsect)
     pub async fn inspect(&self) -> Result<ExecDetails> {
         self.docker
-            .get_json(&format!("/exec/{}/json", &self.id)[..])
+            .get_json(&format!("/exec/{}/json", &self.id))
             .await
     }
 
@@ -164,10 +157,7 @@ impl<'docker> Exec<'docker> {
         let body: Body = opts.serialize()?.into();
 
         self.docker
-            .post_json(
-                &format!("/exec/{}/resize", &self.id)[..],
-                Payload::Json(body),
-            )
+            .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body))
             .await
     }
 }

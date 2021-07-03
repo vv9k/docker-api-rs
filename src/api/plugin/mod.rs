@@ -5,7 +5,11 @@ pub mod opts;
 pub use data::*;
 pub use opts::*;
 
-use crate::{conn::Payload, util::url::encoded_pair, Result};
+use crate::{
+    conn::Payload,
+    util::url::{construct_ep, encoded_pair},
+    Result,
+};
 
 use std::path::Path;
 
@@ -17,18 +21,19 @@ impl<'docker> Plugin<'docker> {
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginInspect)
     pub async fn inspect(&self) -> Result<PluginInfo> {
         self.docker
-            .get_json(&format!("/plugins/{}/json", self.name)[..])
+            .get_json(&format!("/plugins/{}/json", self.name))
             .await
     }
 
     async fn _remove(&self, force: bool) -> Result<PluginInfo> {
-        let mut path = format!("/plugins/{}", self.name);
-        if force {
-            let query = encoded_pair("force", force);
-            path.push('?');
-            path.push_str(&query);
-        }
-        self.docker.delete_json(&path[..]).await
+        let query = if force {
+            Some(encoded_pair("force", true))
+        } else {
+            None
+        };
+        self.docker
+            .delete_json(&construct_ep(format!("/plugins/{}", self.name), query))
+            .await
     }
 
     /// Removes a plugin.
@@ -49,14 +54,18 @@ impl<'docker> Plugin<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginEnable)
     pub async fn enable(&self, timeout: Option<u64>) -> Result<()> {
-        let mut path = format!("/plugins/{}/enable", self.name);
-        if let Some(timeout) = timeout {
-            let query = encoded_pair("timeout", timeout);
-            path.push('?');
-            path.push_str(&query);
-        }
-
-        self.docker.post(&path, Payload::empty()).await.map(|_| ())
+        let query = if let Some(timeout) = timeout {
+            Some(encoded_pair("timeout", timeout))
+        } else {
+            None
+        };
+        self.docker
+            .post(
+                &construct_ep(format!("/plugins/{}/enable", self.name), query),
+                Payload::empty(),
+            )
+            .await
+            .map(|_| ())
     }
 
     /// Disable a plugin.
@@ -102,12 +111,8 @@ impl<'docker> Plugins<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginList)
     pub async fn list(&self, opts: &PluginListOpts) -> Result<Vec<PluginInfo>> {
-        let mut path = vec!["/plugins".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query);
-        }
         self.docker
-            .get_json::<Vec<PluginInfo>>(&path.join("?"))
+            .get_json::<Vec<PluginInfo>>(&construct_ep("/plugins", opts.serialize()))
             .await
     }
 }

@@ -4,6 +4,7 @@
 use crate::{
     api::LogsOpts,
     conn::{tty, TtyChunk},
+    util::url::construct_ep,
     Result,
 };
 
@@ -142,13 +143,10 @@ impl<'docker> Task<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/TaskLogs)
     pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
-        let mut path = vec![format!("/tasks/{}/logs", self.id)];
-        if let Some(query) = opts.serialize() {
-            path.push(query)
-        }
-
-        let stream = Box::pin(self.docker.stream_get(path.join("?")));
-
+        let stream = Box::pin(self.docker.stream_get(construct_ep(
+            format!("/tasks/{}/logs", self.id),
+            opts.serialize(),
+        )));
         Box::pin(tty::decode(stream))
     }
 }
@@ -158,10 +156,8 @@ impl<'docker> Tasks<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/TaskList)
     pub async fn list(&self, opts: &TaskListOpts) -> Result<Vec<TaskInfo>> {
-        let mut path = vec!["/tasks".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query);
-        }
-        self.docker.get_json::<Vec<TaskInfo>>(&path.join("?")).await
+        self.docker
+            .get_json(&construct_ep("/tasks", opts.serialize()))
+            .await
     }
 }

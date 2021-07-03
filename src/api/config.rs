@@ -1,7 +1,7 @@
 //! Configs are application configurations that can be used by services.
 //! Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, Result};
+use crate::{conn::Payload, util::url::construct_ep, Result};
 
 pub mod data {
     use crate::api::{Driver, Labels, ObjectVersion};
@@ -148,12 +148,8 @@ impl<'docker> Configs<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigList)
     pub async fn list(&self, opts: &ConfigListOpts) -> Result<Vec<ConfigInfo>> {
-        let mut path = vec!["/configs".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query);
-        }
         self.docker
-            .get_json::<Vec<ConfigInfo>>(&path.join("?"))
+            .get_json(&construct_ep("/configs", opts.serialize()))
             .await
     }
 

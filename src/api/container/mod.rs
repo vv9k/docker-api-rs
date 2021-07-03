@@ -16,19 +16,19 @@ use hyper::Body;
 use crate::{
     api::{Exec, ExecContainerOpts, LogsOpts},
     conn::{tty, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
-    util::url::encoded_pair,
+    util::url::{append_query, construct_ep, encoded_pair},
     Error, Result,
 };
 
 impl_api_ty!(Container => id: I);
 
 impl<'docker> Container<'docker> {
-    /// Inspects the current docker container instance's details
+    /// Inspects the current docker container instance's details.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerInspect)
     pub async fn inspect(&self) -> Result<ContainerDetails> {
         self.docker
-            .get_json::<ContainerDetails>(&format!("/containers/{}/json", self.id)[..])
+            .get_json::<ContainerDetails>(&format!("/containers/{}/json", self.id))
             .await
     }
 
@@ -37,24 +37,21 @@ impl<'docker> Container<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerTop)
     pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
-        let mut path = vec![format!("/containers/{}/top", self.id)];
+        let mut ep = format!("/containers/{}/top", self.id);
         if let Some(ref args) = psargs {
-            let encoded = encoded_pair("ps_args", args);
-            path.push(encoded)
+            append_query(&mut ep, encoded_pair("ps_args", args));
         }
-        self.docker.get_json(&path.join("?")).await
+        self.docker.get_json(&ep).await
     }
 
     /// Returns a stream of logs emitted by this container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerLogs)
     pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
-        let mut path = vec![format!("/containers/{}/logs", self.id)];
-        if let Some(query) = opts.serialize() {
-            path.push(query)
-        }
-
-        let stream = Box::pin(self.docker.stream_get(path.join("?")));
+        let stream = Box::pin(self.docker.stream_get(construct_ep(
+            format!("/containers/{}/logs", self.id),
+            opts.serialize(),
+        )));
 
         Box::pin(tty::decode(stream))
     }
@@ -83,16 +80,16 @@ impl<'docker> Container<'docker> {
         self.attach_raw().await.map(TtyMultiplexer::new)
     }
 
-    /// Returns a set of changes made to the container instance
+    /// Returns a set of changes made to the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerChanges)
     pub async fn changes(&self) -> Result<Vec<Change>> {
         self.docker
-            .get_json::<Vec<Change>>(&format!("/containers/{}/changes", self.id)[..])
+            .get_json(&format!("/containers/{}/changes", self.id))
             .await
     }
 
-    /// Exports the current docker container into a tarball
+    /// Exports the current docker container into a tarball.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerExport)
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
@@ -101,7 +98,7 @@ impl<'docker> Container<'docker> {
             .map_ok(|c| c.to_vec())
     }
 
-    /// Returns a stream of stats specific to this container instance
+    /// Returns a stream of stats specific to this container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStats)
     pub fn stats(&self) -> impl Stream<Item = Result<Stats>> + Unpin + 'docker {
@@ -123,106 +120,90 @@ impl<'docker> Container<'docker> {
         )
     }
 
-    /// Start the container instance
+    /// Start the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStart)
     pub async fn start(&self) -> Result<()> {
         self.docker
-            .post(
-                &format!("/containers/{}/start", self.id)[..],
-                Payload::empty(),
-            )
+            .post(&format!("/containers/{}/start", self.id), Payload::empty())
             .await
             .map(|_| ())
     }
 
-    /// Stop the container instance
+    /// Stop the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerStop)
     pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
-        let mut path = vec![format!("/containers/{}/stop", self.id)];
+        let mut ep = format!("/containers/{}/stop", self.id);
         if let Some(w) = wait {
-            let encoded = encoded_pair("t", w.as_secs());
-
-            path.push(encoded)
+            append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker
-            .post(&path.join("?"), Payload::empty())
-            .await
-            .map(|_| ())
+        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
     }
 
-    /// Restart the container instance
+    /// Restart the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRestart)
     pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
-        let mut path = vec![format!("/containers/{}/restart", self.id)];
+        let mut ep = format!("/containers/{}/restart", self.id);
         if let Some(w) = wait {
-            let encoded = encoded_pair("t", w.as_secs());
-            path.push(encoded)
+            append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker
-            .post(&path.join("?"), Payload::empty())
-            .await
-            .map(|_| ())
+        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
     }
 
-    /// Kill the container instance
+    /// Kill the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerKill)
     pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
-        let mut path = vec![format!("/containers/{}/kill", self.id)];
+        let mut ep = format!("/containers/{}/kill", self.id);
         if let Some(sig) = signal {
-            let encoded = encoded_pair("signal", sig);
-            path.push(encoded)
+            append_query(&mut ep, encoded_pair("signal", sig));
         }
-        self.docker
-            .post(&path.join("?"), Payload::empty())
-            .await
-            .map(|_| ())
+        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
     }
 
-    /// Rename the container instance
+    /// Rename the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRename)
     pub async fn rename(&self, name: &str) -> Result<()> {
-        let query = encoded_pair("name", name);
         self.docker
             .post(
-                &format!("/containers/{}/rename?{}", self.id, query)[..],
+                &format!(
+                    "/containers/{}/rename?{}",
+                    self.id,
+                    encoded_pair("name", name)
+                ),
                 Payload::empty(),
             )
             .await
             .map(|_| ())
     }
 
-    /// Pause the container instance
+    /// Pause the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerPause)
     pub async fn pause(&self) -> Result<()> {
         self.docker
-            .post(
-                &format!("/containers/{}/pause", self.id)[..],
-                Payload::empty(),
-            )
+            .post(&format!("/containers/{}/pause", self.id), Payload::empty())
             .await
             .map(|_| ())
     }
 
-    /// Unpause the container instance
+    /// Unpause the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerUnpause)
     pub async fn unpause(&self) -> Result<()> {
         self.docker
             .post(
-                &format!("/containers/{}/unpause", self.id)[..],
+                &format!("/containers/{}/unpause", self.id),
                 Payload::empty(),
             )
             .await
             .map(|_| ())
     }
 
-    /// Wait until the container stops
+    /// Wait until the container stops.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerWait)
     pub async fn wait(&self) -> Result<Exit> {
@@ -231,30 +212,32 @@ impl<'docker> Container<'docker> {
             .await
     }
 
-    /// Delete the container instance
+    /// Delete the container instance.
     ///
     /// Use remove instead to use the force/v Opts.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerDelete)
     pub async fn delete(&self) -> Result<()> {
         self.docker
-            .delete(&format!("/containers/{}", self.id)[..])
+            .delete(&format!("/containers/{}", self.id))
             .await
             .map(|_| ())
     }
 
-    /// Delete the container instance (todo: force/v)
+    /// Delete the container instance.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerRemove)
     pub async fn remove(&self, opts: &RmContainerOpts) -> Result<()> {
-        let mut path = vec![format!("/containers/{}", self.id)];
-        if let Some(query) = opts.serialize() {
-            path.push(query)
-        }
-        self.docker.delete(&path.join("?")).await.map(|_| ())
+        self.docker
+            .delete(&construct_ep(
+                format!("/containers/{}", self.id),
+                opts.serialize(),
+            ))
+            .await
+            .map(|_| ())
     }
 
-    /// Execute a command in this container
+    /// Execute a command in this container.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Exec)
     pub fn exec(
@@ -275,10 +258,13 @@ impl<'docker> Container<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerArchive)
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
-        let path_arg = encoded_pair("path", path.to_string_lossy());
-
-        let endpoint = format!("/containers/{}/archive?{}", self.id, path_arg);
-        self.docker.stream_get(endpoint).map_ok(|c| c.to_vec())
+        self.docker
+            .stream_get(format!(
+                "/containers/{}/archive?{}",
+                self.id,
+                encoded_pair("path", path.to_string_lossy())
+            ))
+            .map_ok(|c| c.to_vec())
     }
 
     /// Copy a byte slice as file into (see `bytes`) the container.
@@ -313,11 +299,13 @@ impl<'docker> Container<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PutContainerArchive)
     pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
-        let path_arg = encoded_pair("path", path.to_string_lossy());
-
         self.docker
             .put(
-                &format!("/containers/{}/archive?{}", self.id, path_arg),
+                &format!(
+                    "/containers/{}/archive?{}",
+                    self.id,
+                    encoded_pair("path", path.to_string_lossy())
+                ),
                 Payload::XTar(body),
             )
             .await
@@ -332,11 +320,13 @@ impl<'docker> Container<'docker> {
         P: AsRef<Path>,
     {
         static PATH_STAT_HEADER: &str = "X-Docker-Container-Path-Stat";
-        let path_arg = encoded_pair("path", path.as_ref().to_string_lossy());
-
         let resp = self
             .docker
-            .head_response(&format!("/containers/{}/archive?{}", self.id, path_arg))
+            .head_response(&format!(
+                "/containers/{}/archive?{}",
+                self.id,
+                encoded_pair("path", path.as_ref().to_string_lossy())
+            ))
             .await?;
         if let Some(header) = resp.headers().get(PATH_STAT_HEADER) {
             let header = header.to_str().map_err(|e| {
@@ -367,30 +357,24 @@ impl<'docker> Container<'docker> {
 }
 
 impl<'docker> Containers<'docker> {
-    /// Lists the container instances on the docker host
+    /// Lists the container instances on the docker host.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerList)
     pub async fn list(&self, opts: &ContainerListOpts) -> Result<Vec<ContainerInfo>> {
-        let mut path = vec!["/containers/json".to_owned()];
-        if let Some(query) = opts.serialize() {
-            path.push(query)
-        }
         self.docker
-            .get_json::<Vec<ContainerInfo>>(&path.join("?"))
+            .get_json(&construct_ep("/containers/json", opts.serialize()))
             .await
     }
 
-    /// Returns a builder interface for creating a new container instance
+    /// Create a new container.
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerList)
     pub async fn create(&self, opts: &ContainerOpts) -> Result<ContainerCreateInfo> {
-        let body: Body = opts.serialize()?.into();
-        let mut path = vec!["/containers/create".to_owned()];
-
-        if let Some(ref name) = opts.name {
-            path.push(encoded_pair("name", name));
-        }
-
         self.docker
-            .post_json(&path.join("?"), Payload::Json(body))
+            .post_json(
+                &construct_ep("/containers/create", opts.name.as_ref()),
+                Payload::Json(opts.serialize()?),
+            )
             .await
     }
 
@@ -398,11 +382,12 @@ impl<'docker> Containers<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerPrune)
     pub async fn prune(&self, opts: &ContainerPruneOpts) -> Result<()> {
-        let mut path = "/containers/prune".to_string();
-        if let Some(query) = opts.serialize() {
-            path.push('?');
-            path.push_str(&query);
-        }
-        self.docker.post(&path, Payload::empty()).await.map(|_| ())
+        self.docker
+            .post(
+                &construct_ep("/containers/prune", opts.serialize()),
+                Payload::empty(),
+            )
+            .await
+            .map(|_| ())
     }
 }

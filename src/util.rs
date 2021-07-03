@@ -2,6 +2,26 @@ pub mod url {
     use std::{borrow::Borrow, string::ToString};
     use url::form_urlencoded;
 
+    pub fn construct_ep<E, Q>(ep: E, query: Option<Q>) -> String
+    where
+        E: Into<String>,
+        Q: AsRef<str>,
+    {
+        let mut ep = ep.into();
+        if let Some(query) = query {
+            append_query(&mut ep, query);
+        }
+        ep
+    }
+
+    pub fn append_query<Q>(ep: &mut String, query: Q)
+    where
+        Q: AsRef<str>,
+    {
+        ep.push('?');
+        ep.push_str(query.as_ref());
+    }
+
     pub fn encoded_pair<K, V>(key: K, val: V) -> String
     where
         K: AsRef<str> + 'static,
