@@ -36,10 +36,10 @@ impl_url_opts_builder!(List);
 impl ListOptsBuilder {
     impl_filter_func!(ServiceFilter);
 
-    pub fn enable_status(&mut self) -> &mut Self {
-        self.params.insert("status", "true".to_owned());
-        self
-    }
+    impl_url_bool_field!(
+        "Include service status, with count of running and desired tasks."
+        status => "status"
+    );
 }
 
 #[derive(Default, Debug)]

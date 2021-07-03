@@ -234,72 +234,64 @@ impl BuildOptsBuilder {
         }
     }
 
-    /// set the name of the docker file. defaults to "DockerFile"
-    pub fn dockerfile<P>(&mut self, path: P) -> &mut Self
-    where
-        P: Into<String>,
-    {
-        self.params.insert("dockerfile", path.into());
-        self
-    }
+    impl_url_str_field!("set the name of the docker file. defaults to `DockerFile`" dockerfile: P => "dockerfile");
 
-    /// tag this image with a name after building it
-    pub fn tag<T>(&mut self, t: T) -> &mut Self
-    where
-        T: Into<String>,
-    {
-        self.params.insert("t", t.into());
-        self
-    }
+    impl_url_str_field!("tag this image with a name after building it" tag: T => "t");
 
-    pub fn remote<R>(&mut self, r: R) -> &mut Self
-    where
-        R: Into<String>,
-    {
-        self.params.insert("remote", r.into());
-        self
-    }
+    impl_url_str_field!("Extra hosts to add to /etc/hosts." extra_hosts: H => "extrahosts");
 
-    /// don't use the image cache when building image
-    pub fn nocache(&mut self, nc: bool) -> &mut Self {
-        self.params.insert("nocache", nc.to_string());
-        self
-    }
+    impl_url_str_field!(remote: R => "remote");
 
-    pub fn rm(&mut self, r: bool) -> &mut Self {
-        self.params.insert("rm", r.to_string());
-        self
-    }
+    impl_url_bool_field!("Suppress verbose build output." quiet => "q");
 
-    pub fn forcerm(&mut self, fr: bool) -> &mut Self {
-        self.params.insert("forcerm", fr.to_string());
-        self
-    }
+    impl_url_bool_field!("Don't use the image cache when building image." nocahe => "nocache");
 
-    /// `bridge`, `host`, `none`, `container:<name|id>`, or a custom network name.
-    pub fn network_mode<T>(&mut self, t: T) -> &mut Self
-    where
-        T: Into<String>,
-    {
-        self.params.insert("networkmode", t.into());
-        self
-    }
+    impl_url_str_field!("Attempt to pull the image even if an older image exists locally."
+                        pull: I => "pull");
 
-    pub fn memory(&mut self, memory: u64) -> &mut Self {
-        self.params.insert("memory", memory.to_string());
-        self
-    }
+    impl_url_bool_field!(rm => "rm");
 
-    pub fn cpu_shares(&mut self, cpu_shares: u32) -> &mut Self {
-        self.params.insert("cpushares", cpu_shares.to_string());
-        self
-    }
+    impl_url_bool_field!(forcerm => "forcerm");
 
-    // todo: memswap
-    // todo: cpusetcpus
-    // todo: cpuperiod
-    // todo: cpuquota
-    // todo: buildargs
+    impl_url_field!("Set memory limit for build." memory: usize => "memory");
+
+    impl_url_field!("Total memory (memory + swap). Set as -1 to disable swap." memswap: usize => "memswap");
+
+    impl_url_field!("CPU shares (relative weight)." cpu_shares: usize => "cpushares");
+
+    impl_url_str_field!("CPUs in which to allow execution (eg. `0-3`, `0,1`)" cpu_set_cpus: C => "cpusetcpus");
+
+    impl_url_field!("The length of a CPU period in microseconds." cpu_period: usize => "cpuperiod");
+
+    impl_url_field!(
+        "Microseconds of CPU time that the container can get in a CPU period."
+        cpu_quota: usize => "cpuquota"
+    );
+
+    // TODO: buildargs
+
+    impl_url_field!(
+        "Size of /dev/shm in bytes. The size must be greater than 0. If omitted the system uses 64MB."
+        shm_size: usize => "shmsize"
+    );
+
+    impl_url_bool_field!(
+        "Squash the resulting images layers into a single layer. (Experimental release only.)"
+        squash => "squash"
+    );
+
+    impl_url_str_field!(
+        "`bridge`, `host`, `none`, `container:<name|id>`, or a custom network name."
+        network_mode: T => "networkmode"
+    );
+
+    impl_url_str_field!("Platform in the format os[/arch[/variant]]." platform: P => "platform");
+
+    impl_url_str_field!("Target build stage." target: T => "target");
+
+    impl_url_str_field!("BuildKit output configuration." outputs: C => "outputs");
+
+    // TODO: labels
 
     pub fn build(&self) -> BuildOpts {
         BuildOpts {
@@ -329,20 +321,25 @@ impl Filter for ImageFilter {
 impl_url_opts_builder!(derives = Default | ImageList);
 
 impl ImageListOptsBuilder {
-    impl_url_bool_field!(digests => "digests");
-
-    impl_url_bool_field!(all => "all");
-
-    impl_url_str_field!(filter_name: F => "filter");
-
+    impl_url_bool_field!(
+        "Show all images. Only images from a final layer (no children) are shown by default."
+        all => "all"
+    );
+    impl_url_bool_field!(
+        "Show digest information as a RepoDigests field on each image."
+        digests => "digests"
+    );
     impl_filter_func!(ImageFilter);
 }
 
 impl_url_opts_builder!(derives = Default | ImageRemove);
 
 impl ImageRemoveOptsBuilder {
-    impl_url_bool_field!(force => "force");
-    impl_url_bool_field!(noprune => "noprune");
+    impl_url_bool_field!(
+        "Remove the image even if it is being used by stopped containers or has other tags."
+        force => "force"
+    );
+    impl_url_bool_field!("Do not delete untagged parent images." noprune => "noprune");
 }
 
 impl_url_opts_builder!(ImagePrune);

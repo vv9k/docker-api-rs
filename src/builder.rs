@@ -56,9 +56,23 @@ macro_rules! impl_url_str_field {
             )*
             pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
             where
-                $ty: Into<String> + serde::Serialize,
+                $ty: Into<String>,
             {
                 self.params.insert($docker_name, $name.into());
+                self
+            }
+        }
+    };
+}
+
+macro_rules! impl_url_field {
+    ($($docs:literal)* $name:ident : $ty:tt => $docker_name:literal) => {
+        paste::item! {
+            $(
+                #[doc= $docs]
+            )*
+            pub fn [< $name >](&mut self, $name: $ty)-> &mut Self {
+                self.params.insert($docker_name, $name.to_string());
                 self
             }
         }

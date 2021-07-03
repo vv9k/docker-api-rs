@@ -212,8 +212,9 @@ impl ContainerOptsBuilder {
     }
 
     impl_str_field!(
-    "Specify the working dir (corresponds to the `-w` docker cli argument)"
-    working_dir: W => "WorkingDir");
+        "Specify the working dir (corresponds to the `-w` docker cli argument)"
+        working_dir: W => "WorkingDir"
+    );
 
     impl_vec_field!(
         "Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`"
@@ -225,15 +226,17 @@ impl ContainerOptsBuilder {
     impl_field!(memory: u64 => "HostConfig.Memory");
 
     impl_field!(
-    "Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap."
-    memory_swap: i64 => "HostConfig.MemorySwap");
+        "Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap."
+        memory_swap: i64 => "HostConfig.MemorySwap"
+    );
 
     impl_field!(
-    "CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit."
-    ""
-    "For example, setting `nano_cpus` to `500_000_000` results in the container being allocated"
-    "50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs."
-    nano_cpus: u64 => "HostConfig.NanoCpus");
+        "CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit."
+        ""
+        "For example, setting `nano_cpus` to `500_000_000` results in the container being allocated"
+        "50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs."
+        nano_cpus: u64 => "HostConfig.NanoCpus"
+    );
 
     /// CPU quota in units of CPUs. This is a wrapper around `nano_cpus` to do the unit conversion.
     ///
@@ -332,9 +335,11 @@ impl ContainerOptsBuilder {
 impl_url_opts_builder!(RmContainer);
 
 impl RmContainerOptsBuilder {
-    impl_url_bool_field!(force => "force");
+    impl_url_bool_field!("If the container is running, kill it before removing it." force => "force");
 
-    impl_url_bool_field!(volumes => "v");
+    impl_url_bool_field!("Remove anonymous volumes associated with the container." volumes => "v");
+
+    impl_url_bool_field!("Remove the specified link associated with the container." link => "link");
 }
 
 impl_url_opts_builder!(ContainerPrune);

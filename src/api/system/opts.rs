@@ -67,15 +67,39 @@ pub struct EventsOptsBuilder {
 }
 
 impl EventsOptsBuilder {
-    /// Filter events since a given timestamp
-    pub fn since(&mut self, ts: &u64) -> &mut Self {
-        self.params.insert("since", ts.to_string());
+    #[cfg(feature = "chrono")]
+    /// Only return events since this time.
+    pub fn since<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    where
+        Tz: chrono::TimeZone,
+    {
+        self.params
+            .insert("since", timestamp.timestamp().to_string());
         self
     }
 
-    /// Filter events until a given timestamp
-    pub fn until(&mut self, ts: &u64) -> &mut Self {
-        self.params.insert("until", ts.to_string());
+    #[cfg(not(feature = "chrono"))]
+    /// Only return events since this time, as a UNIX timestamp.
+    pub fn since(&mut self, timestamp: i64) -> &mut Self {
+        self.params.insert("since", timestamp.to_string());
+        self
+    }
+
+    #[cfg(feature = "chrono")]
+    /// Only return events before this time.
+    pub fn until<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    where
+        Tz: chrono::TimeZone,
+    {
+        self.params
+            .insert("until", timestamp.timestamp().to_string());
+        self
+    }
+
+    #[cfg(not(feature = "chrono"))]
+    /// Only return events before this time, as a UNIX timestamp.
+    pub fn until(&mut self, timestamp: i64) -> &mut Self {
+        self.params.insert("until", timestamp.to_string());
         self
     }
 

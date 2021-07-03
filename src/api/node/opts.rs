@@ -17,13 +17,13 @@ impl NodeUpdateOpts {
         NodeUpdateOptsBuilder::new(version)
     }
 
-    impl_map_field!(labels: L => "Labels");
+    impl_map_field!("User-defined key/value metadata" labels: L => "Labels");
 
-    impl_str_field!(name: N => "Name");
+    impl_str_field!("Name for the node." name: N => "Name");
 
-    impl_str_enum_field!(role: Role => "Role");
+    impl_str_enum_field!("Role of the node." role: Role => "Role");
 
-    impl_str_enum_field!(availability: Availability => "Availability");
+    impl_str_enum_field!("Availability of the node." availability: Availability => "Availability");
 
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)

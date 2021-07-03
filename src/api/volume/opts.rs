@@ -3,9 +3,16 @@ use crate::api::Filter;
 impl_json_opts_builder!(VolumeCreate);
 
 impl VolumeCreateOptsBuilder {
-    impl_str_field!(name: N => "Name");
+    impl_str_field!("The new volume's name. If not specified, Docker generates a name." name: N => "Name");
 
-    impl_map_field!(labels: L => "Labels");
+    impl_str_field!("Name of the volume driver to use." driver: D => "Driver");
+
+    impl_map_field!(
+        "A mapping of driver options and values."
+        "These options are passed directly to the driver and are driver specific."
+        driver_opts: O => "DriverOpts");
+
+    impl_map_field!("User-defined key/value metadata." labels: L => "Labels");
 }
 
 impl_url_opts_builder!(VolumePrune);
