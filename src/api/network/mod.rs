@@ -11,38 +11,38 @@ use crate::{conn::Payload, util::url::construct_ep, Result};
 impl_api_ty!(Network => id: I);
 
 impl<'docker> Network<'docker> {
+    api_doc! { Network => Inspect
     /// Inspects the current docker network instance's details.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkInspect>
+    |
     pub async fn inspect(&self) -> Result<NetworkInfo> {
         self.docker
             .get_json(&format!("/networks/{}", self.id))
             .await
-    }
+    }}
 
+    api_doc! { Network => Delete
     /// Delete the network instance.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkDelete>
+    |
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/networks/{}", self.id))
             .await?;
         Ok(())
-    }
+    }}
 
+    api_doc! { Network => Connect
     /// Connect container to network.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkConnect>
+    |
     pub async fn connect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
         self.do_connection("connect", opts).await
-    }
+    }}
 
+    api_doc! { Network => Disconnect
     /// Disconnect container to network.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkDisconnect>
+    |
     pub async fn disconnect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
         self.do_connection("disconnect", opts).await
-    }
+    }}
 
     async fn do_connection<S>(&self, segment: S, opts: &ContainerConnectionOpts) -> Result<()>
     where
@@ -59,27 +59,27 @@ impl<'docker> Network<'docker> {
 }
 
 impl<'docker> Networks<'docker> {
+    api_doc! { Network => List
     /// List the docker networks on the current docker host.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
+    |
     pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkInfo>> {
         self.docker
             .get_json(&construct_ep("/networks", opts.serialize()))
             .await
-    }
+    }}
 
+    api_doc! { Network => Create
     /// Create a new Network instance.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkCreate>
+    |
     pub async fn create(&self, opts: &NetworkCreateOpts) -> Result<NetworkCreateInfo> {
         self.docker
             .post_json("/networks/create", Payload::Json(opts.serialize()?))
             .await
-    }
+    }}
 
+    api_doc! { Network => Prune
     /// Delete unused networks. Returns a list of deleted network names.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NetworkPrune)
+    |
     pub async fn prune(&self, opts: &NetworkPruneOpts) -> Result<Vec<String>> {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "PascalCase")]
@@ -93,5 +93,5 @@ impl<'docker> Networks<'docker> {
             )
             .await
             .map(|resp: PruneResponse| resp.networks_deleted)
-    }
+    }}
 }

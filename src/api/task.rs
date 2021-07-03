@@ -133,32 +133,32 @@ pub use opts::*;
 impl_api_ty!(Task => id: I);
 
 impl<'docker> Task<'docker> {
+    api_doc! { Task => Inspect
     /// Inspects a task.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/TaskInspect)
+    |
     pub async fn inspect(&self) -> Result<TaskInfo> {
         self.docker.get_json(&format!("/tasks/{}", self.id)).await
-    }
+    }}
 
+    api_doc! { Task => Logs
     /// Returns a stream of logs emitted from a task.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/TaskLogs)
+    |
     pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
         let stream = Box::pin(self.docker.stream_get(construct_ep(
             format!("/tasks/{}/logs", self.id),
             opts.serialize(),
         )));
         Box::pin(tty::decode(stream))
-    }
+    }}
 }
 
 impl<'docker> Tasks<'docker> {
-    /// List tasks.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/TaskList)
+    api_doc! { Task => List
+    /// List existing tasks.
+    |
     pub async fn list(&self, opts: &TaskListOpts) -> Result<Vec<TaskInfo>> {
         self.docker
             .get_json(&construct_ep("/tasks", opts.serialize()))
             .await
-    }
+    }}
 }

@@ -21,27 +21,27 @@ use crate::{
 impl_api_ty!(Image => name: N);
 
 impl<'docker> Image<'docker> {
+    api_doc! { Image => Inspect
     /// Inspects a named image's details.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageInspect)
+    |
     pub async fn inspect(&self) -> Result<ImageDetails> {
         self.docker
             .get_json(&format!("/images/{}/json", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Image => History
     /// Lists the history of the images set of changes.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageHistory)
+    |
     pub async fn history(&self) -> Result<Vec<History>> {
         self.docker
             .get_json(&format!("/images/{}/history", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Image => Delete
     /// Remove an image.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageDelete)
+    |
     pub async fn remove(&self, opts: &ImageRemoveOpts) -> Result<Vec<Status>> {
         self.docker
             .delete_json(&construct_ep(
@@ -49,33 +49,33 @@ impl<'docker> Image<'docker> {
                 opts.serialize(),
             ))
             .await
-    }
+    }}
 
+    api_doc! { Image => Get
     /// Export this image to a tarball.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageGet)
+    |
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + Unpin + 'docker {
         Box::pin(
             self.docker
                 .stream_get(format!("/images/{}/get", self.name))
                 .map_ok(|c| c.to_vec()),
         )
-    }
+    }}
 
+    api_doc! { Image => Tag
     /// Adds a tag to an image.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageTag)
+    |
     pub async fn tag(&self, opts: &TagOpts) -> Result<()> {
         let mut ep = format!("/images/{}/tag", self.name);
         if let Some(query) = opts.serialize() {
             append_query(&mut ep, query);
         }
         self.docker.post(&ep, Payload::empty()).await.map(|_| ())
-    }
+    }}
 
+    api_doc! { Distribution => Inspect
     /// Return image digest and platform information by contacting the registry.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/DistributionInspect)
+    |
     pub async fn distribution_inspect(&self) -> Result<DistributionInspectInfo> {
         self.docker
             .post_json(
@@ -83,13 +83,13 @@ impl<'docker> Image<'docker> {
                 Payload::empty(),
             )
             .await
-    }
+    }}
 }
 
 impl<'docker> Images<'docker> {
+    api_doc! { Image => Build
     /// Builds a new image build by reading a Dockerfile in a target directory.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageBuild)
+    |
     pub fn build(
         &self,
         opts: &BuildOpts,
@@ -117,29 +117,29 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
-    }
+    }}
 
+    api_doc! { Image => List
     /// Lists the docker images on the current docker host.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageList)
+    |
     pub async fn list(&self, opts: &ImageListOpts) -> Result<Vec<ImageInfo>> {
         self.docker
             .get_json(&construct_ep("/images/json", opts.serialize()))
             .await
-    }
+    }}
 
+    api_doc! { Image => Search
     /// Search for docker images by term.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageSearch)
+    |
     pub async fn search(&self, term: &str) -> Result<Vec<SearchResult>> {
         self.docker
             .get_json(&format!("/images/search?{}", encoded_pair("term", term)))
             .await
-    }
+    }}
 
+    api_doc! { Image => Pull
     /// Pull and create a new docker images from an existing image.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePull)
+    |
     pub fn pull(
         &self,
         opts: &PullOpts,
@@ -153,12 +153,12 @@ impl<'docker> Images<'docker> {
             Payload::empty(),
             headers,
         ))
-    }
+    }}
 
+    api_doc! { Image => GetAll
     /// Exports a collection of named images,
     /// either by name, name:tag, or image id, into a tarball.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageGetAll)
+    |
     pub fn export(&self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         self.docker
             .stream_get(format!(
@@ -166,12 +166,12 @@ impl<'docker> Images<'docker> {
                 encoded_pairs(names.iter().map(|n| ("names", *n)))
             ))
             .map_ok(|c| c.to_vec())
-    }
+    }}
 
+    api_doc! { Image => Load
     /// Imports an image or set of images from a given tarball source.
     /// Source can be uncompressed on compressed via gzip, bzip2 or xz.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageLoad)
+    |
     pub fn import<R>(
         self,
         mut tarball: R,
@@ -194,11 +194,11 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
-    }
+    }}
 
+    api_doc! { Image => Prune
     /// Delete unused images.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune)
+    |
     pub async fn prune(&self, opts: &ImagePruneOpts) -> Result<ImagePruneInfo> {
         self.docker
             .post_json(
@@ -206,5 +206,5 @@ impl<'docker> Images<'docker> {
                 Payload::empty(),
             )
             .await
-    }
+    }}
 }

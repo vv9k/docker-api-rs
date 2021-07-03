@@ -9,13 +9,13 @@ use crate::{
     Docker, Result,
 };
 
+api_doc! { Exec
 /// Interface for docker exec instance
-///
-/// [Api Reference](https://docs.docker.com/engine/api/v1.41/#tag/Exec)
+|
 pub struct Exec<'docker> {
     docker: &'docker Docker,
     id: String,
-}
+}}
 
 impl<'docker> Exec<'docker> {
     fn new<S>(docker: &'docker Docker, id: S) -> Self
@@ -28,9 +28,9 @@ impl<'docker> Exec<'docker> {
         }
     }
 
+    api_doc! { Exec => Create
     /// Creates a new exec instance that will be executed in a container with id == container_id.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerExec)
+    |
     pub async fn create<C>(
         docker: &'docker Docker,
         container_id: C,
@@ -52,7 +52,7 @@ impl<'docker> Exec<'docker> {
             )
             .await
             .map(|resp: Response| Exec::new(docker, resp.id))
-    }
+    }}
 
     // This exists for Container::exec()
     //
@@ -119,9 +119,9 @@ impl<'docker> Exec<'docker> {
         Exec::new(docker, id)
     }
 
+    api_doc! { Exec => Start
     /// Starts this exec instance returning a multiplexed tty stream.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ExecStart)
+    |
     pub fn start(&self) -> impl Stream<Item = Result<tty::TtyChunk>> + 'docker {
         // We must take ownership of the docker reference to not needlessly tie the stream to the
         // lifetime of `self`.
@@ -138,28 +138,28 @@ impl<'docker> Exec<'docker> {
             }
             .try_flatten_stream(),
         )
-    }
+    }}
 
+    api_doc! { Exec => Inspect
     /// Inspect this exec instance to aquire detailed information.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ExecInpsect)
+    |
     pub async fn inspect(&self) -> Result<ExecDetails> {
         self.docker
             .get_json(&format!("/exec/{}/json", &self.id))
             .await
-    }
+    }}
 
+    api_doc! { Exec => Resize
     /// Resize the TTY session used by an exec instance. This only works if the exec was created
     /// with `tty` enabled.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ExecResize)
+    |
     pub async fn resize(&self, opts: &ExecResizeOpts) -> Result<()> {
         let body: Body = opts.serialize()?.into();
 
         self.docker
             .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body))
             .await
-    }
+    }}
 }
 
 impl_json_opts_builder!(ExecContainer);

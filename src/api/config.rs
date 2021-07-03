@@ -122,41 +122,41 @@ pub use opts::*;
 impl_api_ty!(Config => name: N);
 
 impl<'docker> Config<'docker> {
+    api_doc! { Config => Inspect
     /// Inspects a config.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigInspect)
+    |
     pub async fn inspect(&self) -> Result<ConfigInfo> {
         self.docker
             .get_json(&format!("/configs/{}", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Config => Delete
     /// Delete a config.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigDelete)
+    |
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/configs/{}", self.name))
             .await
             .map(|_| ())
-    }
+    }}
 
     // TODO: add Config::update
 }
 
 impl<'docker> Configs<'docker> {
+    api_doc! { Config => List
     /// List existing configs.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigList)
+    |
     pub async fn list(&self, opts: &ConfigListOpts) -> Result<Vec<ConfigInfo>> {
         self.docker
             .get_json(&construct_ep("/configs", opts.serialize()))
             .await
-    }
+    }}
 
+    api_doc! { Config => Create
     /// Create a new config.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ConfigCreate)
+    |
     pub async fn create(&self, new_config: &ConfigCreate) -> Result<Config<'_>> {
         self.docker
             .post_json(
@@ -165,5 +165,5 @@ impl<'docker> Configs<'docker> {
             )
             .await
             .map(|resp: ConfigCreateResponse| Config::new(self.docker, resp.id))
-    }
+    }}
 }

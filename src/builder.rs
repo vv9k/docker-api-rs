@@ -238,19 +238,19 @@ macro_rules! calculated_doc {
             #[doc = $doc:expr]
             $thing:item
         )*
-    ) => (
+    ) => {
         $(
             #[doc = $doc]
             $thing
         )*
-    );
+    };
 }
 
 macro_rules! impl_api_ty {
     ($($docs:literal)* $name:ident => $name_field:ident : $name_field_tt:tt) => {
         paste::item! {
             calculated_doc!{
-            #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n[Api Reference](https://docs.docker.com/engine/api/", version!() ,"/#tag/", stringify!($name), ")")]
+            #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n", api_url!($name))]
             #[derive(Debug)]
             pub struct [< $name >]<'docker> {
                 docker: &'docker crate::Docker,
@@ -329,6 +329,57 @@ macro_rules! impl_filter_func {
             self.params
                 .insert("filters", serde_json::to_string(&param).unwrap_or_default());
             self
+        }
+    };
+}
+
+macro_rules! api_url {
+    () => {
+        concat!("https://docs.docker.com/engine/api/", version!())
+    };
+    (operation $ep:expr) => {
+        concat!("\n[Api Reference](", api_url!(), "/#operation/", $ep, ")")
+    };
+    (tag $ep:expr) => {
+        concat!("\n[Api Reference](", api_url!(), "/#tag/", $ep, ")")
+    };
+    ($base:ident) => {
+        api_url!(tag stringify!($base))
+    };
+    ($base:ident => $op:ident) => {
+        api_url!(operation concat!(stringify!($base), stringify!($op)))
+    };
+}
+
+macro_rules! api_doc {
+    (
+        $base:ident => $op:ident
+        $(#[doc = $doc:expr])*
+        |
+        $it:item
+    ) => {
+        calculated_doc!{
+            #[doc = concat!(api_url!($base => $op))]
+            #[doc = "\n"]
+            $(
+                #[doc = $doc]
+            )*
+            $it
+        }
+    };
+    (
+        $base:ident
+        $(#[doc = $doc:expr])*
+        |
+        $it:item
+    ) => {
+        calculated_doc!{
+            #[doc = concat!(api_url!($base))]
+            #[doc = "\n"]
+            $(
+                #[doc = $doc]
+            )*
+            $it
         }
     };
 }

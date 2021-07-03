@@ -18,16 +18,16 @@ use crate::{
 impl_api_ty!(Node => name: N);
 
 impl<'docker> Node<'docker> {
+    api_doc! { Node => Inspect
     /// Inspects a named node's details.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeInspect)
+    |
     pub async fn inspect(&self) -> Result<NodeInfo> {
         self.docker.get_json(&format!("/nodes/{}", self.name)).await
-    }
+    }}
 
+    api_doc! { Node => Update
     /// Update a node.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeUpdate)
+    |
     pub async fn update(&self, opts: &NodeUpdateOpts) -> Result<()> {
         self.docker
             .post(
@@ -40,7 +40,7 @@ impl<'docker> Node<'docker> {
             )
             .await
             .map(|_| ())
-    }
+    }}
 
     async fn _delete(&self, force: bool) -> Result<()> {
         let query = if force {
@@ -54,28 +54,28 @@ impl<'docker> Node<'docker> {
             .map(|_| ())
     }
 
+    api_doc! { Node => Delete
     /// Delete a node.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete)
+    |
     pub async fn delete(&self) -> Result<()> {
         self._delete(false).await.map(|_| ())
-    }
+    }}
 
+    api_doc! { Node => Delete
     /// Forcefully delete a node
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeDelete)
+    |
     pub async fn force_delete(&self) -> Result<()> {
         self._delete(true).await.map(|_| ())
-    }
+    }}
 }
 
 impl<'docker> Nodes<'docker> {
+    api_doc! { Node => List
     /// Returns information about installed plugins.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NodeList)
+    |
     pub async fn list(&self, opts: &NodeListOpts) -> Result<Vec<NodeInfo>> {
         self.docker
             .get_json(&construct_ep("/nodes", opts.serialize()))
             .await
-    }
+    }}
 }

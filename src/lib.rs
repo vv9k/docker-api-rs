@@ -20,9 +20,10 @@
 /// Latest Docker API version supported by this crate.
 pub static VERSION: &str = "v1.41";
 
+/// https://github.com/rust-lang/rust/issues/53749
 macro_rules! version {
     () => {
-        stringify!(VERSION)
+        "v1.41"
     };
 }
 

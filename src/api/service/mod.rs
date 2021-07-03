@@ -18,20 +18,20 @@ use futures_util::stream::Stream;
 impl_api_ty!(Service => name: N);
 
 impl<'docker> Services<'docker> {
+    api_doc! { Service => List
     /// Lists the docker services on the current docker host.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceList>
+    |
     pub async fn list(&self, opts: &ListOpts) -> Result<Vec<ServiceInfo>> {
         self.docker
             .get_json(&construct_ep("/services", opts.serialize()))
             .await
-    }
+    }}
 }
 
 impl<'docker> Service<'docker> {
+    api_doc! { Service => Create
     /// Creates a new service from ServiceOpts.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceCreate>
+    |
     pub async fn create(&self, opts: &ServiceOpts) -> Result<ServiceCreateInfo> {
         let headers = opts
             .auth_header()
@@ -43,29 +43,29 @@ impl<'docker> Service<'docker> {
                 headers,
             )
             .await
-    }
+    }}
 
+    api_doc! { Service => Inspect
     /// Inspects a named service's details.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceInspect>
+    |
     pub async fn inspect(&self) -> Result<ServiceInfo> {
         self.docker
             .get_json(&format!("/services/{}", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Service => Delete
     /// Deletes a service.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceDelete>
+    |
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete_json(&format!("/services/{}", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Service => Logs
     /// Returns a stream of logs from a service.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceLogs>
+    |
     pub fn logs(
         &self,
         opts: &LogsOpts,
@@ -75,5 +75,5 @@ impl<'docker> Service<'docker> {
             opts.serialize(),
         )));
         Box::pin(tty::decode(stream))
-    }
+    }}
 }

@@ -129,41 +129,41 @@ pub use opts::*;
 impl_api_ty!(Secret => name: N);
 
 impl<'docker> Secret<'docker> {
+    api_doc! { Secret => Inspect
     /// Inspects a secret.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretInspect)
+    |
     pub async fn inspect(&self) -> Result<SecretInfo> {
         self.docker
             .get_json(&format!("/secrets/{}", self.name))
             .await
-    }
+    }}
 
+    api_doc! { Secret => Delete
     /// Delete a secret.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretDelete)
+    |
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/secrets/{}", self.name))
             .await
             .map(|_| ())
-    }
+    }}
 
     // TODO: add Secret::update
 }
 
 impl<'docker> Secrets<'docker> {
+    api_doc! { Secret => List
     /// List existing secrets.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretList)
+    |
     pub async fn list(&self, opts: &SecretListOpts) -> Result<Vec<SecretInfo>> {
         self.docker
             .get_json(&construct_ep("/secrets", opts.serialize()))
             .await
-    }
+    }}
 
+    api_doc! { Secret => Create
     /// Create a new secret.
-    ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/SecretCreate)
+    |
     pub async fn create(&self, new_secret: &SecretCreate) -> Result<Secret<'_>> {
         self.docker
             .post_json(
@@ -172,5 +172,5 @@ impl<'docker> Secrets<'docker> {
             )
             .await
             .map(|resp: SecretCreateResponse| Secret::new(self.docker, resp.id))
-    }
+    }}
 }
