@@ -23,14 +23,7 @@ use crate::{
 impl_api_ty!(Container => id: I);
 
 impl<'docker> Container<'docker> {
-    api_doc! { Container => Inspect
-    /// Inspects the current docker container instance's details.
-    |
-    pub async fn inspect(&self) -> Result<ContainerDetails> {
-        self.docker
-            .get_json(&format!("/containers/{}/json", self.id))
-            .await
-    }}
+    impl_inspect! {container: Container -> format!("/containers/{}/json", container.id)}
 
     api_doc! { Container => Top
     /// Returns a `top` view of information about the container process.

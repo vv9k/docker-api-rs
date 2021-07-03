@@ -383,3 +383,20 @@ macro_rules! api_doc {
         }
     };
 }
+
+macro_rules! impl_inspect {
+    (
+        $it:ident: $base:ident -> $ep:expr
+    ) => {
+        paste::item! {
+        api_doc! { $base => Inspect
+        #[doc = concat!("Inspect this ", stringify!($base), ".")]
+        |
+        pub async fn inspect(&self) -> Result<[< $base Info >]> {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
+            let ep = ep_fn(self);
+            self.docker.get_json(ep.as_ref()).await
+        }}
+        }
+    };
+}

@@ -21,14 +21,7 @@ use crate::{
 impl_api_ty!(Image => name: N);
 
 impl<'docker> Image<'docker> {
-    api_doc! { Image => Inspect
-    /// Inspects a named image's details.
-    |
-    pub async fn inspect(&self) -> Result<ImageDetails> {
-        self.docker
-            .get_json(&format!("/images/{}/json", self.name))
-            .await
-    }}
+    impl_inspect! {img: Image -> format!("/images/{}/json", img.name)}
 
     api_doc! { Image => History
     /// Lists the history of the images set of changes.

@@ -11,14 +11,7 @@ use crate::{conn::Payload, util::url::construct_ep, Result};
 impl_api_ty!(Network => id: I);
 
 impl<'docker> Network<'docker> {
-    api_doc! { Network => Inspect
-    /// Inspects the current docker network instance's details.
-    |
-    pub async fn inspect(&self) -> Result<NetworkInfo> {
-        self.docker
-            .get_json(&format!("/networks/{}", self.id))
-            .await
-    }}
+    impl_inspect! {net: Network -> format!("/networks/{}", net.id)}
 
     api_doc! { Network => Delete
     /// Delete the network instance.

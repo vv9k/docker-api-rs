@@ -133,12 +133,7 @@ pub use opts::*;
 impl_api_ty!(Task => id: I);
 
 impl<'docker> Task<'docker> {
-    api_doc! { Task => Inspect
-    /// Inspects a task.
-    |
-    pub async fn inspect(&self) -> Result<TaskInfo> {
-        self.docker.get_json(&format!("/tasks/{}", self.id)).await
-    }}
+    impl_inspect! { task: Task -> format!("/tasks/{}", task.id) }
 
     api_doc! { Task => Logs
     /// Returns a stream of logs emitted from a task.

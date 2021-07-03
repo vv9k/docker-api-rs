@@ -20,12 +20,7 @@ impl<'docker> Swarm<'docker> {
         Self { docker }
     }
 
-    api_doc! { Swarm => Info
-    /// Inspects swarm on this Docker host.
-    |
-    pub async fn inspect(&self) -> Result<SwarmInfo> {
-        self.docker.get_json("/swarm").await
-    }}
+    impl_inspect! { __: Swarm -> "/swarm".into() }
 
     api_doc! { Swarm => Unlockkey
     /// Get the unlock key.

@@ -20,14 +20,7 @@ impl<'docker> Volume<'docker> {
             .map(|_| ())
     }}
 
-    api_doc! { Volume => Inspect
-    /// Inspects this volume.
-    |
-    pub async fn inspect(&self) -> Result<VolumeInfo> {
-        self.docker
-            .get_json(&format!("/volumes/{}", self.name))
-            .await
-    }}
+    impl_inspect! { vol: Volume -> format!("/volumes/{}", vol.name) }
 }
 
 impl<'docker> Volumes<'docker> {

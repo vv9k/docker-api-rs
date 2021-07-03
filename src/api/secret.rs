@@ -129,14 +129,7 @@ pub use opts::*;
 impl_api_ty!(Secret => name: N);
 
 impl<'docker> Secret<'docker> {
-    api_doc! { Secret => Inspect
-    /// Inspects a secret.
-    |
-    pub async fn inspect(&self) -> Result<SecretInfo> {
-        self.docker
-            .get_json(&format!("/secrets/{}", self.name))
-            .await
-    }}
+    impl_inspect! { secret: Secret -> format!("/secrets/{}", secret.name) }
 
     api_doc! { Secret => Delete
     /// Delete a secret.

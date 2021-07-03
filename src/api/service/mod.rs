@@ -17,17 +17,6 @@ use futures_util::stream::Stream;
 
 impl_api_ty!(Service => name: N);
 
-impl<'docker> Services<'docker> {
-    api_doc! { Service => List
-    /// Lists the docker services on the current docker host.
-    |
-    pub async fn list(&self, opts: &ListOpts) -> Result<Vec<ServiceInfo>> {
-        self.docker
-            .get_json(&construct_ep("/services", opts.serialize()))
-            .await
-    }}
-}
-
 impl<'docker> Service<'docker> {
     api_doc! { Service => Create
     /// Creates a new service from ServiceOpts.
@@ -45,14 +34,7 @@ impl<'docker> Service<'docker> {
             .await
     }}
 
-    api_doc! { Service => Inspect
-    /// Inspects a named service's details.
-    |
-    pub async fn inspect(&self) -> Result<ServiceInfo> {
-        self.docker
-            .get_json(&format!("/services/{}", self.name))
-            .await
-    }}
+    impl_inspect! {svc: Service -> format!("/services/{}", svc.name)}
 
     api_doc! { Service => Delete
     /// Deletes a service.
@@ -75,5 +57,16 @@ impl<'docker> Service<'docker> {
             opts.serialize(),
         )));
         Box::pin(tty::decode(stream))
+    }}
+}
+
+impl<'docker> Services<'docker> {
+    api_doc! { Service => List
+    /// Lists the docker services on the current docker host.
+    |
+    pub async fn list(&self, opts: &ListOpts) -> Result<Vec<ServiceInfo>> {
+        self.docker
+            .get_json(&construct_ep("/services", opts.serialize()))
+            .await
     }}
 }

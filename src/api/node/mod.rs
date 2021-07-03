@@ -18,12 +18,7 @@ use crate::{
 impl_api_ty!(Node => name: N);
 
 impl<'docker> Node<'docker> {
-    api_doc! { Node => Inspect
-    /// Inspects a named node's details.
-    |
-    pub async fn inspect(&self) -> Result<NodeInfo> {
-        self.docker.get_json(&format!("/nodes/{}", self.name)).await
-    }}
+    impl_inspect! {node: Node -> format!("/nodes/{}", node.name)}
 
     api_doc! { Node => Update
     /// Update a node.

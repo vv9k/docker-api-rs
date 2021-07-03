@@ -17,14 +17,7 @@ use std::path::Path;
 impl_api_ty!(Plugin => name: N);
 
 impl<'docker> Plugin<'docker> {
-    api_doc! { Plugin => Inspect
-    /// Inspects a named plugin's details.
-    |
-    pub async fn inspect(&self) -> Result<PluginInfo> {
-        self.docker
-            .get_json(&format!("/plugins/{}/json", self.name))
-            .await
-    }}
+    impl_inspect! {plug: Plugin -> format!("/plugins/{}/json", plug.name)}
 
     async fn _remove(&self, force: bool) -> Result<PluginInfo> {
         let query = if force {

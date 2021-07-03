@@ -122,14 +122,7 @@ pub use opts::*;
 impl_api_ty!(Config => name: N);
 
 impl<'docker> Config<'docker> {
-    api_doc! { Config => Inspect
-    /// Inspects a config.
-    |
-    pub async fn inspect(&self) -> Result<ConfigInfo> {
-        self.docker
-            .get_json(&format!("/configs/{}", self.name))
-            .await
-    }}
+    impl_inspect! { cfg: Config -> format!("/configs/{}", cfg.name) }
 
     api_doc! { Config => Delete
     /// Delete a config.
