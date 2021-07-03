@@ -10,26 +10,6 @@ use crate::{conn::Payload, util::url::construct_ep, Result};
 
 impl_api_ty!(Network => id: I);
 
-impl<'docker> Networks<'docker> {
-    /// List the docker networks on the current docker host.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
-    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkDetails>> {
-        self.docker
-            .get_json(&construct_ep("/networks", opts.serialize()))
-            .await
-    }
-
-    /// Create a new Network instance.
-    ///
-    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkCreate>
-    pub async fn create(&self, opts: &NetworkCreateOpts) -> Result<NetworkCreateInfo> {
-        self.docker
-            .post_json("/networks/create", Payload::Json(opts.serialize()?))
-            .await
-    }
-}
-
 impl<'docker> Network<'docker> {
     /// Inspects the current docker network instance's details.
     ///
@@ -75,5 +55,43 @@ impl<'docker> Network<'docker> {
             )
             .await?;
         Ok(())
+    }
+}
+
+impl<'docker> Networks<'docker> {
+    /// List the docker networks on the current docker host.
+    ///
+    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
+    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkDetails>> {
+        self.docker
+            .get_json(&construct_ep("/networks", opts.serialize()))
+            .await
+    }
+
+    /// Create a new Network instance.
+    ///
+    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkCreate>
+    pub async fn create(&self, opts: &NetworkCreateOpts) -> Result<NetworkCreateInfo> {
+        self.docker
+            .post_json("/networks/create", Payload::Json(opts.serialize()?))
+            .await
+    }
+
+    /// Delete unused networks. Returns a list of deleted network names.
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/NetworkPrune)
+    pub async fn prune(&self, opts: &NetworkPruneOpts) -> Result<Vec<String>> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct PruneResponse {
+            networks_deleted: Vec<String>,
+        }
+        self.docker
+            .post_json(
+                &construct_ep("/networks/prune", opts.serialize()),
+                Payload::empty(),
+            )
+            .await
+            .map(|resp: PruneResponse| resp.networks_deleted)
     }
 }

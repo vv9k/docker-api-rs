@@ -338,6 +338,38 @@ impl ImageListOptsBuilder {
     impl_filter_func!(ImageFilter);
 }
 
+impl_url_opts_builder!(derives = Default | ImageRemove);
+
+impl ImageRemoveOptsBuilder {
+    impl_url_bool_field!(force => "force");
+    impl_url_bool_field!(noprune => "noprune");
+}
+
+impl_url_opts_builder!(ImagePrune);
+
+pub enum ImagePruneFilter {
+    Dangling(bool),
+    Until(String),
+    LabelKey(String),
+    LabelKeyVal(String, String),
+}
+
+impl Filter for ImagePruneFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        use ImagePruneFilter::*;
+        match &self {
+            Dangling(dangling) => ("dangling", dangling.to_string()),
+            Until(until) => ("until", until.to_owned()),
+            LabelKey(label) => ("label", label.to_owned()),
+            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+        }
+    }
+}
+
+impl ImagePruneOptsBuilder {
+    impl_filter_func!(ImagePruneFilter);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

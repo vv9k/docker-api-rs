@@ -381,13 +381,12 @@ impl<'docker> Containers<'docker> {
     /// Delete stopped containers.
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerPrune)
-    pub async fn prune(&self, opts: &ContainerPruneOpts) -> Result<()> {
+    pub async fn prune(&self, opts: &ContainerPruneOpts) -> Result<ContainersPruneInfo> {
         self.docker
-            .post(
+            .post_json(
                 &construct_ep("/containers/prune", opts.serialize()),
                 Payload::empty(),
             )
             .await
-            .map(|_| ())
     }
 }

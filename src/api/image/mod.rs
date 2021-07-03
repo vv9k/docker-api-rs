@@ -39,12 +39,15 @@ impl<'docker> Image<'docker> {
             .await
     }
 
-    /// Deletes an image.
+    /// Remove an image.
     ///
-    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune)
-    pub async fn delete(&self) -> Result<Vec<Status>> {
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImageDelete)
+    pub async fn remove(&self, opts: &ImageRemoveOpts) -> Result<Vec<Status>> {
         self.docker
-            .delete_json(&format!("/images/{}", self.name))
+            .delete_json(&construct_ep(
+                format!("/images/{}", self.name),
+                opts.serialize(),
+            ))
             .await
     }
 
@@ -191,5 +194,17 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
+    }
+
+    /// Delete unused images.
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ImagePrune)
+    pub async fn prune(&self, opts: &ImagePruneOpts) -> Result<ImagePruneInfo> {
+        self.docker
+            .post_json(
+                &construct_ep("/images/prune", opts.serialize()),
+                Payload::empty(),
+            )
+            .await
     }
 }

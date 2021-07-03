@@ -167,3 +167,17 @@ pub struct DistributionInspectInfo {
     descriptor: Descriptor,
     platforms: Vec<serde_json::Value>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct ImagePruneInfo {
+    pub images_deleted: Vec<ImageDeleteItem>,
+    pub space_reclaimed: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct ImageDeleteItem {
+    pub untagged: String,
+    pub deleted: String,
+}

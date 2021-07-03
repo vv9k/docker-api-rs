@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use crate::{api::Filter, Error, Result};
 
 use std::collections::HashMap;
 
@@ -107,4 +107,27 @@ impl ContainerConnectionOptsBuilder {
             params: self.params.clone(),
         }
     }
+}
+
+impl_url_opts_builder!(NetworkPrune);
+
+pub enum NetworkPruneFilter {
+    Until(String),
+    LabelKey(String),
+    LabelKeyVal(String, String),
+}
+
+impl Filter for NetworkPruneFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        use NetworkPruneFilter::*;
+        match &self {
+            Until(until) => ("until", until.to_owned()),
+            LabelKey(label) => ("label", label.to_owned()),
+            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+        }
+    }
+}
+
+impl NetworkPruneOptsBuilder {
+    impl_filter_func!(NetworkPruneFilter);
 }

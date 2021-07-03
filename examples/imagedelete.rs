@@ -7,7 +7,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let img = env::args()
         .nth(1)
         .expect("You need to specify an image name");
-    match docker.images().get(&img).delete().await {
+    match docker.images().get(&img).remove(&Default::default()).await {
         Ok(statuses) => {
             for status in statuses {
                 println!("{:?}", status);
