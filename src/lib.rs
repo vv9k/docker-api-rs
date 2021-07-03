@@ -22,7 +22,7 @@ pub static VERSION: &str = "v1.41";
 
 macro_rules! version {
     () => {
-        "v1.41"
+        stringify!(VERSION)
     };
 }
 
