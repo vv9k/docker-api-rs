@@ -43,3 +43,9 @@ To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
 
 Many small runnable example programs can be found in this repository's [examples directory](https://github.com/wojciechkepka/docker-api-rs/tree/master/examples).
 
+
+## Notice
+This crate is a fork of [shiplift](https://github.com/softprops/shiplift).
+
+## License
+[MIT](https://raw.githubusercontent.com/wojciechkepka/docker-api-rs/master/LICENSE)
