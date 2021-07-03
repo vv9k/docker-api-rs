@@ -337,6 +337,29 @@ impl RmContainerOptsBuilder {
     impl_url_bool_field!(volumes => "v");
 }
 
+impl_url_opts_builder!(ContainerPrune);
+
+pub enum ContainerPruneFilter {
+    Until(String),
+    LabelKey(String),
+    LabelKeyVal(String, String),
+}
+
+impl Filter for ContainerPruneFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        use ContainerPruneFilter::*;
+        match &self {
+            Until(until) => ("until", until.to_owned()),
+            LabelKey(label) => ("label", label.to_owned()),
+            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+        }
+    }
+}
+
+impl ContainerPruneOptsBuilder {
+    impl_filter_func!(ContainerPruneFilter);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -393,4 +393,16 @@ impl<'docker> Containers<'docker> {
             .post_json(&path.join("?"), Payload::Json(body))
             .await
     }
+
+    /// Delete stopped containers.
+    ///
+    /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/ContainerPrune)
+    pub async fn prune(&self, opts: &ContainerPruneOpts) -> Result<()> {
+        let mut path = "/containers/prune".to_string();
+        if let Some(query) = opts.serialize() {
+            path.push('?');
+            path.push_str(&query);
+        }
+        self.docker.post(&path, Payload::empty()).await.map(|_| ())
+    }
 }

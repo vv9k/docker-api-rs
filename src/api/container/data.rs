@@ -380,3 +380,10 @@ pub struct ContainerCreateInfo {
 pub struct Exit {
     pub status_code: u64,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ContainersPruneInfo {
+    pub containers_deleted: Vec<String>,
+    pub space_reclaimed: i64,
+}
