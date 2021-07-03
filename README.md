@@ -13,6 +13,29 @@ Add the following to your `Cargo.toml` file
 docker-api = "0.1"
 ```
 
+## Supported API
+Default endpoints include:
+ - Containers
+ - Images
+ - Networks
+ - Volumes
+ - Exec
+ - System
+
+To enable swarm endpoints add a `swarm` feature to Cargo.toml like so:
+```toml
+docker-api = { version = "0.1", features = ["swarm"] }
+```
+
+Swarm endpoints include:
+ - Swarm
+ - Nodes
+ - Services
+ - Tasks
+ - Secrets
+ - Configs
+ - Plugins
+
 ## Usage
 
 Many small runnable example programs can be found in this repository's [examples directory](https://github.com/wojciechkepka/docker-api-rs/tree/master/examples).

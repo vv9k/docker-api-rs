@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! A task is a container running on a swarm. It is the atomic scheduling unit of swarm.
 //! Swarm mode must be enabled for these endpoints to work.
 

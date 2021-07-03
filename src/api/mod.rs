@@ -7,25 +7,22 @@ pub mod event;
 pub mod exec;
 pub mod image;
 pub mod network;
-pub mod node;
-pub mod plugin;
-pub mod secret;
-pub mod service;
-pub mod swarm;
-pub mod task;
 pub mod volume;
 
-pub use common::*;
-pub use config::*;
-pub use container::*;
-pub use event::*;
-pub use exec::*;
-pub use image::*;
-pub use network::*;
-pub use node::*;
-pub use plugin::*;
-pub use secret::*;
-pub use service::*;
-pub use swarm::*;
-pub use task::*;
-pub use volume::*;
+#[cfg(feature = "swarm")]
+pub mod node;
+#[cfg(feature = "swarm")]
+pub mod plugin;
+#[cfg(feature = "swarm")]
+pub mod secret;
+#[cfg(feature = "swarm")]
+pub mod service;
+#[cfg(feature = "swarm")]
+pub mod swarm;
+#[cfg(feature = "swarm")]
+pub mod task;
+
+pub use {common::*, config::*, container::*, event::*, exec::*, image::*, network::*, volume::*};
+
+#[cfg(feature = "swarm")]
+pub use {node::*, plugin::*, secret::*, service::*, swarm::*, task::*};

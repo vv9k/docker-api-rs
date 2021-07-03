@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Manage and inspect services within a swarm.
 pub mod data;
 pub mod opts;

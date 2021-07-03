@@ -19,13 +19,15 @@ use crate::{
         event::{Event, EventsOpts},
         image::Images,
         network::{NetworkEntry, Networks},
-        service::Services,
         volume::{VolumeInfo, Volumes},
         Labels,
     },
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
 };
+
+#[cfg(feature = "swarm")]
+use crate::service::Services;
 
 #[cfg(feature = "tls")]
 use {crate::conn::get_https_connector, std::path::Path};
@@ -152,6 +154,7 @@ impl Docker {
         Containers::new(self)
     }
 
+    #[cfg(feature = "swarm")]
     /// Exports an interface for interacting with Docker services
     pub fn services(&'_ self) -> Services<'_> {
         Services::new(self)
@@ -284,6 +287,7 @@ impl Docker {
         Ok(serde_json::from_str::<T>(&&raw_string)?)
     }
 
+    #[allow(dead_code)]
     pub(crate) async fn post_json_headers<'a, B, T>(
         &self,
         endpoint: impl AsRef<str>,

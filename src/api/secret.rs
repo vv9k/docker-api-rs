@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
 
 use crate::{conn::Payload, util::url::construct_ep, Result};

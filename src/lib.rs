@@ -37,18 +37,22 @@ pub mod errors;
 
 pub use crate::{
     api::{
-        config::{self, Config, Configs},
         container::{self, Container, Containers},
         exec::{self, Exec, ExecContainerOpts},
         image::{self, Image, Images},
         network::{self, Network, Networks},
-        plugin::{self, Plugin, Plugins},
-        secret::{self, Secret, Secrets},
-        service::{self, Service, Services},
-        swarm::{self, Swarm},
-        task::{self, Task, Tasks},
         volume::{self, Volume, Volumes},
     },
     docker::Docker,
     errors::{Error, Result},
+};
+
+#[cfg(feature = "swarm")]
+pub use crate::api::{
+    config::{self, Config, Configs},
+    plugin::{self, Plugin, Plugins},
+    secret::{self, Secret, Secrets},
+    service::{self, Service, Services},
+    swarm::{self, Swarm},
+    task::{self, Task, Tasks},
 };

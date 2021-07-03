@@ -1,5 +1,7 @@
+#[cfg(feature = "swarm")]
 use docker_api::{service::ListOpts, Docker};
 
+#[cfg(feature = "swarm")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -17,5 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => eprintln!("Error: {}", e),
     }
 
+    Ok(())
+}
+
+#[cfg(not(feature = "swarm"))]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }

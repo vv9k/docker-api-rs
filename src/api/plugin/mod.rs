@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Install, create and manage plugins
 pub mod data;
 pub mod opts;

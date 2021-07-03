@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Manage Docker nodes
 //!
 //! Nodes are instances of the Engine participating in a swarm.

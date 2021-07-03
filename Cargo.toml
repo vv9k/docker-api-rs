@@ -21,12 +21,12 @@ base64 = "0.13"
 byteorder = "1.4"
 bytes = "1.0"
 
-chrono = { version = "0.4", optional = true, features = ["serde"] }
+chrono = { version="0.4", optional=true, features=["serde"] }
 
 flate2 = "1.0"
 tar = "0.4"
 
-serde = { version = "1.0", features = ["derive"] }
+serde = { version="1.0", features=["derive"] }
 serde_json = "1.0"
 
 pin-project = "1.0"
@@ -37,20 +37,21 @@ tokio = "1.0"
 futures-util = "0.3"
 futures_codec = "0.4"
 
-hyper = { version = "0.14", features = ["client", "http1", "tcp", "stream"] }
-hyper-openssl = { version = "0.9", optional = true }
-openssl = { version = "0.10", optional = true }
+hyper = { version="0.14", features=["client", "http1", "tcp", "stream"] }
+hyper-openssl = { version="0.9", optional=true }
+openssl = { version="0.10", optional=true }
 
 [target.'cfg(unix)'.dependencies]
-hyperlocal = { version = "0.8"}
+hyperlocal = { version="0.8" }
 
 [dev-dependencies]
 env_logger = "0.8"
 # Required for examples to run
 futures = "0.3.1"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version="1.0", features=["macros", "rt-multi-thread"] }
 
 [features]
 default = ["chrono"]
 tls = ["openssl", "hyper-openssl"]
 vendored-ssl = ["tls", "openssl/vendored"]
+swarm = []
