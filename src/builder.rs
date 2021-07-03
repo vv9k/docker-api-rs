@@ -79,6 +79,7 @@ macro_rules! impl_url_bool_field {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! impl_str_enum_field {
     ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {

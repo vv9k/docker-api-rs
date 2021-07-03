@@ -1,7 +1,11 @@
-use docker_api::{api::LogsOpts, conn::TtyChunk, Docker};
-use futures::StreamExt;
-use std::{env, str};
+#[cfg(feature = "swarm")]
+use {
+    docker_api::{api::LogsOpts, conn::TtyChunk, Docker},
+    futures::StreamExt,
+    std::{env, str},
+};
 
+#[cfg(feature = "swarm")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::new("tcp://127.0.0.1:80")?;
@@ -24,6 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[cfg(feature = "swarm")]
 fn print_chunk(chunk: TtyChunk) {
     match chunk {
         TtyChunk::StdOut(bytes) => {
@@ -34,4 +39,9 @@ fn print_chunk(chunk: TtyChunk) {
         }
         TtyChunk::StdIn(_) => unreachable!(),
     }
+}
+
+#[cfg(not(feature = "swarm"))]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    Ok(())
 }

@@ -22,7 +22,7 @@ Default endpoints include:
  - Exec
  - System
 
-To enable swarm endpoints add a `swarm` feature to Cargo.toml like so:
+To enable swarm endpoints add a `swarm` feature to `Cargo.toml` like so:
 ```toml
 docker-api = { version = "0.1", features = ["swarm"] }
 ```
@@ -35,6 +35,9 @@ Swarm endpoints include:
  - Secrets
  - Configs
  - Plugins
+
+## SSL Connection
+To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
 
 ## Usage
 

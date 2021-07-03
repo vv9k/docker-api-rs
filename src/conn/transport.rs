@@ -68,6 +68,7 @@ impl IntoIterator for Headers {
 /// Types of payload that can be sent
 pub(crate) enum Payload<B: Into<Body>> {
     None,
+    #[allow(dead_code)]
     Text(B),
     Json(B),
     XTar(B),

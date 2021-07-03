@@ -1,3 +1,4 @@
+#![cfg(feature = "swarm")]
 //! Control and manage clusters of engines also known as Swarm
 pub mod data;
 pub mod opts;
