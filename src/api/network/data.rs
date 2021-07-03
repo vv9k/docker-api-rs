@@ -50,27 +50,27 @@ pub struct NetworkEntry {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Ipam {
-    pub driver: String,
-    pub config: Vec<ConfigMap>,
+    pub driver: Option<String>,
+    pub config: Option<Vec<ConfigMap>>,
     pub options: Option<Options>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct NetworkDetails {
-    pub name: String,
+pub struct NetworkInfo {
+    pub name: Option<String>,
+    pub labels: Labels,
     pub id: String,
-    pub scope: String,
-    pub driver: String,
+    pub scope: Option<String>,
+    pub driver: Option<String>,
     #[serde(rename = "EnableIPv6")]
-    pub enable_ipv6: bool,
+    pub enable_ipv6: Option<bool>,
     #[serde(rename = "IPAM")]
-    pub ipam: Ipam,
-    pub internal: bool,
-    pub attachable: bool,
-    pub containers: HashMap<String, NetworkContainerDetails>,
+    pub ipam: Option<Ipam>,
+    pub internal: Option<bool>,
+    pub attachable: Option<bool>,
+    pub containers: Option<HashMap<String, NetworkContainerDetails>>,
     pub options: Option<Options>,
-    pub labels: Option<Labels>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

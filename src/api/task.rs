@@ -35,7 +35,7 @@ pub mod data {
         pub name: String,
         pub labels: Labels,
         pub spec: TaskSpec,
-        pub slot: usize,
+        pub slot: isize,
         #[serde(rename = "NodeID")]
         pub node_id: String,
         // pub assigned_generic_resources: Vec<serde_json::Value>, ??
@@ -65,8 +65,8 @@ pub mod data {
         #[serde(rename = "ContainerID")]
         pub container_id: String,
         #[serde(rename = "PID")]
-        pub pid: usize,
-        pub exit_code: usize,
+        pub pid: isize,
+        pub exit_code: isize,
     }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]

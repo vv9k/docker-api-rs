@@ -34,34 +34,34 @@ pub struct SwarmInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SwarmSpec {
-    pub name: String,
+    pub name: Option<String>,
     pub labels: Option<Labels>,
     pub orchestration: Option<Orchestration>,
-    pub raft: Raft,
+    pub raft: Option<Raft>,
     pub dispatcher: Option<Dispatcher>,
     #[serde(rename = "CAConfig")]
     pub ca_config: Option<CaConfig>,
-    pub encryption_config: EncryptionConfig,
-    pub task_defaults: TaskDefaults,
+    pub encryption_config: Option<EncryptionConfig>,
+    pub task_defaults: Option<TaskDefaults>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Dispatcher {
-    pub heartbeat_period: i64,
+    pub heartbeat_period: Option<i64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CaConfig {
-    pub node_cert_expiry: i64,
+    pub node_cert_expiry: Option<i64>,
     #[serde(rename = "ExternalCAs")]
-    pub external_cas: Vec<ExternalCa>,
+    pub external_cas: Option<Vec<ExternalCa>>,
     #[serde(rename = "SigningCACert")]
-    pub signing_ca_cert: String,
+    pub signing_ca_cert: Option<String>,
     #[serde(rename = "SigningCAKey")]
-    pub signing_ca_key: String,
-    pub force_rotate: u64,
+    pub signing_ca_key: Option<String>,
+    pub force_rotate: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -70,7 +70,7 @@ pub struct ExternalCa {
     pub protocol: String,
     #[serde(rename = "URL")]
     pub url: String,
-    pub options: Options,
+    pub options: Option<Options>,
     #[serde(rename = "CACert")]
     pub ca_cert: String,
 }
@@ -84,17 +84,17 @@ pub struct EncryptionConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct TaskDefaults {
-    pub log_driver: Driver,
+    pub log_driver: Option<Driver>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Raft {
-    pub snapshot_interval: u64,
-    pub keep_old_snapshots: u64,
-    pub log_entries_for_slow_followers: u64,
-    pub election_tick: usize,
-    pub heartbeat_tick: usize,
+    pub snapshot_interval: Option<u64>,
+    pub keep_old_snapshots: Option<u64>,
+    pub log_entries_for_slow_followers: Option<u64>,
+    pub election_tick: isize,
+    pub heartbeat_tick: isize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -107,5 +107,5 @@ pub struct JoinTokens {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Orchestration {
-    pub task_history_retention_limit: i64,
+    pub task_history_retention_limit: Option<i64>,
 }

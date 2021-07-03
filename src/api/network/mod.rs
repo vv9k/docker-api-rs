@@ -14,7 +14,7 @@ impl<'docker> Network<'docker> {
     /// Inspects the current docker network instance's details.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkInspect>
-    pub async fn inspect(&self) -> Result<NetworkDetails> {
+    pub async fn inspect(&self) -> Result<NetworkInfo> {
         self.docker
             .get_json(&format!("/networks/{}", self.id))
             .await
@@ -62,7 +62,7 @@ impl<'docker> Networks<'docker> {
     /// List the docker networks on the current docker host.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/NetworkList>
-    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkDetails>> {
+    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkInfo>> {
         self.docker
             .get_json(&construct_ep("/networks", opts.serialize()))
             .await

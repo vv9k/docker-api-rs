@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::new("tcp://127.0.0.1:80")?;
     match docker
         .services()
-        .list(&ListOpts::builder().enable_status().build())
+        .list(&ListOpts::builder().status(true).build())
         .await
     {
         Ok(services) => {

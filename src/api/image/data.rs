@@ -1,4 +1,4 @@
-use crate::api::Labels;
+use crate::api::{DriverData, Labels};
 
 use std::collections::HashMap;
 
@@ -37,56 +37,81 @@ pub struct ImageInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ImageDetails {
-    pub architecture: String,
-    pub author: String,
+    pub id: String,
+    pub repo_tags: Vec<String>,
+    pub repo_digests: Vec<String>,
+    pub parent: String,
     pub comment: String,
-    pub config: ContainerConfig,
     #[cfg(feature = "chrono")]
     pub created: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub created: String,
+    pub container: String,
     pub docker_version: String,
-    pub id: String,
+    pub author: String,
+    pub config: ContainerConfig,
+    pub architecture: String,
     pub os: String,
-    pub parent: String,
-    pub repo_tags: Option<Vec<String>>,
-    pub repo_digests: Option<Vec<String>>,
-    pub size: u64,
-    pub virtual_size: u64,
+    pub os_version: Option<String>,
+    pub size: i64,
+    pub virtual_size: i64,
+    pub graph_driver: DriverData,
+    #[serde(rename = "RootFS")]
+    pub root_fs: ImageRootFs,
+    pub metadata: ImageMetadata,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ImageRootFs {
+    #[serde(rename = "Type")]
+    pub type_: String,
+    pub layers: Option<Vec<String>>,
+    pub base_layer: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ImageMetadata {
+    #[cfg(feature = "chrono")]
+    pub last_tag_timed: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub last_tag_timed: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContainerConfig {
-    pub attach_stderr: bool,
+    pub hostname: String,
+    pub domainname: String,
+    pub user: String,
     pub attach_stdin: bool,
     pub attach_stdout: bool,
-    pub cmd: Option<Vec<String>>,
-    pub domainname: String,
-    pub entrypoint: Option<Vec<String>>,
-    pub env: Option<Vec<String>>,
+    pub attach_stderr: bool,
     pub exposed_ports: Option<HashMap<String, serde_json::Value>>,
-    pub hostname: String,
-    pub image: String,
-    pub labels: Option<Labels>,
-    // pub MacAddress: String,
-    pub on_build: Option<Vec<String>>,
-    // pub NetworkDisabled: bool,
+    pub tty: bool,
     pub open_stdin: bool,
     pub stdin_once: bool,
-    pub tty: bool,
-    pub user: String,
+    pub env: Vec<String>,
+    pub cmd: Vec<String>,
+    pub image: String,
     pub working_dir: String,
+    pub entrypoint: Vec<String>,
+    pub network_disabled: Option<bool>,
+    pub mac_address: Option<String>,
+    pub on_build: Vec<String>,
+    pub labels: Labels,
+    pub stop_signal: Option<String>,
+    pub stop_timeout: Option<isize>,
+    pub shell: Option<Vec<String>>,
 }
 
 impl ContainerConfig {
     pub fn env(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
-        if let Some(ref vars) = self.env {
-            for e in vars {
-                let pair: Vec<&str> = e.split('=').collect();
-                map.insert(pair[0].to_owned(), pair[1].to_owned());
-            }
+        for e in &self.env {
+            let pair: Vec<&str> = e.split('=').collect();
+            map.insert(pair[0].to_owned(), pair[1].to_owned());
         }
         map
     }
@@ -102,6 +127,9 @@ pub struct History {
     #[cfg(not(feature = "chrono"))]
     pub created: u64,
     pub created_by: String,
+    pub comment: String,
+    pub size: i64,
+    pub tags: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

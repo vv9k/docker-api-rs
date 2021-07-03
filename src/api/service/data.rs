@@ -21,7 +21,8 @@ pub struct ServiceInfo {
     pub updated_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub updated_at: String,
-    pub endpoint: Endpoint,
+    pub spec: Option<ServiceSpec>,
+    pub endpoint: Option<Endpoint>,
     pub update_status: Option<UpdateStatus>,
     pub service_status: Option<ServiceStatus>,
     pub job_status: Option<JobStatus>,
@@ -30,7 +31,7 @@ pub struct ServiceInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Endpoint {
-    pub spec: EndpointSpec,
+    pub spec: Option<EndpointSpec>,
     pub ports: Option<Vec<EndpointPortConfig>>,
     #[serde(rename = "VirtualIPs")]
     pub virtual_ips: Option<serde_json::Value>,
@@ -47,25 +48,25 @@ pub struct EndpointSpec {
 #[serde(rename_all = "PascalCase")]
 pub struct EndpointPortConfig {
     pub name: Option<String>,
-    pub protocol: String,
-    pub publish_mode: String,
+    pub protocol: Option<String>,
+    pub publish_mode: Option<String>,
     pub published_port: Option<u64>,
-    pub target_port: u64,
+    pub target_port: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct UpdateStatus {
-    pub state: String,
+    pub state: Option<String>,
     #[cfg(feature = "chrono")]
-    pub started_at: DateTime<Utc>,
+    pub started_at: Option<DateTime<Utc>>,
     #[cfg(not(feature = "chrono"))]
-    pub started_at: String,
+    pub started_at: Option<String>,
     #[cfg(feature = "chrono")]
-    pub completed_at: DateTime<Utc>,
+    pub completed_at: Option<DateTime<Utc>>,
     #[cfg(not(feature = "chrono"))]
-    pub completed_at: String,
-    pub message: String,
+    pub completed_at: Option<String>,
+    pub message: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -81,43 +82,22 @@ pub struct ServiceStatus {
 pub struct JobStatus {
     pub job_iteration: ObjectVersion,
     #[cfg(feature = "chrono")]
-    pub last_execution: DateTime<Utc>,
+    pub last_execution: Option<DateTime<Utc>>,
     #[cfg(not(feature = "chrono"))]
-    pub last_execution: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ServiceDetails {
-    #[serde(rename = "ID")]
-    pub id: String,
-    pub version: ObjectVersion,
-    #[cfg(feature = "chrono")]
-    pub created_at: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub created_at: String,
-    #[cfg(feature = "chrono")]
-    pub updated_at: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub updated_at: String,
-    pub spec: ServiceSpec,
-    pub endpoint: Endpoint,
-    pub update_status: Option<UpdateStatus>,
-    pub service_status: Option<ServiceStatus>,
-    pub job_status: Option<JobStatus>,
+    pub last_execution: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ServiceSpec {
-    pub name: String,
-    pub labels: Option<serde_json::Value>,
-    pub task_template: TaskSpec,
-    pub mode: Mode,
+    pub name: Option<String>,
+    pub labels: serde_json::Value,
+    pub task_template: Option<TaskSpec>,
+    pub mode: Option<Mode>,
     pub update_config: Option<UpdateConfig>,
     pub rollback_config: Option<RollbackConfig>,
     pub networks: Option<Vec<NetworkAttachmentConfig>>,
-    pub endpoint_spec: EndpointSpec,
+    pub endpoint_spec: Option<EndpointSpec>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -137,24 +117,24 @@ pub struct Mode {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Replicated {
-    pub replicas: u64,
+    pub replicas: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ReplicatedJob {
-    pub max_concurrent: u64,
-    pub total_completions: u64,
+    pub max_concurrent: Option<u64>,
+    pub total_completions: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct UpdateConfig {
     pub parallelism: u64,
-    pub delay: u64,
-    pub failure_action: String,
-    pub monitor: u64,
-    pub max_failure_ratio: usize,
+    pub delay: Option<u64>,
+    pub failure_action: Option<String>,
+    pub monitor: Option<u64>,
+    pub max_failure_ratio: f32,
     pub order: String,
 }
 
@@ -163,8 +143,8 @@ pub type RollbackConfig = UpdateConfig;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct NetworkAttachmentConfig {
-    pub target: String,
-    pub aliases: Vec<String>,
+    pub target: Option<String>,
+    pub aliases: Option<Vec<String>>,
     pub driver_opts: Option<serde_json::Value>,
 }
 

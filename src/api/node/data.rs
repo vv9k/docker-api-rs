@@ -1,4 +1,4 @@
-use crate::api::{ObjectVersion, TlsInfo};
+use crate::api::{Labels, ObjectVersion, TlsInfo};
 
 use serde::{Deserialize, Serialize};
 
@@ -66,9 +66,9 @@ pub struct NodeInfo {
     pub updated_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub updated_at: String,
-    pub spec: NodeSpec,
-    pub description: NodeDescription,
-    pub status: NodeStatus,
+    pub spec: Option<NodeSpec>,
+    pub description: Option<NodeDescription>,
+    pub status: Option<NodeStatus>,
     pub manager_status: Option<ManagerStatus>,
 }
 
@@ -76,39 +76,39 @@ pub struct NodeInfo {
 #[serde(rename_all = "PascalCase")]
 pub struct NodeStatus {
     // TODO: use an enum here
-    pub state: String,
-    pub message: String,
-    pub addr: String,
+    pub state: Option<String>,
+    pub message: Option<String>,
+    pub addr: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct NodeSpec {
-    pub name: String,
-    pub labels: serde_json::Value,
+    pub name: Option<String>,
+    pub labels: Labels,
     // TODO: use an enum here
-    pub role: String,
+    pub role: Option<String>,
     // TODO: use an enum here
-    pub availability: String,
+    pub availability: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct NodeDescription {
-    pub hostname: String,
-    pub platform: Platform,
-    pub resources: ResourceObject,
-    pub engine: EngineDescription,
+    pub hostname: Option<String>,
+    pub platform: Option<Platform>,
+    pub resources: Option<ResourceObject>,
+    pub engine: Option<EngineDescription>,
     #[serde(rename = "TLSInfo")]
-    pub tls_info: TlsInfo,
+    pub tls_info: Option<TlsInfo>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct EngineDescription {
-    pub engine_version: String,
-    pub labels: serde_json::Value,
-    pub plugins: Vec<serde_json::Value>,
+    pub engine_version: Option<String>,
+    pub labels: Option<Labels>,
+    pub plugins: Option<Vec<serde_json::Value>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -123,15 +123,15 @@ pub struct ResourceObject {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Platform {
-    architecture: String,
-    os: String,
+    architecture: Option<String>,
+    os: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ManagerStatus {
-    pub leader: bool,
+    pub leader: Option<bool>,
     // TODO: use an enum here
-    pub reachability: String,
-    pub addr: String,
+    pub reachability: Option<String>,
+    pub addr: Option<String>,
 }

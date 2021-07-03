@@ -35,11 +35,11 @@ pub struct Version {
 pub struct Info {
     #[serde(rename = "ID")]
     pub id: String,
-    pub containers: usize,
-    pub containers_running: usize,
-    pub containers_paused: usize,
-    pub containers_stopped: usize,
-    pub images: usize,
+    pub containers: isize,
+    pub containers_running: isize,
+    pub containers_paused: isize,
+    pub containers_stopped: isize,
+    pub images: isize,
     pub driver: String,
     pub driver_status: Vec<Vec<String>>,
     pub docker_root_dir: String,
@@ -61,8 +61,8 @@ pub struct Info {
     pub bridge_nf_iptables: bool,
     pub bridge_nf_ip6tables: bool,
     pub debug: bool,
-    pub n_fd: usize,
-    pub n_goroutines: usize,
+    pub n_fd: isize,
+    pub n_goroutines: isize,
     pub system_time: String,
     pub logging_driver: String,
     pub cgroup_driver: String,
@@ -114,7 +114,7 @@ pub struct Info {
 #[serde(rename_all = "PascalCase")]
 pub struct AddressPool {
     base: String,
-    size: usize,
+    size: isize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -142,12 +142,12 @@ pub struct ImageSummary {
     pub parent_id: String,
     pub repo_tags: Vec<String>,
     pub repo_digests: Option<Vec<String>>,
-    pub created: usize,
-    pub size: usize,
-    pub shared_size: usize,
-    pub virtual_size: usize,
+    pub created: isize,
+    pub size: isize,
+    pub shared_size: isize,
+    pub virtual_size: isize,
     pub labels: Option<Labels>,
-    pub containers: usize,
+    pub containers: isize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -194,7 +194,7 @@ pub struct BuildCache {
     pub description: String,
     pub in_use: bool,
     pub shared: bool,
-    pub size: usize,
+    pub size: i64,
     #[cfg(feature = "chrono")]
     pub created_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
@@ -203,7 +203,7 @@ pub struct BuildCache {
     pub last_used_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub last_used_at: String,
-    pub usage_count: usize,
+    pub usage_count: isize,
 }
 
 #[derive(Serialize, Debug)]

@@ -1,4 +1,4 @@
-use crate::api::{ConfigMap, DriverData, Labels};
+use crate::api::{ConfigMap, DriverData, Labels, Options};
 
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str};
@@ -173,7 +173,7 @@ pub struct HostConfig {
     pub userns_mode: String,
     pub shm_size: u64,
     pub sysctls: Option<Sysctls>,
-    pub runtime: String,
+    pub runtime: Option<String>,
     pub console_size: Option<Vec<u64>>,
     pub isolation: String,
     pub masked_paths: Option<Vec<String>>,
@@ -215,16 +215,16 @@ pub struct LogConfig {
 #[serde(rename_all = "PascalCase")]
 pub struct Ulimit {
     pub name: String,
-    pub soft: u64,
-    pub hard: u64,
+    pub soft: isize,
+    pub hard: isize,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DeviceMapping {
-    pub path_on_host: Option<String>,
-    pub path_in_container: Option<String>,
-    pub cgroup_permissions: Option<String>,
+    pub path_on_host: String,
+    pub path_in_container: String,
+    pub cgroup_permissions: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -235,7 +235,7 @@ pub struct DeviceRequest {
     #[serde(rename = "DeviceIDs")]
     pub device_ids: Vec<String>,
     pub capabilities: Vec<String>,
-    pub options: Option<serde_json::Value>,
+    pub options: Options,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -251,10 +251,29 @@ pub struct Port {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub read: String,
-    pub networks: HashMap<String, NetworkStats>,
-    pub memory_stats: MemoryStats,
-    pub blkio_stats: BlkioStats,
-    pub cpu_stats: CpuStats,
+    pub pre_read: String,
+    pub num_procs: u32,
+    pub memory_stats: Option<MemoryStats>,
+    pub blkio_stats: Option<BlkioStats>,
+    pub cpu_stats: Option<CpuStats>,
+    pub precpu_stats: Option<CpuStats>,
+    pub pids_stats: Option<PidsStats>,
+    pub storage_stats: Option<StorageStats>,
+    pub network_stats: Option<HashMap<String, NetworkStats>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct StorageStats {
+    pub read_count_normalized: Option<u64>,
+    pub read_size_bytes: Option<u64>,
+    pub write_count_normalized: Option<u64>,
+    pub write_size_bytes: Option<u64>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PidsStats {
+    current: Option<u64>,
+    limit: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -378,12 +397,12 @@ pub struct ContainerCreateInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Exit {
-    pub status_code: u64,
+    pub status_code: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContainersPruneInfo {
     pub containers_deleted: Vec<String>,
-    pub space_reclaimed: i64,
+    pub space_reclaimed: u64,
 }

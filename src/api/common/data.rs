@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 pub type Labels = HashMap<String, String>;
+pub type StatusMap = HashMap<String, String>;
 pub type Options = HashMap<String, String>;
 pub type Data = HashMap<String, String>;
 pub type ConfigMap = HashMap<String, String>;

@@ -48,7 +48,7 @@ impl<'docker> Service<'docker> {
     /// Inspects a named service's details.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/ServiceInspect>
-    pub async fn inspect(&self) -> Result<ServiceDetails> {
+    pub async fn inspect(&self) -> Result<ServiceInfo> {
         self.docker
             .get_json(&format!("/services/{}", self.name))
             .await
