@@ -10,17 +10,24 @@ use crate::{conn::Payload, Result};
 impl_api_ty!(Volume => name: N);
 
 impl<'docker> Volume<'docker> {
-    /// Deletes a volume.
+    /// Deletes this volume.
     ///
     /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeDelete>
     pub async fn delete(&self) -> Result<()> {
         self.docker
             .delete(&format!("/volumes/{}", self.name))
-            .await?;
-        Ok(())
+            .await
+            .map(|_| ())
     }
 
-    // TODO: implement Volume::inspect
+    /// Inspects this volume.
+    ///
+    /// API Reference: <https://docs.docker.com/engine/api/v1.41/#operation/VolumeInspect>
+    pub async fn inspect(&self) -> Result<VolumeInfo> {
+        self.docker
+            .get_json(&format!("/volumes/{}", self.name))
+            .await
+    }
 }
 
 impl<'docker> Volumes<'docker> {
