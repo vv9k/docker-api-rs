@@ -55,11 +55,7 @@ impl<'docker> Plugin<'docker> {
     ///
     /// [Api Reference](https://docs.docker.com/engine/api/v1.41/#operation/PluginEnable)
     pub async fn enable(&self, timeout: Option<u64>) -> Result<()> {
-        let query = if let Some(timeout) = timeout {
-            Some(encoded_pair("timeout", timeout))
-        } else {
-            None
-        };
+        let query = timeout.map(|timeout| encoded_pair("timeout", timeout));
         self.docker
             .post(
                 &construct_ep(format!("/plugins/{}/enable", self.name), query),

@@ -39,4 +39,8 @@ pub enum Error {
     UnsupportedScheme(String),
     #[error("Provided URI is missing authority part after scheme")]
     MissingAuthority,
+    #[error("Failed to parse url - {0}")]
+    InvalidUrl(url::ParseError),
+    #[error("Failed to parse uri - {0}")]
+    InvalidUri(http::uri::InvalidUri),
 }

@@ -1,18 +1,6 @@
 //! Main entrypoint for interacting with the Docker API.
 //!
 //! API Reference: <https://docs.docker.com/engine/api/v1.41/>
-
-use std::{collections::HashMap, convert::TryFrom, io};
-
-use futures_util::{
-    io::{AsyncRead, AsyncWrite},
-    stream::Stream,
-    TryStreamExt,
-};
-use hyper::{body::Bytes, header::HeaderMap, Body, Client, Method, Response};
-use log::trace;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-
 use crate::{
     api::{
         container::{Containers, Mount, Port},
@@ -26,11 +14,22 @@ use crate::{
     errors::{Error, Result},
 };
 
+use futures_util::{
+    io::{AsyncRead, AsyncWrite},
+    stream::Stream,
+    TryStreamExt,
+};
+use hyper::{body::Bytes, header::HeaderMap, Body, Client, Method, Response};
+use log::trace;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+
+use std::{collections::HashMap, convert::TryFrom, io, path::Path};
+
 #[cfg(feature = "swarm")]
 use crate::service::Services;
 
 #[cfg(feature = "tls")]
-use {crate::conn::get_https_connector, std::path::Path};
+use crate::conn::get_https_connector;
 
 #[cfg(unix)]
 use crate::conn::get_unix_connector;
@@ -75,7 +74,7 @@ impl Docker {
             Some("unix") => Err(Error::UnsupportedScheme("unix".to_string())),
             Some("tcp") | Some("http") => {
                 if let Some(host) = it.next() {
-                    Ok(Docker::tcp(host))
+                    Docker::tcp(host)
                 } else {
                     Err(Error::MissingAuthority)
                 }
@@ -93,14 +92,14 @@ impl Docker {
     #[cfg(unix)]
     pub fn unix<P>(socket_path: P) -> Docker
     where
-        P: Into<String>,
+        P: AsRef<Path>,
     {
         Docker {
             transport: Transport::Unix {
                 client: Client::builder()
                     .pool_max_idle_per_host(0)
                     .build(get_unix_connector()),
-                path: socket_path.into(),
+                path: socket_path.as_ref().to_path_buf(),
             },
         }
     }
@@ -113,6 +112,9 @@ impl Docker {
     /// `cert_path` specifies the base path in the filesystem containing a certificate (`cert.pem`)
     /// and a key (`key.pem`) that will be used by the client. If verify is `true` a CA file will be
     /// added (`ca.pem`) to the connector.
+    ///
+    /// Returns an error if the provided host will fail to parse as URL or reading the certificate
+    /// files will fail.
     pub fn tls<H, P>(host: H, cert_path: P, verify: bool) -> Result<Docker>
     where
         H: AsRef<str>,
@@ -121,7 +123,8 @@ impl Docker {
         Ok(Docker {
             transport: Transport::EncryptedTcp {
                 client: Client::builder().build(get_https_connector(cert_path.as_ref(), verify)?),
-                host: format!("https://{}", host.as_ref()),
+                host: url::Url::parse(&format!("https://{}", host.as_ref()))
+                    .map_err(Error::InvalidUrl)?,
             },
         })
     }
@@ -131,17 +134,19 @@ impl Docker {
     /// authority part.
     ///
     /// TLS is supported with feature `tls` enabled through [Docker::tls](Docker::tls) constructor.
-    pub fn tcp<H>(host: H) -> Docker
+    ///
+    /// Returns an error if the provided host will fail to parse as URL.
+    pub fn tcp<H>(host: H) -> Result<Docker>
     where
         H: AsRef<str>,
     {
-        let http = get_http_connector();
-        Docker {
+        Ok(Docker {
             transport: Transport::Tcp {
-                client: Client::builder().build(http),
-                host: format!("tcp://{}", host.as_ref()),
+                client: Client::builder().build(get_http_connector()),
+                host: url::Url::parse(&format!("tcp://{}", host.as_ref()))
+                    .map_err(Error::InvalidUrl)?,
             },
-        }
+        })
     }
 
     /// Exports an interface for interacting with Docker images

@@ -1,6 +1,7 @@
 //! Transports for communicating with the docker daemon
 
 use crate::{Error, Result};
+
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
     stream::{self, Stream},
@@ -18,10 +19,14 @@ use hyperlocal::UnixConnector;
 #[cfg(unix)]
 use hyperlocal::Uri as DomainUri;
 use pin_project::pin_project;
+
 use serde::{Deserialize, Serialize};
+use url::Url;
+
 use std::{
     io,
     iter::IntoIterator,
+    path::PathBuf,
     pin::Pin,
     task::{Context, Poll},
 };
@@ -118,29 +123,29 @@ pub enum Transport {
     /// A network tcp interface
     Tcp {
         client: Client<HttpConnector>,
-        host: String,
+        host: Url,
     },
     /// TCP/TLS
     #[cfg(feature = "tls")]
     EncryptedTcp {
         client: Client<HttpsConnector<HttpConnector>>,
-        host: String,
+        host: Url,
     },
     /// A Unix domain socket
     #[cfg(unix)]
     Unix {
         client: Client<UnixConnector>,
-        path: String,
+        path: PathBuf,
     },
 }
 
 impl Transport {
     pub fn remote_addr(&self) -> &str {
         match &self {
-            Self::Tcp { ref host, .. } => host.as_str(),
+            Self::Tcp { ref host, .. } => host.as_ref(),
             #[cfg(feature = "tls")]
-            Self::EncryptedTcp { ref host, .. } => host.as_str(),
-            Self::Unix { ref path, .. } => path.as_str(),
+            Self::EncryptedTcp { ref host, .. } => host.as_ref(),
+            Self::Unix { ref path, .. } => path.to_str().unwrap_or_default(),
         }
     }
 
@@ -154,21 +159,7 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let ep = endpoint.as_ref();
-        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
-        // should be prefixed with the API version as the ones without will stop being supported in future releases
-        let req = self.build_request(
-            method,
-            &format!(
-                "{}{}{}",
-                crate::VERSION,
-                if !ep.starts_with('/') { "/" } else { "" },
-                ep,
-            ),
-            body,
-            headers,
-            Request::builder(),
-        )?;
+        let req = self.build_request(method, endpoint, body, headers, Request::builder())?;
 
         self.send_request(req).await
     }
@@ -225,9 +216,10 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let tokio_multiplexer = self.stream_upgrade_tokio(method, endpoint, body).await?;
-
-        Ok(Compat { tokio_multiplexer })
+        self.stream_upgrade_tokio(method, endpoint, body)
+            .await
+            .map(Compat::new)
+            .map_err(Error::from)
     }
 
     async fn get_body<B>(
@@ -277,9 +269,9 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let body = self.get_body(method, endpoint, body, headers).await?;
-
-        Ok(stream_body(body))
+        self.get_body(method, endpoint, body, headers)
+            .await
+            .map(stream_body)
     }
 
     async fn get_json_chunk_stream<B>(
@@ -292,9 +284,9 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let body = self.get_body(method, endpoint, body, headers).await?;
-
-        Ok(stream_json_body(body))
+        self.get_body(method, endpoint, body, headers)
+            .await
+            .map(stream_json_body)
     }
 
     /// Builds an HTTP request.
@@ -309,24 +301,23 @@ impl Transport {
     where
         B: Into<Body>,
     {
-        let req = match self {
-            Transport::Tcp { host, .. } => {
-                builder
-                    .method(method)
-                    .uri(&format!("{}{}", host, endpoint.as_ref()))
-            }
+        let ep = endpoint.as_ref();
+        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
+        // should be prefixed with the API version as the ones without will stop being supported in future releases
+        let uri: hyper::Uri = match self {
+            Transport::Tcp { host, .. } => format!("{}{}/{}", host, crate::VERSION, ep)
+                .parse()
+                .map_err(Error::InvalidUri)?,
             #[cfg(feature = "tls")]
-            Transport::EncryptedTcp { host, .. } => {
-                builder
-                    .method(method)
-                    .uri(&format!("{}{}", host, endpoint.as_ref()))
-            }
+            Transport::EncryptedTcp { host, .. } => format!("{}{}/{}", host, crate::VERSION, ep)
+                .parse()
+                .map_err(Error::InvalidUri)?,
             #[cfg(unix)]
             Transport::Unix { path, .. } => {
-                let uri = DomainUri::new(&path, endpoint.as_ref());
-                builder.method(method).uri(uri)
+                DomainUri::new(&path, &format!("/{}/{}", crate::VERSION, ep)).into()
             }
         };
+        let req = builder.method(method).uri(&uri);
         let mut req = req.header(header::HOST, "");
 
         if let Some(h) = headers {
@@ -342,22 +333,25 @@ impl Transport {
 
         let mime = body.mime_type();
         if let Some(c) = mime {
-            req = req.header(header::CONTENT_TYPE, &c.to_string()[..]);
+            req = req.header(header::CONTENT_TYPE, &c.to_string());
         }
 
         // it's ok to unwrap, we check that the body is not none
-        Ok(req.body(body.into_inner().unwrap().into())?)
+        req.body(body.into_inner().unwrap().into())
+            .map_err(Error::from)
     }
 
     /// Send the given request to the docker daemon and return a Future of the response.
     async fn send_request(&self, req: Request<Body>) -> Result<Response<Body>> {
         match self {
-            Transport::Tcp { ref client, .. } => Ok(client.request(req).await?),
+            Transport::Tcp { ref client, .. } => client.request(req),
             #[cfg(feature = "tls")]
-            Transport::EncryptedTcp { ref client, .. } => Ok(client.request(req).await?),
+            Transport::EncryptedTcp { ref client, .. } => client.request(req),
             #[cfg(unix)]
-            Transport::Unix { ref client, .. } => Ok(client.request(req).await?),
+            Transport::Unix { ref client, .. } => client.request(req),
         }
+        .await
+        .map_err(Error::from)
     }
 
     /// Makes an HTTP request, upgrading the connection to a TCP
@@ -385,7 +379,6 @@ impl Transport {
         )?;
 
         let response = self.send_request(req).await?;
-
         match response.status() {
             StatusCode::SWITCHING_PROTOCOLS => Ok(hyper::upgrade::on(response).await?),
             _ => Err(Error::ConnectionNotUpgraded),
@@ -405,6 +398,12 @@ impl Transport {
 struct Compat<S> {
     #[pin]
     tokio_multiplexer: S,
+}
+
+impl<S> Compat<S> {
+    fn new(tokio_multiplexer: S) -> Self {
+        Self { tokio_multiplexer }
+    }
 }
 
 impl<S> AsyncRead for Compat<S>
@@ -451,8 +450,9 @@ struct ErrorResponse {
 
 fn stream_body(body: Body) -> impl Stream<Item = Result<Bytes>> {
     async fn unfold(mut body: Body) -> Option<(Result<Bytes>, Body)> {
-        let chunk_result = body.next().await?.map_err(Error::from);
-        Some((chunk_result, body))
+        body.next()
+            .await
+            .map(|chunk| (chunk.map_err(Error::from), body))
     }
 
     stream::unfold(body, unfold)
