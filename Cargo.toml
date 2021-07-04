@@ -1,6 +1,6 @@
 [package]
 name = "docker-api"
-version = "0.3.0"
+version = "0.3.2"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
 documentation = "https://docs.rs/docker-api"
@@ -57,3 +57,11 @@ default = ["chrono"]
 tls = ["openssl", "hyper-openssl"]
 vendored-ssl = ["tls", "openssl/vendored"]
 swarm = []
+
+
+# docs.rs-specific configuration
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]

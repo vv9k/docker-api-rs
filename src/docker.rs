@@ -79,6 +79,7 @@ impl Docker {
     /// `socket_path` is the part of URI that comes after the `unix://`. For example a URI `unix:///run/docker.sock` has a
     /// `socket_path` == "/run/docker.sock".
     #[cfg(unix)]
+    #[cfg_attr(docsrs, doc(cfg(unix)))]
     pub fn unix<P>(socket_path: P) -> Docker
     where
         P: AsRef<Path>,
@@ -94,6 +95,7 @@ impl Docker {
     }
 
     #[cfg(feature = "tls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "tls")))]
     /// Creates a new docker instance for a docker host listening on a given TCP socket `host`.
     /// `host` is the part of URI that comes after `tcp://` or `http://` or `https://` schemes,
     /// also known as authority part.

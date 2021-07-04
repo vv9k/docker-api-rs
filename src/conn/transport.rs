@@ -127,6 +127,7 @@ pub enum Transport {
     },
     /// TCP/TLS
     #[cfg(feature = "tls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "tls")))]
     EncryptedTcp {
         client: Client<HttpsConnector<HttpConnector>>,
         host: Url,

@@ -16,6 +16,7 @@
 //! }
 //! # };
 //! ```
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 /// Latest Docker API version supported by this crate.
 pub static VERSION: &str = "v1.41";
@@ -49,6 +50,7 @@ pub use crate::{
 };
 
 #[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 pub use crate::api::{
     config::{self, Config, Configs},
     node::{self, Node, Nodes},
