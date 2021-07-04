@@ -323,6 +323,6 @@ impl<'docker> Containers<'docker> {
     impl_api_ep! {__: Container, resp
         List -> "/containers/json"
         Prune ->  "/containers/prune"
-        Create -> "/containers/create".into(), resp.id
+        Create -> "/containers/create", resp.id
     }
 }

@@ -18,7 +18,7 @@ impl<'docker> Config<'docker> {
 impl<'docker> Configs<'docker> {
     impl_api_ep! { __: Config, resp
         List -> "/configs"
-        Create -> "/configs/create".into(), resp.id
+        Create -> "/configs/create", resp.id
     }
 }
 

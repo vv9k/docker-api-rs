@@ -16,7 +16,7 @@ impl<'docker> Secret<'docker> {
 impl<'docker> Secrets<'docker> {
     impl_api_ep! { __: Secret, resp
         List -> "/secrets"
-        Create -> "/secrets/create".into() , resp.id
+        Create -> "/secrets/create", resp.id
     }
 }
 

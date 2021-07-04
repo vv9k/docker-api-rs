@@ -47,7 +47,7 @@ impl<'docker> Network<'docker> {
 impl<'docker> Networks<'docker> {
     impl_api_ep! { __: Network, resp
         List -> "/networks"
-        Create -> "/network/create".into(), resp.id
+        Create -> "/network/create", resp.id
         Prune -> "/networks/prune"
     }
 }

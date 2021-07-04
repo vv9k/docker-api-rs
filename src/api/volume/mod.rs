@@ -18,7 +18,7 @@ impl<'docker> Volume<'docker> {
 
 impl<'docker> Volumes<'docker> {
     impl_api_ep! {__: Volume, resp
-        Create -> "/volumes/create".into(), resp.name
+        Create -> "/volumes/create", resp.name
         List -> "/volumes", VolumesInfo
         Prune -> "/volumes/prune"
     }
