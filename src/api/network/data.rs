@@ -92,7 +92,7 @@ pub struct NetworkCreateInfo {
     pub warning: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct NetworksPruneInfo {
     pub networks_deleted: Vec<String>,

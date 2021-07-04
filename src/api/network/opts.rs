@@ -109,7 +109,7 @@ impl ContainerConnectionOptsBuilder {
     }
 }
 
-impl_url_opts_builder!(NetworkPrune);
+impl_url_opts_builder!(derives = Default | NetworkPrune);
 
 pub enum NetworkPruneFilter {
     Until(String),

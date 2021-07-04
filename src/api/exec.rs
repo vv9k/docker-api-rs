@@ -116,7 +116,7 @@ impl<'docker> Exec<'docker> {
     /// It's in callers responsibility to ensure that exec instance with specified id actually
     /// exists. Use [Exec::create](Exec::create) to ensure that the exec instance is created
     /// beforehand.
-    pub async fn get<I>(docker: &'docker Docker, id: I) -> Exec<'docker>
+    pub fn get<I>(docker: &'docker Docker, id: I) -> Exec<'docker>
     where
         I: Into<String>,
     {

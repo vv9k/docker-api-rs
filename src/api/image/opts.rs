@@ -345,7 +345,7 @@ impl RmImageOptsBuilder {
     impl_url_bool_field!("Do not delete untagged parent images." noprune => "noprune");
 }
 
-impl_url_opts_builder!(ImagePrune);
+impl_url_opts_builder!(derives = Default | ImagePrune);
 
 pub enum ImagesPruneFilter {
     Dangling(bool),
