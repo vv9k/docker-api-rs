@@ -251,7 +251,6 @@ pub struct Port {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub read: String,
-    pub pre_read: String,
     pub num_procs: u32,
     pub memory_stats: Option<MemoryStats>,
     pub blkio_stats: Option<BlkioStats>,
@@ -290,57 +289,57 @@ pub struct NetworkStats {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MemoryStats {
-    pub max_usage: u64,
-    pub usage: u64,
+    pub max_usage: Option<u64>,
+    pub usage: Option<u64>,
     pub failcnt: Option<u64>,
-    pub limit: u64,
-    pub stats: MemoryStat,
+    pub limit: Option<u64>,
+    pub stats: Option<MemoryStat>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MemoryStat {
-    pub total_pgmajfault: u64,
-    pub cache: u64,
-    pub mapped_file: u64,
-    pub total_inactive_file: u64,
-    pub pgpgout: u64,
-    pub rss: u64,
-    pub total_mapped_file: u64,
-    pub writeback: u64,
-    pub unevictable: u64,
-    pub pgpgin: u64,
-    pub total_unevictable: u64,
-    pub pgmajfault: u64,
-    pub total_rss: u64,
-    pub total_rss_huge: u64,
-    pub total_writeback: u64,
-    pub total_inactive_anon: u64,
-    pub rss_huge: u64,
-    pub hierarchical_memory_limit: u64,
-    pub hierarchical_memsw_limit: u64,
-    pub total_pgfault: u64,
-    pub total_active_file: u64,
-    pub active_anon: u64,
-    pub total_active_anon: u64,
-    pub total_pgpgout: u64,
-    pub total_cache: u64,
-    pub inactive_anon: u64,
-    pub active_file: u64,
-    pub pgfault: u64,
-    pub inactive_file: u64,
-    pub total_pgpgin: u64,
+    pub total_pgmajfault: Option<u64>,
+    pub cache: Option<u64>,
+    pub mapped_file: Option<u64>,
+    pub total_inactive_file: Option<u64>,
+    pub pgpgout: Option<u64>,
+    pub rss: Option<u64>,
+    pub total_mapped_file: Option<u64>,
+    pub writeback: Option<u64>,
+    pub unevictable: Option<u64>,
+    pub pgpgin: Option<u64>,
+    pub total_unevictable: Option<u64>,
+    pub pgmajfault: Option<u64>,
+    pub total_rss: Option<u64>,
+    pub total_rss_huge: Option<u64>,
+    pub total_writeback: Option<u64>,
+    pub total_inactive_anon: Option<u64>,
+    pub rss_huge: Option<u64>,
+    pub hierarchical_memory_limit: Option<u64>,
+    pub hierarchical_memsw_limit: Option<u64>,
+    pub total_pgfault: Option<u64>,
+    pub total_active_file: Option<u64>,
+    pub active_anon: Option<u64>,
+    pub total_active_anon: Option<u64>,
+    pub total_pgpgout: Option<u64>,
+    pub total_cache: Option<u64>,
+    pub inactive_anon: Option<u64>,
+    pub active_file: Option<u64>,
+    pub pgfault: Option<u64>,
+    pub inactive_file: Option<u64>,
+    pub total_pgpgin: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CpuStats {
     pub cpu_usage: CpuUsage,
-    pub system_cpu_usage: u64,
-    pub throttling_data: ThrottlingData,
+    pub system_cpu_usage: Option<u64>,
+    pub throttling_data: Option<ThrottlingData>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CpuUsage {
-    pub percpu_usage: Vec<u64>,
+    pub percpu_usage: Option<Vec<u64>>,
     pub usage_in_usermode: u64,
     pub total_usage: u64,
     pub usage_in_kernelmode: u64,
@@ -355,14 +354,14 @@ pub struct ThrottlingData {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BlkioStats {
-    pub io_service_bytes_recursive: Vec<BlkioStat>,
-    pub io_serviced_recursive: Vec<BlkioStat>,
-    pub io_queue_recursive: Vec<BlkioStat>,
-    pub io_service_time_recursive: Vec<BlkioStat>,
-    pub io_wait_time_recursive: Vec<BlkioStat>,
-    pub io_merged_recursive: Vec<BlkioStat>,
-    pub io_time_recursive: Vec<BlkioStat>,
-    pub sectors_recursive: Vec<BlkioStat>,
+    pub io_service_bytes_recursive: Option<Vec<BlkioStat>>,
+    pub io_serviced_recursive: Option<Vec<BlkioStat>>,
+    pub io_queue_recursive: Option<Vec<BlkioStat>>,
+    pub io_service_time_recursive: Option<Vec<BlkioStat>>,
+    pub io_wait_time_recursive: Option<Vec<BlkioStat>>,
+    pub io_merged_recursive: Option<Vec<BlkioStat>>,
+    pub io_time_recursive: Option<Vec<BlkioStat>>,
+    pub sectors_recursive: Option<Vec<BlkioStat>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

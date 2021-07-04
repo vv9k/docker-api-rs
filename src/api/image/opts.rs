@@ -1,6 +1,9 @@
 use crate::{api::Filter, util::url::encoded_pairs};
 
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use serde::Serialize;
 
@@ -190,7 +193,7 @@ impl PullOptsBuilder {
 
 #[derive(Default, Debug)]
 pub struct BuildOpts {
-    pub path: String,
+    pub path: PathBuf,
     params: HashMap<&'static str, String>,
 }
 
@@ -198,9 +201,9 @@ impl BuildOpts {
     /// return a new instance of a builder for Opts
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
-    pub fn builder<S>(path: S) -> BuildOptsBuilder
+    pub fn builder<P>(path: P) -> BuildOptsBuilder
     where
-        S: Into<String>,
+        P: AsRef<Path>,
     {
         BuildOptsBuilder::new(path)
     }
@@ -217,7 +220,7 @@ impl BuildOpts {
 
 #[derive(Default)]
 pub struct BuildOptsBuilder {
-    path: String,
+    path: PathBuf,
     params: HashMap<&'static str, String>,
 }
 
@@ -226,10 +229,10 @@ impl BuildOptsBuilder {
     /// describing how to build a Docker image
     pub(crate) fn new<P>(path: P) -> Self
     where
-        P: Into<String>,
+        P: AsRef<Path>,
     {
         BuildOptsBuilder {
-            path: path.into(),
+            path: path.as_ref().to_path_buf(),
             ..Default::default()
         }
     }

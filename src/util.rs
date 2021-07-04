@@ -85,9 +85,10 @@ pub mod tarball {
     use tar::Builder;
 
     /// Writes a gunzip encoded tarball to `buf` from entries found in `path`.
-    pub fn dir<W>(buf: W, path: &str) -> io::Result<()>
+    pub fn dir<W, P>(buf: W, path: P) -> io::Result<()>
     where
         W: Write,
+        P: AsRef<Path>,
     {
         let mut archive = Builder::new(GzEncoder::new(buf, Compression::best()));
         fn bundle<F>(dir: &Path, f: &mut F, bundle_dir: bool) -> io::Result<()>
@@ -111,7 +112,8 @@ pub mod tarball {
         }
 
         {
-            let base_path = Path::new(path).canonicalize()?;
+            let path = path.as_ref();
+            let base_path = path.canonicalize()?;
             let mut base_path_str = base_path
                 .to_str()
                 .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "invalid base path"))?
@@ -137,7 +139,7 @@ pub mod tarball {
                 }
                 Ok(())
             };
-            bundle(Path::new(path), &mut append, false)?;
+            bundle(path, &mut append, false)?;
         }
         archive.finish()?;
 

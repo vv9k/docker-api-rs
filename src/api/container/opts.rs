@@ -332,7 +332,7 @@ impl ContainerOptsBuilder {
     }
 }
 
-impl_url_opts_builder!(RmContainer);
+impl_url_opts_builder!(derives = Default | RmContainer);
 
 impl RmContainerOptsBuilder {
     impl_url_bool_field!("If the container is running, kill it before removing it." force => "force");
@@ -342,7 +342,7 @@ impl RmContainerOptsBuilder {
     impl_url_bool_field!("Remove the specified link associated with the container." link => "link");
 }
 
-impl_url_opts_builder!(ContainerPrune);
+impl_url_opts_builder!(derives = Default | ContainerPrune);
 
 pub enum ContainerPruneFilter {
     Until(String),

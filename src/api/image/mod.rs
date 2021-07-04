@@ -91,7 +91,7 @@ impl<'docker> Images<'docker> {
         // stream. But for backwards compatability, we have to return the error inside of the
         // stream.
         let mut bytes = Vec::default();
-        let tar_result = tarball::dir(&mut bytes, opts.path.as_str());
+        let tar_result = tarball::dir(&mut bytes, &opts.path);
 
         // We must take ownership of the Docker reference. If we don't then the lifetime of 'stream
         // is incorrectly tied to `self`.
@@ -113,9 +113,12 @@ impl<'docker> Images<'docker> {
     api_doc! { Image => Search
     /// Search for docker images by term.
     |
-    pub async fn search(&self, term: &str) -> Result<Vec<SearchResult>> {
+    pub async fn search<T>(&self, term: T) -> Result<Vec<SearchResult>>
+    where
+        T: AsRef<str>,
+    {
         self.docker
-            .get_json(&format!("/images/search?{}", encoded_pair("term", term)))
+            .get_json(&format!("/images/search?{}", encoded_pair("term", term.as_ref())))
             .await
     }}
 

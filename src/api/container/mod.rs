@@ -102,6 +102,7 @@ impl<'docker> Container<'docker> {
             futures_codec::FramedRead::new(reader, codec)
                 .map_err(Error::IO)
                 .and_then(|s: String| async move {
+                    log::trace!("{}", s);
                     serde_json::from_str(&s).map_err(Error::SerdeJsonError)
                 }),
         )
