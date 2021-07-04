@@ -396,18 +396,23 @@ macro_rules! impl_api_ep {
         )*
     };
     (
-        Inspect $it:ident: $base:ident -> $resp:ident $ep:expr $(,$extra:expr)*
+        Inspect $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(,$extra:expr)*
     ) => {
         paste::item! {
         api_doc! { $base => Inspect
         #[doc = concat!("Inspect this ", stringify!($base), ".")]
         |
-        pub async fn inspect(&self) -> Result<[< $base Info >]> {
+        pub async fn inspect(&self) -> Result<[< $base $ret >]> {
             let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
             let ep = ep_fn(self);
             self.docker.get_json(ep.as_ref()).await
         }}
         }
+    };
+    (
+        Inspect $it:ident: $base:ident -> $resp:ident $ep:expr $(,$extra:expr)*
+    ) => {
+        impl_api_ep! { Inspect $it: $base -> $resp $ep, Info }
     };
     (
         ForceDelete $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(,$extra:expr)*
@@ -504,15 +509,7 @@ macro_rules! impl_api_ep {
     (
         List $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
     ) => {
-        paste::item! {
-        api_doc! { $base => List
-        #[doc = concat!("List available ", stringify!($base), "s.")]
-        |
-        pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<Vec<[< $base Info >]>> {
-            let ep = crate::util::url::construct_ep($ep, opts.serialize());
-            self.docker.get_json(&ep).await
-        }}
-        }
+        impl_api_ep! { List $it: $base -> $resp $ep, [< $base  Info >] }
     };
     (
         Create $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
