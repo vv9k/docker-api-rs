@@ -15,9 +15,10 @@ impl VolumeCreateOptsBuilder {
     impl_map_field!("User-defined key/value metadata." labels: L => "Labels");
 }
 
-impl_url_opts_builder!(VolumePrune);
+impl_url_opts_builder!(derives = Default | VolumePrune);
 
-pub enum VolumePruneFilter {
+impl_url_opts_builder!(derives = Default | VolumeList);
+pub enum VolumeFilter {
     Dangling(bool),
     Driver(String),
     LabelKey(String),
@@ -25,9 +26,9 @@ pub enum VolumePruneFilter {
     Name(String),
 }
 
-impl Filter for VolumePruneFilter {
+impl Filter for VolumeFilter {
     fn query_key_val(&self) -> (&'static str, String) {
-        use VolumePruneFilter::*;
+        use VolumeFilter::*;
         match &self {
             Dangling(dangling) => ("dangling", dangling.to_string()),
             Driver(driver) => ("driver", driver.to_owned()),
@@ -39,5 +40,9 @@ impl Filter for VolumePruneFilter {
 }
 
 impl VolumePruneOptsBuilder {
-    impl_filter_func!(VolumePruneFilter);
+    impl_filter_func!(VolumeFilter);
+}
+
+impl VolumeListOptsBuilder {
+    impl_filter_func!(VolumeFilter);
 }

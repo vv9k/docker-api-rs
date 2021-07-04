@@ -1,10 +1,30 @@
 #![cfg(feature = "swarm")]
 //! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, util::url::construct_ep, Result};
+use crate::{conn::Payload, Result};
+
+impl_api_ty!(Secret => name: N);
+
+impl<'docker> Secret<'docker> {
+    impl_api_ep! { secret: Secret, resp
+        Inspect -> format!("/secrets/{}", secret.name)
+        Delete -> format!("/secrets/{}", secret.name)
+    }
+    // TODO: add Secret::update
+}
+
+impl<'docker> Secrets<'docker> {
+    impl_api_ep! { __: Secret, resp
+        List -> "/secrets"
+        Create -> "/secrets/create".into() , resp.id
+    }
+}
 
 pub mod data {
-    use crate::api::{Driver, Labels, ObjectVersion};
+    use crate::{
+        api::{Driver, Labels, ObjectVersion},
+        Error, Result,
+    };
     use serde::{Deserialize, Serialize};
 
     #[cfg(feature = "chrono")]
@@ -40,7 +60,7 @@ pub mod data {
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
     /// Structure used to create a new secret with [`Secrets::create`](crate::Secrets::create).
-    pub struct SecretCreate {
+    pub struct SecretCreateOpts {
         name: String,
         labels: Labels,
         data: String,
@@ -48,7 +68,7 @@ pub mod data {
         templating: Driver,
     }
 
-    impl SecretCreate {
+    impl SecretCreateOpts {
         /// Create a new secret with name and data. This function will take care of
         /// encoding the secret's data as base64.
         pub fn new<N, D>(name: N, data: D) -> Self
@@ -83,14 +103,20 @@ pub mod data {
         {
             self.labels.insert(key.into(), val.into())
         }
+
+        pub fn serialize(&self) -> Result<String> {
+            serde_json::to_string(&self).map_err(Error::from)
+        }
     }
 
     #[derive(Deserialize)]
-    pub(crate) struct SecretCreateResponse {
+    pub(crate) struct SecretCreateInfo {
         #[serde(rename = "Id")]
         pub id: String,
     }
 }
+
+pub use data::*;
 
 pub mod opts {
     use crate::api::Filter;
@@ -123,47 +149,4 @@ pub mod opts {
     }
 }
 
-pub use data::*;
 pub use opts::*;
-
-impl_api_ty!(Secret => name: N);
-
-impl<'docker> Secret<'docker> {
-    impl_inspect! { secret: Secret -> format!("/secrets/{}", secret.name) }
-
-    api_doc! { Secret => Delete
-    /// Delete a secret.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete(&format!("/secrets/{}", self.name))
-            .await
-            .map(|_| ())
-    }}
-
-    // TODO: add Secret::update
-}
-
-impl<'docker> Secrets<'docker> {
-    api_doc! { Secret => List
-    /// List existing secrets.
-    |
-    pub async fn list(&self, opts: &SecretListOpts) -> Result<Vec<SecretInfo>> {
-        self.docker
-            .get_json(&construct_ep("/secrets", opts.serialize()))
-            .await
-    }}
-
-    api_doc! { Secret => Create
-    /// Create a new secret.
-    |
-    pub async fn create(&self, new_secret: &SecretCreate) -> Result<Secret<'_>> {
-        self.docker
-            .post_json(
-                "/secrets/create",
-                Payload::Json(serde_json::to_string(&new_secret)?),
-            )
-            .await
-            .map(|resp: SecretCreateResponse| Secret::new(self.docker, resp.id))
-    }}
-}

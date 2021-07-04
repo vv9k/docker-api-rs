@@ -10,48 +10,16 @@ use crate::{conn::Payload, Result};
 impl_api_ty!(Volume => name: N);
 
 impl<'docker> Volume<'docker> {
-    api_doc! { Volume => Delete
-    /// Deletes this volume.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete(&format!("/volumes/{}", self.name))
-            .await
-            .map(|_| ())
-    }}
-
-    impl_inspect! { vol: Volume -> format!("/volumes/{}", vol.name) }
+    impl_api_ep! {vol: Volume, resp
+        Inspect -> format!("/volumes/{}", vol.name)
+        Delete -> format!("/volumes/{}", vol.name)
+    }
 }
 
 impl<'docker> Volumes<'docker> {
-    api_doc! { Volume => Create
-    /// Creates a new docker volume.
-    |
-    pub async fn create(&self, opts: &VolumeCreateOpts) -> Result<VolumeCreateInfo> {
-        self.docker
-            .post_json("/volumes/create", Payload::Json(opts.serialize()?))
-            .await
-    }}
-
-    api_doc! { Volume => List
-    /// Lists the docker volumes on the current docker host.
-    |
-    pub async fn list(&self) -> Result<Vec<VolumeInfo>> {
-        self.docker
-            .get_json("/volumes")
-            .await
-            .map(|rep: VolumesInfo| rep.volumes.unwrap_or_default())
-    }}
-
-    api_doc! { Volume => Prune
-    /// Delete unused volumes.
-    |
-    pub async fn prune(&self, opts: &VolumePruneOpts) -> Result<VolumePruneInfo> {
-        self.docker
-            .post_json(
-                &crate::util::url::construct_ep("/volumes/prune", opts.serialize()),
-                Payload::empty(),
-            )
-            .await
-    }}
+    impl_api_ep! {__: Volume, resp
+        Create -> "/volumes/create".into(), resp.name
+        List -> "/volumes", VolumesInfo
+        Prune -> "/volumes/prune"
+    }
 }

@@ -14,7 +14,8 @@ pub struct VolumeCreateInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct VolumesInfo {
-    pub volumes: Option<Vec<VolumeInfo>>,
+    #[serde(default)]
+    pub volumes: Vec<VolumeInfo>,
     pub warnings: Option<Vec<String>>,
 }
 
@@ -44,7 +45,7 @@ pub struct UsageData {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct VolumePruneInfo {
+pub struct VolumesPruneInfo {
     pub volumes_deleted: Vec<String>,
     pub space_reclaimed: i64,
 }

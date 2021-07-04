@@ -332,9 +332,9 @@ impl ImageListOptsBuilder {
     impl_filter_func!(ImageFilter);
 }
 
-impl_url_opts_builder!(derives = Default | ImageRemove);
+impl_url_opts_builder!(derives = Default | RmImage);
 
-impl ImageRemoveOptsBuilder {
+impl RmImageOptsBuilder {
     impl_url_bool_field!(
         "Remove the image even if it is being used by stopped containers or has other tags."
         force => "force"
@@ -344,16 +344,16 @@ impl ImageRemoveOptsBuilder {
 
 impl_url_opts_builder!(ImagePrune);
 
-pub enum ImagePruneFilter {
+pub enum ImagesPruneFilter {
     Dangling(bool),
     Until(String),
     LabelKey(String),
     LabelKeyVal(String, String),
 }
 
-impl Filter for ImagePruneFilter {
+impl Filter for ImagesPruneFilter {
     fn query_key_val(&self) -> (&'static str, String) {
-        use ImagePruneFilter::*;
+        use ImagesPruneFilter::*;
         match &self {
             Dangling(dangling) => ("dangling", dangling.to_string()),
             Until(until) => ("until", until.to_owned()),
@@ -364,7 +364,7 @@ impl Filter for ImagePruneFilter {
 }
 
 impl ImagePruneOptsBuilder {
-    impl_filter_func!(ImagePruneFilter);
+    impl_filter_func!(ImagesPruneFilter);
 }
 
 #[cfg(test)]

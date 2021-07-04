@@ -42,7 +42,7 @@ impl ContainerListOptsBuilder {
 
 /// Interface for building a new docker container from an existing image
 #[derive(Serialize, Debug)]
-pub struct ContainerOpts {
+pub struct ContainerCreateOpts {
     pub name: Option<String>,
     params: HashMap<&'static str, Value>,
 }
@@ -72,7 +72,7 @@ where
     }
 }
 
-impl ContainerOpts {
+impl ContainerCreateOpts {
     /// return a new instance of a builder for Opts
     pub fn builder<N>(name: N) -> ContainerOptsBuilder
     where
@@ -324,8 +324,8 @@ impl ContainerOptsBuilder {
 
     impl_str_field!(user: U => "User");
 
-    pub fn build(&self) -> ContainerOpts {
-        ContainerOpts {
+    pub fn build(&self) -> ContainerCreateOpts {
+        ContainerCreateOpts {
             name: self.name.clone(),
             params: self.params.clone(),
         }

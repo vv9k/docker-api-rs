@@ -17,32 +17,10 @@ use std::path::Path;
 impl_api_ty!(Plugin => name: N);
 
 impl<'docker> Plugin<'docker> {
-    impl_inspect! {plug: Plugin -> format!("/plugins/{}/json", plug.name)}
-
-    async fn _remove(&self, force: bool) -> Result<PluginInfo> {
-        let query = if force {
-            Some(encoded_pair("force", true))
-        } else {
-            None
-        };
-        self.docker
-            .delete_json(&construct_ep(format!("/plugins/{}", self.name), query))
-            .await
+    impl_api_ep! {plug: Plugin, resp
+        Inspect -> format!("/plugins/{}/json", plug.name)
+        ForceDelete -> format!("/plugins/{}", plug.name), PluginInfo
     }
-
-    api_doc! { Plugin => Delete
-    /// Removes a plugin.
-    |
-    pub async fn remove(&self) -> Result<PluginInfo> {
-        self._remove(false).await
-    }}
-
-    api_doc! { Plugin => Delete
-    /// Forcefully remove a plugin. This may result in issues if the plugin is in use by a container.
-    |
-    pub async fn force_remove(&self) -> Result<PluginInfo> {
-        self._remove(true).await
-    }}
 
     api_doc! { Plugin => Enable
     /// Enable a plugin.
@@ -97,12 +75,7 @@ impl<'docker> Plugin<'docker> {
 }
 
 impl<'docker> Plugins<'docker> {
-    api_doc! { Plugin => List
-    /// Returns information about installed plugins.
-    |
-    pub async fn list(&self, opts: &PluginListOpts) -> Result<Vec<PluginInfo>> {
-        self.docker
-            .get_json(&construct_ep("/plugins", opts.serialize()))
-            .await
-    }}
+    impl_api_ep! {plug: Plugin, resp
+        List -> "/plugins"
+    }
 }

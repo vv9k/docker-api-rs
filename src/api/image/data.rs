@@ -198,7 +198,7 @@ pub struct DistributionInspectInfo {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
-pub struct ImagePruneInfo {
+pub struct ImagesPruneInfo {
     pub images_deleted: Vec<ImageDeleteItem>,
     pub space_reclaimed: i64,
 }

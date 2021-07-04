@@ -1,5 +1,5 @@
 #[cfg(feature = "swarm")]
-use docker_api::{service::ListOpts, Docker};
+use docker_api::{service::ServiceListOpts, Docker};
 
 #[cfg(feature = "swarm")]
 #[tokio::main]
@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::new("tcp://127.0.0.1:80")?;
     match docker
         .services()
-        .list(&ListOpts::builder().status(true).build())
+        .list(&ServiceListOpts::builder().status(true).build())
         .await
     {
         Ok(services) => {

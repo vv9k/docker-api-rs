@@ -384,9 +384,19 @@ macro_rules! api_doc {
     };
 }
 
-macro_rules! impl_inspect {
+macro_rules! impl_api_ep {
     (
-        $it:ident: $base:ident -> $ep:expr
+        $it:ident: $base:ident, $resp:ident
+        $(
+            $op:ident -> $ep:expr $(,$extra:expr)*
+        )*
+    ) => {
+        $(
+        impl_api_ep! {$op $it: $base -> $resp $ep $(,$extra)* }
+        )*
+    };
+    (
+        Inspect $it:ident: $base:ident -> $resp:ident $ep:expr $(,$extra:expr)*
     ) => {
         paste::item! {
         api_doc! { $base => Inspect
@@ -398,5 +408,162 @@ macro_rules! impl_inspect {
             self.docker.get_json(ep.as_ref()).await
         }}
         }
+    };
+    (
+        ForceDelete $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(,$extra:expr)*
+    ) => {
+
+        paste::item! {
+        async fn _delete(&self, force: bool) -> Result<[< $ret >]> {
+            let query = if force {
+                Some(crate::util::url::encoded_pair("force", force))
+            } else {
+                None
+            };
+
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
+            let ep = ep_fn(self);
+            let ep = crate::util::url::construct_ep(ep, query);
+
+            self.docker
+                .delete_json(ep.as_ref())
+                .await
+        }
+        }
+        paste::item! {
+        api_doc! { $base => Delete
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
+        |
+        pub async fn force_delete(&self) -> Result<[< $ret >]> {
+            self._delete(true).await
+        }}
+        }
+        paste::item! {
+        api_doc! { $base => Delete
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
+        |
+        pub async fn delete(&self) -> Result<[< $ret >]> {
+            self._delete(false).await
+        }}
+        }
+    };
+    (
+        Delete $it:ident: $base:ident -> $resp:ident $ep:expr $(,$extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => Delete
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
+        |
+        pub async fn delete(&self) -> Result<()> {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
+            let ep = ep_fn(self);
+            self.docker.delete(ep.as_ref()).await.map(|_| ())
+        }}
+        }
+    };
+    (
+        DeleteWithOpts $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(,$extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => Delete
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
+        #[doc = concat!("Use [`delete`](", stringify!($base), "::delete) to delete without options.")]
+        |
+        pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<[< $ret >]> {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
+            let ep = ep_fn(self);
+            let ep = crate::util::url::construct_ep(ep, opts.serialize());
+            self.docker.delete_json(ep.as_ref()).await
+        }}
+        }
+        paste::item! {
+        api_doc! { $base => Delete
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
+        #[doc = concat!("Use [`remove`](", stringify!($base), "::remove) to customize options.")]
+        |
+        pub async fn delete(&self) -> Result<[< $ret >]> {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &$base| $ep;
+            let ep = ep_fn(self);
+            self.docker.delete_json(ep.as_ref()).await
+        }}
+        }
+    };
+    (
+        List $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(, $extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => List
+        #[doc = concat!("List available ", stringify!($base), "s.")]
+        |
+        pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<$ret> {
+            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            self.docker.get_json(&ep).await
+        }}
+        }
+    };
+    (
+        List $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => List
+        #[doc = concat!("List available ", stringify!($base), "s.")]
+        |
+        pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<Vec<[< $base Info >]>> {
+            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            self.docker.get_json(&ep).await
+        }}
+        }
+    };
+    (
+        Create $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => Create
+        #[doc = concat!("Create a new ", stringify!($base), ".")]
+        |
+        pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]<'_>> {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &[< $base s >]| $ep;
+            let ep = ep_fn(self);
+            self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
+            .map(|$resp: [< $base CreateInfo >]| [< $base >]::new(self.docker, $($extra)*))
+        }}
+        }
+    };
+    (
+        Prune $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => Prune
+        #[doc = concat!("Delete stopped/unused ", stringify!($base), "s.")]
+        |
+        pub async fn prune(&self, opts: &[< $base PruneOpts >]) -> Result<[< $base sPruneInfo >]> {
+            self.docker
+                .post_json(
+                    &crate::util::url::construct_ep($ep, opts.serialize()),
+                    crate::conn::Payload::empty()
+                ).await
+        }}
+        }
+    };
+    (
+        Logs $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
+    ) => {
+        paste::item! {
+        api_doc! { $base => Logs
+        #[doc = concat!("Returns a stream of logs from a ", stringify!($base), ".")]
+        |
+        pub fn logs(
+            &self,
+            opts: &crate::api::LogsOpts
+        ) -> impl futures_util::Stream<Item = crate::Result<crate::conn::TtyChunk>> + Unpin + 'docker {
+            let ep_fn: &dyn Fn(&Self) -> String = &|$it: &[< $base >]| $ep;
+            let ep = ep_fn(self);
+            let ep = crate::util::url::construct_ep(ep, opts.serialize());
+
+            let stream = Box::pin(self.docker.stream_get(ep));
+
+            Box::pin(crate::conn::tty::decode(stream))
+        }
+        }}
     };
 }

@@ -28,6 +28,10 @@ impl<'docker> Exec<'docker> {
         }
     }
 
+    impl_api_ep! {exec: Exec, resp
+        Inspect -> format!("/exec/{}/json", exec.id)
+    }
+
     api_doc! { Exec => Create
     /// Creates a new exec instance that will be executed in a container with id == container_id.
     |
@@ -140,15 +144,6 @@ impl<'docker> Exec<'docker> {
         )
     }}
 
-    api_doc! { Exec => Inspect
-    /// Inspect this exec instance to aquire detailed information.
-    |
-    pub async fn inspect(&self) -> Result<ExecDetails> {
-        self.docker
-            .get_json(&format!("/exec/{}/json", &self.id))
-            .await
-    }}
-
     api_doc! { Exec => Resize
     /// Resize the TTY session used by an exec instance. This only works if the exec was created
     /// with `tty` enabled.
@@ -207,7 +202,7 @@ impl ExecResizeOptsBuilder {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct ExecDetails {
+pub struct ExecInfo {
     pub can_remove: bool,
     #[serde(rename = "ContainerID")]
     pub container_id: String,

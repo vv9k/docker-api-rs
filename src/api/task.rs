@@ -2,14 +2,22 @@
 //! A task is a container running on a swarm. It is the atomic scheduling unit of swarm.
 //! Swarm mode must be enabled for these endpoints to work.
 
-use crate::{
-    api::LogsOpts,
-    conn::{tty, TtyChunk},
-    util::url::construct_ep,
-    Result,
-};
+use crate::Result;
 
-use futures_util::Stream;
+impl_api_ty!(Task => id: I);
+
+impl<'docker> Task<'docker> {
+    impl_api_ep! { task: Task, resp
+        Inspect -> format!("/tasks/{}", task.id)
+        Logs -> format!("/tasks/{}/logs", task.id)
+    }
+}
+
+impl<'docker> Tasks<'docker> {
+    impl_api_ep! { task: Task, resp
+        List -> "/tasks"
+    }
+}
 
 pub mod data {
     use crate::api::{Labels, ObjectVersion};
@@ -129,31 +137,3 @@ pub mod opts {
 }
 
 pub use opts::*;
-
-impl_api_ty!(Task => id: I);
-
-impl<'docker> Task<'docker> {
-    impl_inspect! { task: Task -> format!("/tasks/{}", task.id) }
-
-    api_doc! { Task => Logs
-    /// Returns a stream of logs emitted from a task.
-    |
-    pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
-        let stream = Box::pin(self.docker.stream_get(construct_ep(
-            format!("/tasks/{}/logs", self.id),
-            opts.serialize(),
-        )));
-        Box::pin(tty::decode(stream))
-    }}
-}
-
-impl<'docker> Tasks<'docker> {
-    api_doc! { Task => List
-    /// List existing tasks.
-    |
-    pub async fn list(&self, opts: &TaskListOpts) -> Result<Vec<TaskInfo>> {
-        self.docker
-            .get_json(&construct_ep("/tasks", opts.serialize()))
-            .await
-    }}
-}

@@ -7,13 +7,9 @@ pub use data::*;
 pub use opts::*;
 
 use crate::{
-    api::LogsOpts,
-    conn::{tty, Headers, Payload},
-    util::url::construct_ep,
+    conn::{Headers, Payload},
     Result,
 };
-
-use futures_util::stream::Stream;
 
 impl_api_ty!(Service => name: N);
 
@@ -34,39 +30,15 @@ impl<'docker> Service<'docker> {
             .await
     }}
 
-    impl_inspect! {svc: Service -> format!("/services/{}", svc.name)}
-
-    api_doc! { Service => Delete
-    /// Deletes a service.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete_json(&format!("/services/{}", self.name))
-            .await
-    }}
-
-    api_doc! { Service => Logs
-    /// Returns a stream of logs from a service.
-    |
-    pub fn logs(
-        &self,
-        opts: &LogsOpts,
-    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker {
-        let stream = Box::pin(self.docker.stream_get(construct_ep(
-            format!("/services/{}/logs", self.name),
-            opts.serialize(),
-        )));
-        Box::pin(tty::decode(stream))
-    }}
+    impl_api_ep! { svc: Service, resp
+        Inspect -> format!("/services/{}", svc.name)
+        Delete -> format!("/services/{}", svc.name)
+        Logs -> format!("/services/{}/logs", svc.name)
+    }
 }
 
 impl<'docker> Services<'docker> {
-    api_doc! { Service => List
-    /// Lists the docker services on the current docker host.
-    |
-    pub async fn list(&self, opts: &ListOpts) -> Result<Vec<ServiceInfo>> {
-        self.docker
-            .get_json(&construct_ep("/services", opts.serialize()))
-            .await
-    }}
+    impl_api_ep! { svc: Service, resp
+        List -> "/services"
+    }
 }

@@ -20,8 +20,13 @@ use crate::{
 
 impl_api_ty!(Image => name: N);
 
+pub type DeleteStatus = Vec<Status>;
+
 impl<'docker> Image<'docker> {
-    impl_inspect! {img: Image -> format!("/images/{}/json", img.name)}
+    impl_api_ep! {img: Image, resp
+        Inspect -> format!("/images/{}/json", img.name)
+        DeleteWithOpts -> format!("/images/{}", img.name), DeleteStatus
+    }
 
     api_doc! { Image => History
     /// Lists the history of the images set of changes.
@@ -29,18 +34,6 @@ impl<'docker> Image<'docker> {
     pub async fn history(&self) -> Result<Vec<History>> {
         self.docker
             .get_json(&format!("/images/{}/history", self.name))
-            .await
-    }}
-
-    api_doc! { Image => Delete
-    /// Remove an image.
-    |
-    pub async fn remove(&self, opts: &ImageRemoveOpts) -> Result<Vec<Status>> {
-        self.docker
-            .delete_json(&construct_ep(
-                format!("/images/{}", self.name),
-                opts.serialize(),
-            ))
             .await
     }}
 
@@ -80,6 +73,11 @@ impl<'docker> Image<'docker> {
 }
 
 impl<'docker> Images<'docker> {
+    impl_api_ep! {img: Image, resp
+        List -> "/images/json"
+        Prune ->  "/images/prune"
+    }
+
     api_doc! { Image => Build
     /// Builds a new image build by reading a Dockerfile in a target directory.
     |
@@ -110,15 +108,6 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
-    }}
-
-    api_doc! { Image => List
-    /// Lists the docker images on the current docker host.
-    |
-    pub async fn list(&self, opts: &ImageListOpts) -> Result<Vec<ImageInfo>> {
-        self.docker
-            .get_json(&construct_ep("/images/json", opts.serialize()))
-            .await
     }}
 
     api_doc! { Image => Search
@@ -187,17 +176,5 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
-    }}
-
-    api_doc! { Image => Prune
-    /// Delete unused images.
-    |
-    pub async fn prune(&self, opts: &ImagePruneOpts) -> Result<ImagePruneInfo> {
-        self.docker
-            .post_json(
-                &construct_ep("/images/prune", opts.serialize()),
-                Payload::empty(),
-            )
-            .await
     }}
 }

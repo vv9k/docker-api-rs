@@ -2,10 +2,31 @@
 //! Configs are application configurations that can be used by services.
 //! Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, util::url::construct_ep, Result};
+use crate::{conn::Payload, Result};
+
+impl_api_ty!(Config => name: N);
+
+impl<'docker> Config<'docker> {
+    impl_api_ep! { cfg: Config, resp
+        Inspect -> format!("/configs/{}", cfg.name)
+        Delete -> format!("/configs/{}", cfg.name)
+    }
+
+    // TODO: add Config::update
+}
+
+impl<'docker> Configs<'docker> {
+    impl_api_ep! { __: Config, resp
+        List -> "/configs"
+        Create -> "/configs/create".into(), resp.id
+    }
+}
 
 pub mod data {
-    use crate::api::{Driver, Labels, ObjectVersion};
+    use crate::{
+        api::{Driver, Labels, ObjectVersion},
+        Error, Result,
+    };
     use serde::{Deserialize, Serialize};
 
     #[cfg(feature = "chrono")]
@@ -40,14 +61,14 @@ pub mod data {
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
     /// Structure used to create a new config with [`Configs::create`](crate::Configs::create).
-    pub struct ConfigCreate {
+    pub struct ConfigCreateOpts {
         name: String,
         labels: Labels,
         data: String,
         templating: Driver,
     }
 
-    impl ConfigCreate {
+    impl ConfigCreateOpts {
         /// Create a new config with name and data. This function will take care of
         /// encoding the config's data as base64.
         pub fn new<N, D>(name: N, data: D) -> Self
@@ -76,14 +97,20 @@ pub mod data {
         {
             self.labels.insert(key.into(), val.into())
         }
+
+        pub fn serialize(&self) -> Result<String> {
+            serde_json::to_string(&self).map_err(Error::from)
+        }
     }
 
     #[derive(Deserialize)]
-    pub(crate) struct ConfigCreateResponse {
+    pub(crate) struct ConfigCreateInfo {
         #[serde(rename = "Id")]
         pub id: String,
     }
 }
+
+pub use data::*;
 
 pub mod opts {
     use crate::api::Filter;
@@ -116,47 +143,4 @@ pub mod opts {
     }
 }
 
-pub use data::*;
 pub use opts::*;
-
-impl_api_ty!(Config => name: N);
-
-impl<'docker> Config<'docker> {
-    impl_inspect! { cfg: Config -> format!("/configs/{}", cfg.name) }
-
-    api_doc! { Config => Delete
-    /// Delete a config.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete(&format!("/configs/{}", self.name))
-            .await
-            .map(|_| ())
-    }}
-
-    // TODO: add Config::update
-}
-
-impl<'docker> Configs<'docker> {
-    api_doc! { Config => List
-    /// List existing configs.
-    |
-    pub async fn list(&self, opts: &ConfigListOpts) -> Result<Vec<ConfigInfo>> {
-        self.docker
-            .get_json(&construct_ep("/configs", opts.serialize()))
-            .await
-    }}
-
-    api_doc! { Config => Create
-    /// Create a new config.
-    |
-    pub async fn create(&self, new_config: &ConfigCreate) -> Result<Config<'_>> {
-        self.docker
-            .post_json(
-                "/configs/create",
-                Payload::Json(serde_json::to_string(&new_config)?),
-            )
-            .await
-            .map(|resp: ConfigCreateResponse| Config::new(self.docker, resp.id))
-    }}
-}

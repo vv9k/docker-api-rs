@@ -6,22 +6,15 @@ pub mod opts;
 pub use data::*;
 pub use opts::*;
 
-use crate::{conn::Payload, util::url::construct_ep, Result};
+use crate::{conn::Payload, Result};
 
 impl_api_ty!(Network => id: I);
 
 impl<'docker> Network<'docker> {
-    impl_inspect! {net: Network -> format!("/networks/{}", net.id)}
-
-    api_doc! { Network => Delete
-    /// Delete the network instance.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete(&format!("/networks/{}", self.id))
-            .await?;
-        Ok(())
-    }}
+    impl_api_ep! { net: Network, resp
+        Inspect -> format!("/networks/{}", net.id)
+        Delete -> format!("/network/{}", net.id)
+    }
 
     api_doc! { Network => Connect
     /// Connect container to network.
@@ -52,39 +45,9 @@ impl<'docker> Network<'docker> {
 }
 
 impl<'docker> Networks<'docker> {
-    api_doc! { Network => List
-    /// List the docker networks on the current docker host.
-    |
-    pub async fn list(&self, opts: &NetworkListOpts) -> Result<Vec<NetworkInfo>> {
-        self.docker
-            .get_json(&construct_ep("/networks", opts.serialize()))
-            .await
-    }}
-
-    api_doc! { Network => Create
-    /// Create a new Network instance.
-    |
-    pub async fn create(&self, opts: &NetworkCreateOpts) -> Result<NetworkCreateInfo> {
-        self.docker
-            .post_json("/networks/create", Payload::Json(opts.serialize()?))
-            .await
-    }}
-
-    api_doc! { Network => Prune
-    /// Delete unused networks. Returns a list of deleted network names.
-    |
-    pub async fn prune(&self, opts: &NetworkPruneOpts) -> Result<Vec<String>> {
-        #[derive(serde::Deserialize)]
-        #[serde(rename_all = "PascalCase")]
-        struct PruneResponse {
-            networks_deleted: Vec<String>,
-        }
-        self.docker
-            .post_json(
-                &construct_ep("/networks/prune", opts.serialize()),
-                Payload::empty(),
-            )
-            .await
-            .map(|resp: PruneResponse| resp.networks_deleted)
-    }}
+    impl_api_ep! { __: Network, resp
+        List -> "/networks"
+        Create -> "/network/create".into(), resp.id
+        Prune -> "/networks/prune"
+    }
 }

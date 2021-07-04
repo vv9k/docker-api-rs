@@ -14,16 +14,22 @@ use futures_util::{
 use hyper::Body;
 
 use crate::{
-    api::{Exec, ExecContainerOpts, LogsOpts},
-    conn::{tty, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
-    util::url::{append_query, construct_ep, encoded_pair},
+    api::{Exec, ExecContainerOpts},
+    conn::{Multiplexer as TtyMultiplexer, Payload, TtyChunk},
+    util::url::{append_query, encoded_pair},
     Error, Result,
 };
 
 impl_api_ty!(Container => id: I);
 
+type Void = ();
+
 impl<'docker> Container<'docker> {
-    impl_inspect! {container: Container -> format!("/containers/{}/json", container.id)}
+    impl_api_ep! {container: Container, resp
+        Inspect -> format!("/containers/{}/json", container.id)
+        Logs -> format!("/containers/{}/logs", container.id)
+        DeleteWithOpts -> format!("/containers/{}", container.id), Void
+    }
 
     api_doc! { Container => Top
     /// Returns a `top` view of information about the container process.
@@ -35,18 +41,6 @@ impl<'docker> Container<'docker> {
             append_query(&mut ep, encoded_pair("ps_args", args));
         }
         self.docker.get_json(&ep).await
-    }}
-
-    api_doc! { Container => Logs
-    /// Returns a stream of logs emitted by this container innstance.
-    |
-    pub fn logs(&self, opts: &LogsOpts) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
-        let stream = Box::pin(self.docker.stream_get(construct_ep(
-            format!("/containers/{}/logs", self.id),
-            opts.serialize(),
-        )));
-
-        Box::pin(tty::decode(stream))
     }}
 
     /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
@@ -205,30 +199,6 @@ impl<'docker> Container<'docker> {
             .await
     }}
 
-    api_doc! { Container => Delete
-    /// Delete the container instance.
-    /// Use remove instead to use the force/v Opts.
-    |
-    pub async fn delete(&self) -> Result<()> {
-        self.docker
-            .delete(&format!("/containers/{}", self.id))
-            .await
-            .map(|_| ())
-    }}
-
-    api_doc! { Container => Delete
-    /// Delete the container instance.
-    |
-    pub async fn remove(&self, opts: &RmContainerOpts) -> Result<()> {
-        self.docker
-            .delete(&construct_ep(
-                format!("/containers/{}", self.id),
-                opts.serialize(),
-            ))
-            .await
-            .map(|_| ())
-    }}
-
     api_doc! { Exec
     /// Execute a command in this container.
     |
@@ -349,36 +319,9 @@ impl<'docker> Container<'docker> {
 }
 
 impl<'docker> Containers<'docker> {
-    api_doc! { Container => List
-    /// Lists the container instances on the docker host.
-    |
-    pub async fn list(&self, opts: &ContainerListOpts) -> Result<Vec<ContainerInfo>> {
-        self.docker
-            .get_json(&construct_ep("/containers/json", opts.serialize()))
-            .await
-    }}
-
-    api_doc! { Container => Create
-    /// Create a new container.
-    |
-    pub async fn create(&self, opts: &ContainerOpts) -> Result<ContainerCreateInfo> {
-        self.docker
-            .post_json(
-                &construct_ep("/containers/create", opts.name.as_ref()),
-                Payload::Json(opts.serialize()?),
-            )
-            .await
-    }}
-
-    api_doc! { Container => Prune
-    /// Delete stopped containers.
-    |
-    pub async fn prune(&self, opts: &ContainerPruneOpts) -> Result<ContainersPruneInfo> {
-        self.docker
-            .post_json(
-                &construct_ep("/containers/prune", opts.serialize()),
-                Payload::empty(),
-            )
-            .await
-    }}
+    impl_api_ep! {__: Container, resp
+        List -> "/containers/json"
+        Prune ->  "/containers/prune"
+        Create -> "/containers/create".into(), resp.id
+    }
 }

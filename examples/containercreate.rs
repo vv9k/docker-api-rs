@@ -1,4 +1,4 @@
-use docker_api::{container::ContainerOpts, Docker};
+use docker_api::{container::ContainerCreateOpts, Docker};
 use std::env;
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match docker
         .containers()
-        .create(&ContainerOpts::builder(image).build())
+        .create(&ContainerCreateOpts::builder(image).build())
         .await
     {
         Ok(info) => println!("{:?}", info),
