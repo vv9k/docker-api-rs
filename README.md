@@ -10,7 +10,7 @@ Add the following to your `Cargo.toml` file
 
 ```toml
 [dependencies]
-docker-api = "0.1"
+docker-api = "0.3"
 ```
 
 ## Supported API
@@ -24,7 +24,7 @@ Default endpoints include:
 
 To enable swarm endpoints add a `swarm` feature to `Cargo.toml` like so:
 ```toml
-docker-api = { version = "0.1", features = ["swarm"] }
+docker-api = { version = "0.3", features = ["swarm"] }
 ```
 
 Swarm endpoints include:
