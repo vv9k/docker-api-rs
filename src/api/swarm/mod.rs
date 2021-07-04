@@ -20,8 +20,8 @@ impl<'docker> Swarm<'docker> {
         Self { docker }
     }
 
-    impl_api_ep! {__: Swarm, resp
-        Inspect -> "/swarm".into()
+    impl_api_ep! {_swarm: Swarm, resp
+        Inspect -> "/swarm"
     }
 
     api_doc! { Swarm => Unlockkey

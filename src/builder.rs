@@ -403,9 +403,8 @@ macro_rules! impl_api_ep {
         #[doc = concat!("Inspect this ", stringify!($base), ".")]
         |
         pub async fn inspect(&self) -> Result<[< $base $ret >]> {
-            let ep_fn = Box::new(|$it: &$base| $ep);
-            let ep: String = ep_fn(self);
-            self.docker.get_json(ep.as_ref()).await
+            let $it = self;
+            self.docker.get_json($ep).await
         }}
         }
     };
@@ -426,9 +425,8 @@ macro_rules! impl_api_ep {
                 None
             };
 
-            let ep_fn= Box::new(|$it: &$base| $ep);
-            let ep = ep_fn(self);
-            let ep = crate::util::url::construct_ep(ep, query);
+            let $it = self;
+            let ep = crate::util::url::construct_ep($ep, query);
 
             self.docker
                 .delete_json(ep.as_ref())
@@ -460,9 +458,8 @@ macro_rules! impl_api_ep {
         #[doc = concat!("Delete this ", stringify!($base), ".")]
         |
         pub async fn delete(&self) -> Result<()> {
-            let ep_fn= Box::new(|$it: &$base| $ep);
-            let ep = ep_fn(self);
-            self.docker.delete(ep.as_ref()).await.map(|_| ())
+            let $it = self;
+            self.docker.delete($ep).await.map(|_| ())
         }}
         }
     };
@@ -475,9 +472,8 @@ macro_rules! impl_api_ep {
         #[doc = concat!("Use [`delete`](", stringify!($base), "::delete) to delete without options.")]
         |
         pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<[< $ret >]> {
-            let ep_fn= Box::new(|$it: &$base| $ep);
-            let ep = ep_fn(self);
-            let ep = crate::util::url::construct_ep(ep, opts.serialize());
+            let $it = self;
+            let ep = crate::util::url::construct_ep($ep, opts.serialize());
             self.docker.delete_json(ep.as_ref()).await
         }}
         }
@@ -487,9 +483,8 @@ macro_rules! impl_api_ep {
         #[doc = concat!("Use [`remove`](", stringify!($base), "::remove) to customize options.")]
         |
         pub async fn delete(&self) -> Result<[< $ret >]> {
-            let ep_fn= Box::new(|$it: &$base| $ep);
-            let ep = ep_fn(self);
-            self.docker.delete_json(ep.as_ref()).await
+            let $it = self;
+            self.docker.delete_json($ep).await
         }}
         }
     };
@@ -559,9 +554,8 @@ macro_rules! impl_api_ep {
             &self,
             opts: &crate::api::LogsOpts
         ) -> impl futures_util::Stream<Item = crate::Result<crate::conn::TtyChunk>> + Unpin + 'docker {
-            let ep_fn= Box::new(|$it: &[< $base >]| $ep);
-            let ep = ep_fn(self);
-            let ep = crate::util::url::construct_ep(ep, opts.serialize());
+            let $it = self;
+            let ep = crate::util::url::construct_ep($ep, opts.serialize());
 
             let stream = Box::pin(self.docker.stream_get(ep));
 

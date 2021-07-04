@@ -7,8 +7,8 @@ impl_api_ty!(Secret => name: N);
 
 impl<'docker> Secret<'docker> {
     impl_api_ep! { secret: Secret, resp
-        Inspect -> format!("/secrets/{}", secret.name)
-        Delete -> format!("/secrets/{}", secret.name)
+        Inspect -> &format!("/secrets/{}", secret.name)
+        Delete -> &format!("/secrets/{}", secret.name)
     }
     // TODO: add Secret::update
 }

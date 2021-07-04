@@ -8,8 +8,8 @@ impl_api_ty!(Config => name: N);
 
 impl<'docker> Config<'docker> {
     impl_api_ep! { cfg: Config, resp
-        Inspect -> format!("/configs/{}", cfg.name)
-        Delete -> format!("/configs/{}", cfg.name)
+        Inspect -> &format!("/configs/{}", cfg.name)
+        Delete -> &format!("/configs/{}", cfg.name)
     }
 
     // TODO: add Config::update

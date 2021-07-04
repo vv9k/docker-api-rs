@@ -11,8 +11,8 @@ impl_api_ty!(Volume => name: N);
 
 impl<'docker> Volume<'docker> {
     impl_api_ep! {vol: Volume, resp
-        Inspect -> format!("/volumes/{}", vol.name)
-        Delete -> format!("/volumes/{}", vol.name)
+        Inspect -> &format!("/volumes/{}", vol.name)
+        Delete -> &format!("/volumes/{}", vol.name)
     }
 }
 

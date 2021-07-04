@@ -17,8 +17,8 @@ type Void = ();
 
 impl<'docker> Node<'docker> {
     impl_api_ep! {node: Node, resp
-        Inspect -> format!("/nodes/{}", node.name)
-        ForceDelete -> format!("/nodes/{}", node.name), Void
+        Inspect -> &format!("/nodes/{}", node.name)
+        ForceDelete -> &format!("/nodes/{}", node.name), Void
     }
 
     api_doc! { Node => Update

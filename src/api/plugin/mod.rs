@@ -18,8 +18,8 @@ impl_api_ty!(Plugin => name: N);
 
 impl<'docker> Plugin<'docker> {
     impl_api_ep! {plug: Plugin, resp
-        Inspect -> format!("/plugins/{}/json", plug.name)
-        ForceDelete -> format!("/plugins/{}", plug.name), PluginInfo
+        Inspect -> &format!("/plugins/{}/json", plug.name)
+        ForceDelete -> &format!("/plugins/{}", plug.name), PluginInfo
     }
 
     api_doc! { Plugin => Enable

@@ -31,9 +31,9 @@ impl<'docker> Service<'docker> {
     }}
 
     impl_api_ep! { svc: Service, resp
-        Inspect -> format!("/services/{}", svc.name)
-        Delete -> format!("/services/{}", svc.name)
-        Logs -> format!("/services/{}/logs", svc.name)
+        Inspect -> &format!("/services/{}", svc.name)
+        Delete -> &format!("/services/{}", svc.name)
+        Logs -> &format!("/services/{}/logs", svc.name)
     }
 }
 

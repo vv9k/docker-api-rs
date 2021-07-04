@@ -12,8 +12,8 @@ impl_api_ty!(Network => id: I);
 
 impl<'docker> Network<'docker> {
     impl_api_ep! { net: Network, resp
-        Inspect -> format!("/networks/{}", net.id)
-        Delete -> format!("/network/{}", net.id)
+        Inspect -> &format!("/networks/{}", net.id)
+        Delete -> &format!("/network/{}", net.id)
     }
 
     api_doc! { Network => Connect

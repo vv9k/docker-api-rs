@@ -8,8 +8,8 @@ impl_api_ty!(Task => id: I);
 
 impl<'docker> Task<'docker> {
     impl_api_ep! { task: Task, resp
-        Inspect -> format!("/tasks/{}", task.id)
-        Logs -> format!("/tasks/{}/logs", task.id)
+        Inspect -> &format!("/tasks/{}", task.id)
+        Logs -> &format!("/tasks/{}/logs", task.id)
     }
 }
 

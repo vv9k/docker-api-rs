@@ -29,7 +29,7 @@ impl<'docker> Exec<'docker> {
     }
 
     impl_api_ep! {exec: Exec, resp
-        Inspect -> format!("/exec/{}/json", exec.id)
+        Inspect -> &format!("/exec/{}/json", exec.id)
     }
 
     api_doc! { Exec => Create

@@ -26,9 +26,9 @@ type Void = ();
 
 impl<'docker> Container<'docker> {
     impl_api_ep! {container: Container, resp
-        Inspect -> format!("/containers/{}/json", container.id)
-        Logs -> format!("/containers/{}/logs", container.id)
-        DeleteWithOpts -> format!("/containers/{}", container.id), Void
+        Inspect -> &format!("/containers/{}/json", container.id)
+        Logs -> &format!("/containers/{}/logs", container.id)
+        DeleteWithOpts -> &format!("/containers/{}", container.id), Void
     }
 
     api_doc! { Container => Top
