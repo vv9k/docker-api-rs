@@ -41,7 +41,7 @@ To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
 
 ## Usage
 
-Many small runnable example programs can be found in this repository's [examples directory](https://github.com/wojciechkepka/docker-api-rs/tree/master/examples).
+Examples for most API endpoints can be found in the [examples directory](https://github.com/wojciechkepka/docker-api-rs/tree/master/examples).
 
 
 ## Notice
