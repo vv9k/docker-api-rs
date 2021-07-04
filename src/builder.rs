@@ -509,7 +509,15 @@ macro_rules! impl_api_ep {
     (
         List $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
     ) => {
-        impl_api_ep! { List $it: $base -> $resp $ep, [< $base  Info >] }
+        paste::item! {
+        api_doc! { $base => List
+        #[doc = concat!("List available ", stringify!($base), "s.")]
+        |
+        pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<Vec<[< $base Info >]>> {
+            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            self.docker.get_json(&ep).await
+        }}
+        }
     };
     (
         Create $it:ident: $base:ident -> $resp:ident $ep:expr $(, $extra:expr)*
