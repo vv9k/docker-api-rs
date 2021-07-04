@@ -302,20 +302,25 @@ impl Transport {
         B: Into<Body>,
     {
         let ep = endpoint.as_ref();
+        let ep = format!(
+            "/{}{}{}",
+            crate::VERSION,
+            if !ep.starts_with('/') { "/" } else { "" },
+            ep
+        );
+
         // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
         // should be prefixed with the API version as the ones without will stop being supported in future releases
         let uri: hyper::Uri = match self {
-            Transport::Tcp { host, .. } => format!("{}{}/{}", host, crate::VERSION, ep)
+            Transport::Tcp { host, .. } => format!("{}{}", host, ep)
                 .parse()
                 .map_err(Error::InvalidUri)?,
             #[cfg(feature = "tls")]
-            Transport::EncryptedTcp { host, .. } => format!("{}{}/{}", host, crate::VERSION, ep)
+            Transport::EncryptedTcp { host, .. } => format!("{}{}", host, ep)
                 .parse()
                 .map_err(Error::InvalidUri)?,
             #[cfg(unix)]
-            Transport::Unix { path, .. } => {
-                DomainUri::new(&path, &format!("/{}/{}", crate::VERSION, ep)).into()
-            }
+            Transport::Unix { path, .. } => DomainUri::new(&path, &ep).into(),
         };
         let req = builder.method(method).uri(&uri);
         let mut req = req.header(header::HOST, "");
