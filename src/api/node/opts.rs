@@ -17,7 +17,7 @@ impl NodeUpdateOpts {
         NodeUpdateOptsBuilder::new(version)
     }
 
-    impl_map_field!("User-defined key/value metadata" labels: L => "Labels");
+    impl_map_field!(json "User-defined key/value metadata" labels: L => "Labels");
 
     impl_str_field!("Name for the node." name: N => "Name");
 

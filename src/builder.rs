@@ -110,7 +110,13 @@ macro_rules! impl_str_enum_field {
 }
 
 macro_rules! impl_map_field {
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+    (url $($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+        impl_map_field! { $($docs)* $name: $ty => $docker_name => serde_json::to_string(&$name.into_iter().collect::<std::collections::HashMap<_, _>>()).unwrap_or_default() }
+    };
+    (json $($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+        impl_map_field! { $($docs)* $name: $ty => $docker_name => serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()) }
+    };
+    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal => $ret:expr) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -121,7 +127,7 @@ macro_rules! impl_map_field {
                 K: AsRef<str> + serde::Serialize + Eq + std::hash::Hash,
                 V: AsRef<str> + serde::Serialize
             {
-                self.params.insert($docker_name, serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()));
+                self.params.insert($docker_name, $ret);
                 self
             }
         }

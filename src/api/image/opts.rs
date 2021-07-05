@@ -294,7 +294,7 @@ impl BuildOptsBuilder {
 
     impl_url_str_field!("BuildKit output configuration." outputs: C => "outputs");
 
-    // TODO: labels
+    impl_map_field!(url "Add labels to this image." labels: L => "labels");
 
     pub fn build(&self) -> BuildOpts {
         BuildOpts {

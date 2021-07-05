@@ -250,7 +250,7 @@ impl ContainerOptsBuilder {
     "containers."
     cpu_shares: u32 => "HostConfig.CpuShares");
 
-    impl_map_field!(labels: L => "Labels");
+    impl_map_field!(json labels: L => "Labels");
 
     /// Whether to attach to `stdin`.
     pub fn attach_stdin(&mut self, attach: bool) -> &mut Self {

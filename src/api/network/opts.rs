@@ -43,7 +43,7 @@ impl NetworkCreateOptsBuilder {
 
     impl_str_field!(driver: D => "Driver");
 
-    impl_map_field!(labels: L => "Labels");
+    impl_map_field!(json labels: L => "Labels");
 
     pub fn build(&self) -> NetworkCreateOpts {
         NetworkCreateOpts {

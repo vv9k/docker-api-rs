@@ -7,12 +7,12 @@ impl VolumeCreateOptsBuilder {
 
     impl_str_field!("Name of the volume driver to use." driver: D => "Driver");
 
-    impl_map_field!(
+    impl_map_field!(json
         "A mapping of driver options and values."
         "These options are passed directly to the driver and are driver specific."
         driver_opts: O => "DriverOpts");
 
-    impl_map_field!("User-defined key/value metadata." labels: L => "Labels");
+    impl_map_field!(json "User-defined key/value metadata." labels: L => "Labels");
 }
 
 impl_url_opts_builder!(derives = Default | VolumePrune);
