@@ -1,4 +1,4 @@
-use crate::api::{Filter, Labels};
+use crate::api::{Filter, ImageName, Labels};
 
 use std::{collections::HashMap, hash::Hash, iter::Peekable, str, time::Duration};
 
@@ -7,21 +7,117 @@ use serde_json::{json, Map, Value};
 
 use crate::{Error, Result};
 
+pub enum Health {
+    Starting,
+    Healthy,
+    Unhealthy,
+    None,
+}
+
+impl AsRef<str> for Health {
+    fn as_ref(&self) -> &str {
+        match &self {
+            Health::Starting => "starting",
+            Health::Healthy => "healthy",
+            Health::Unhealthy => "unhealthy",
+            Health::None => "none",
+        }
+    }
+}
+
+#[cfg(windows)]
+pub enum Isolation {
+    Default,
+    Process,
+    HyperV,
+}
+
+#[cfg(windows)]
+impl AsRef<str> for Isolation {
+    fn as_ref(&self) -> &str {
+        match &self {
+            Isolation::Default => "default",
+            Isolation::Process => "process",
+            Isolation::HyperV => "hyperv",
+        }
+    }
+}
+
+pub enum ContainerStatusEnum {
+    Created,
+    Restarting,
+    Running,
+    Removing,
+    Paused,
+    Exited,
+    Dead,
+}
+
+impl AsRef<str> for ContainerStatusEnum {
+    fn as_ref(&self) -> &str {
+        use ContainerStatusEnum::*;
+        match &self {
+            Created => "created",
+            Restarting => "restarting",
+            Running => "running",
+            Removing => "removing",
+            Paused => "paused",
+            Exited => "exited",
+            Dead => "dead",
+        }
+    }
+}
+
 /// Filter Opts for container listings
 pub enum ContainerFilter {
+    Ancestor(ImageName),
+    /// Container ID or name.
+    Before(String),
+    /// Containers with the specified exit code.
     ExitCode(u64),
-    Status(String),
-    LabelName(String),
+    Health(Health),
+    /// The container's ID.
+    Id(String),
+    #[cfg(windows)]
+    #[cfg_attr(docsrs, doc(cfg(windows)))]
+    /// Applies only to Windows daemon.
+    Isolation(Isolation),
+    IsTask(bool),
+    /// Label in the form of `label=key`.
+    LabelKey(String),
+    /// Label in the form of `label=key=val`.
     Label(String, String),
+    /// The container's name.
+    Name(String),
+    // TODO: ContainerFilter::Publish
+    /// Network ID or name.
+    Network(String),
+    /// Container ID or name.
+    Since(String),
+    Status(ContainerStatusEnum),
+    /// Volume name or mount point destination.
+    Volume(String),
 }
 
 impl Filter for ContainerFilter {
     fn query_key_val(&self) -> (&'static str, String) {
+        use ContainerFilter::*;
         match &self {
-            ContainerFilter::ExitCode(c) => ("exit", c.to_string()),
-            ContainerFilter::Status(s) => ("status", s.to_owned()),
-            ContainerFilter::LabelName(n) => ("label", n.to_owned()),
-            ContainerFilter::Label(n, v) => ("label", format!("{}={}", n, v)),
+            Ancestor(name) => ("ancestor", name.to_string()),
+            Before(before) => ("before", before.to_owned()),
+            ExitCode(c) => ("exit", c.to_string()),
+            Health(health) => ("health", health.as_ref().to_string()),
+            Id(id) => ("id", id.to_owned()),
+            #[cfg(windows)]
+            Isolation(isolation) => ("isolation", isolation.as_ref().to_string()),
+            IsTask(is_task) => ("is-task", is_task.to_string()),
+            LabelKey(key) => ("label", key.to_owned()),
+            Label(key, val) => ("label", format!("{}={}", key, val)),
+            Name(name) => ("name", name.to_owned()),
+            Network(net) => ("net", net.to_owned()),
+            Since(since) => ("since", since.to_owned()),
+            Status(s) => ("status", s.as_ref().to_string()),
+            Volume(vol) => ("volume", vol.to_owned()),
         }
     }
 }
@@ -29,7 +125,10 @@ impl Filter for ContainerFilter {
 impl_url_opts_builder!(derives = Default | ContainerList);
 
 impl ContainerListOptsBuilder {
-    impl_filter_func!(ContainerFilter);
+    impl_filter_func!(
+        /// Filter the list of containers by one of the enum variants.
+        ContainerFilter
+    );
 
     impl_url_bool_field!("If set to true all containers will be returned" all => "all");
 
@@ -345,9 +444,18 @@ impl RmContainerOptsBuilder {
 impl_url_opts_builder!(derives = Default | ContainerPrune);
 
 pub enum ContainerPruneFilter {
+    /// Prune containers created before this timestamp. The <timestamp> can be Unix timestamps,
+    /// date formatted timestamps, or Go duration strings (e.g. 10m, 1h30m) computed relative to
+    /// the daemon machine’s time.
     Until(String),
+    #[cfg(feature = "chrono")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono")))]
+    /// Prune containers created before this timestamp. Same as `Until` but takes a datetime object.
+    UntilDate(chrono::DateTime<chrono::Utc>),
+    /// Label in the form of `label=key`.
     LabelKey(String),
-    LabelKeyVal(String, String),
+    /// Label in the form of `label=key=val`.
+    Label(String, String),
 }
 
 impl Filter for ContainerPruneFilter {
@@ -355,8 +463,10 @@ impl Filter for ContainerPruneFilter {
         use ContainerPruneFilter::*;
         match &self {
             Until(until) => ("until", until.to_owned()),
+            #[cfg(feature = "chrono")]
+            UntilDate(until) => ("until", until.timestamp().to_string()),
             LabelKey(label) => ("label", label.to_owned()),
-            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+            Label(key, val) => ("label", format!("{}={}", key, val)),
         }
     }
 }

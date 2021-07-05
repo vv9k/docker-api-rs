@@ -18,11 +18,19 @@ impl VolumeCreateOptsBuilder {
 impl_url_opts_builder!(derives = Default | VolumePrune);
 
 impl_url_opts_builder!(derives = Default | VolumeList);
+
+/// Filter type used to filter volumes by one of the variants.
 pub enum VolumeFilter {
+    /// When set to `true`, returns all volumes that are not in use by a container.
+    /// When set to `false`, only volumes that are in use by one or more containers are returned.
     Dangling(bool),
+    /// Matches volumes based on their driver.
     Driver(String),
+    /// Label in the form of `label=key`.
     LabelKey(String),
-    LabelKeyVal(String, String),
+    /// Label in the form of `label=key=val`.
+    Label { key: String, val: String },
+    /// Matches all or part of a volume name.
     Name(String),
 }
 
@@ -33,16 +41,22 @@ impl Filter for VolumeFilter {
             Dangling(dangling) => ("dangling", dangling.to_string()),
             Driver(driver) => ("driver", driver.to_owned()),
             LabelKey(label) => ("label", label.to_owned()),
-            LabelKeyVal(key, val) => ("label", format!("{}:{}", key, val)),
+            Label { key, val } => ("label", format!("{}:{}", key, val)),
             Name(name) => ("name", name.to_owned()),
         }
     }
 }
 
 impl VolumePruneOptsBuilder {
-    impl_filter_func!(VolumeFilter);
+    impl_filter_func!(
+        /// Filter pruned volumes by one of the variants of the filter enum.
+        VolumeFilter
+    );
 }
 
 impl VolumeListOptsBuilder {
-    impl_filter_func!(VolumeFilter);
+    impl_filter_func!(
+        /// Filter listed volumes by one of the variants of the filter enum.
+        VolumeFilter
+    );
 }

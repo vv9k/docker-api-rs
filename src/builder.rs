@@ -321,7 +321,10 @@ macro_rules! impl_api_ty {
 }
 
 macro_rules! impl_filter_func {
-    ($filter_ty:ident) => {
+    ($(#[doc = $doc:expr])* $filter_ty:ident) => {
+        $(
+            #[doc = $doc]
+        )*
         pub fn filter<F>(&mut self, filters: F) -> &mut Self
         where
             F: IntoIterator<Item = $filter_ty>,

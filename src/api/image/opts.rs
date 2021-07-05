@@ -3,6 +3,7 @@ use crate::{api::Filter, util::url::encoded_pairs};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    string::ToString,
 };
 
 use serde::Serialize;
@@ -60,38 +61,44 @@ pub struct RegistryAuthBuilder {
 }
 
 impl RegistryAuthBuilder {
-    pub fn username<I>(&mut self, username: I) -> &mut Self
+    /// The username used for authentication.
+    pub fn username<U>(&mut self, username: U) -> &mut Self
     where
-        I: Into<String>,
+        U: Into<String>,
     {
         self.username = Some(username.into());
         self
     }
 
-    pub fn password<I>(&mut self, password: I) -> &mut Self
+    /// The password used for authentication.
+    pub fn password<P>(&mut self, password: P) -> &mut Self
     where
-        I: Into<String>,
+        P: Into<String>,
     {
         self.password = Some(password.into());
         self
     }
 
-    pub fn email<I>(&mut self, email: I) -> &mut Self
+    /// The email addres used for authentication.
+    pub fn email<E>(&mut self, email: E) -> &mut Self
     where
-        I: Into<String>,
+        E: Into<String>,
     {
         self.email = Some(email.into());
         self
     }
 
-    pub fn server_address<I>(&mut self, server_address: I) -> &mut Self
+    /// The server address of registry, should be a domain/IP without a protocol.
+    /// Example: `10.92.0.1`, `docker.corp.local`
+    pub fn server_address<A>(&mut self, server_address: A) -> &mut Self
     where
-        I: Into<String>,
+        A: Into<String>,
     {
         self.server_address = Some(server_address.into());
         self
     }
 
+    /// Create the final authentication object.
     pub fn build(&self) -> RegistryAuth {
         RegistryAuth::Password {
             username: self.username.clone().unwrap_or_default(),
@@ -304,19 +311,83 @@ impl BuildOptsBuilder {
     }
 }
 
-/// Filter Opts for image listings
+/// All forms that the image identifier can take.
+pub enum ImageName {
+    /// `<image>[:<tag>]`
+    Tag { image: String, tag: Option<String> },
+    /// `<image-id>`
+    Id(String),
+    /// `<image@digest>`
+    Digest { image: String, digest: String },
+}
+
+impl ToString for ImageName {
+    fn to_string(&self) -> String {
+        match &self {
+            ImageName::Tag { image, tag } => match tag {
+                Some(tag) => format!("{}:{}", image, tag),
+                None => image.to_owned(),
+            },
+            ImageName::Id(id) => id.to_owned(),
+            ImageName::Digest { image, digest } => format!("{}@{}", image, digest),
+        }
+    }
+}
+
+impl ImageName {
+    /// Create a [`Tag`](ImageName::Tag) variant of image name.
+    pub fn tag<I, T>(image: I, tag: Option<T>) -> Self
+    where
+        I: Into<String>,
+        T: Into<String>,
+    {
+        Self::Tag {
+            image: image.into(),
+            tag: tag.map(|t| t.into()),
+        }
+    }
+
+    /// Create a [`Id`](ImageName::Id) variant of image name.
+    pub fn id<I>(id: I) -> Self
+    where
+        I: Into<String>,
+    {
+        Self::Id(id.into())
+    }
+
+    /// Create a [`Digest`](ImageName::Digest) variant of image name.
+    pub fn digest<I, D>(image: I, digest: D) -> Self
+    where
+        I: Into<String>,
+        D: Into<String>,
+    {
+        Self::Digest {
+            image: image.into(),
+            digest: digest.into(),
+        }
+    }
+}
+
+/// Filter type used to filter listed images.
 pub enum ImageFilter {
+    Before(ImageName),
     Dangling,
-    LabelName(String),
+    /// Label in the form of `label=key`.
+    LabelKey(String),
+    /// Label in the form of `label=key=val`.
     Label(String, String),
+    Since(ImageName),
 }
 
 impl Filter for ImageFilter {
     fn query_key_val(&self) -> (&'static str, String) {
+        use ImageFilter::*;
         match &self {
-            ImageFilter::Dangling => ("dangling", true.to_string()),
-            ImageFilter::LabelName(n) => ("label", n.to_owned()),
-            ImageFilter::Label(n, v) => ("label", format!("{}={}", n, v)),
+            Before(name) => ("before", name.to_string()),
+            Dangling => ("dangling", true.to_string()),
+            LabelKey(n) => ("label", n.to_owned()),
+            Label(n, v) => ("label", format!("{}={}", n, v)),
+            Since(name) => ("since", name.to_string()),
         }
     }
 }
@@ -332,7 +403,10 @@ impl ImageListOptsBuilder {
         "Show digest information as a RepoDigests field on each image."
         digests => "digests"
     );
-    impl_filter_func!(ImageFilter);
+    impl_filter_func!(
+        /// Filter the listed images by one of the variants of the enum.
+        ImageFilter
+    );
 }
 
 impl_url_opts_builder!(derives = Default | RmImage);
@@ -348,10 +422,21 @@ impl RmImageOptsBuilder {
 impl_url_opts_builder!(derives = Default | ImagePrune);
 
 pub enum ImagesPruneFilter {
+    /// When set to `true`, prune only unused and untagged images.
+    /// When set to `false`, all unused images are pruned.
     Dangling(bool),
+    #[cfg(feature = "chrono")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chrono")))]
+    /// Prune images created before this timestamp. Same as `Until` but takes a datetime object.
+    UntilDate(chrono::DateTime<chrono::Utc>),
+    /// Prune images created before this timestamp. The <timestamp> can be Unix timestamps,
+    /// date formatted timestamps, or Go duration strings (e.g. 10m, 1h30m)
+    /// computed relative to the daemon machine’s time.
     Until(String),
+    /// Label in the form of `label=key`.
     LabelKey(String),
-    LabelKeyVal(String, String),
+    /// Label in the form of `label=key=val`.
+    Label(String, String),
 }
 
 impl Filter for ImagesPruneFilter {
@@ -360,8 +445,10 @@ impl Filter for ImagesPruneFilter {
         match &self {
             Dangling(dangling) => ("dangling", dangling.to_string()),
             Until(until) => ("until", until.to_owned()),
+            #[cfg(feature = "chrono")]
+            UntilDate(until) => ("until", until.timestamp().to_string()),
             LabelKey(label) => ("label", label.to_owned()),
-            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+            Label(key, val) => ("label", format!("{}={}", key, val)),
         }
     }
 }

@@ -49,8 +49,10 @@ impl NodeUpdateOptsBuilder {
     }
 }
 
+/// Filter type used to filter nodes by one of the variants.
 pub enum NodeFilter {
     Id(String),
+    /// The engine label
     Label(String),
     Membership(Membership),
     Name(String),

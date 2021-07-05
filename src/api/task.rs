@@ -47,7 +47,7 @@ pub mod data {
         #[serde(rename = "NodeID")]
         pub node_id: String,
         // pub assigned_generic_resources: Vec<serde_json::Value>, ??
-        pub status: Status,
+        pub status: TaskStatus,
         pub desired_state: TaskState,
         pub job_iteration: ObjectVersion,
     }
@@ -57,7 +57,7 @@ pub mod data {
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    pub struct Status {
+    pub struct TaskStatus {
         #[cfg(feature = "chrono")]
         pub timestamp: DateTime<Utc>,
         #[cfg(not(feature = "chrono"))]
