@@ -39,8 +39,21 @@ pub mod url {
         K: AsRef<str>,
         V: AsRef<str>,
     {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(iter)
+        iter.into_iter()
+            .fold(
+                form_urlencoded::Serializer::new(String::new()),
+                |mut acc, v| {
+                    let &(ref k, ref v) = v.borrow();
+                    let k = k.as_ref();
+                    let v = v.as_ref();
+                    if v.is_empty() {
+                        acc.append_key_only(k);
+                    } else {
+                        acc.append_pair(k, v);
+                    }
+                    acc
+                },
+            )
             .finish()
     }
 }
