@@ -5,6 +5,7 @@
 - `ContainerOptsBuilder::expose` and `ContainerOptsBuilder::publish` now take a strongly typed `PublishPort`
   as input parameter.
 - Add missing fields to `NetworkCreateOptsBuilder`
+- Add missing fields to `ContainerConnectionOptsBuilder`
 
 # 0.3.3
 - Fix return type of `Image::inspect`

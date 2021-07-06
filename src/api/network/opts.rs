@@ -9,7 +9,6 @@ impl_opts_builder!(url =>
     /// Options for filtering networks list results"
     NetworkList
 );
-// TODO: implement `filters` field on network list
 
 /// Used for [`NetworkFilter::Scope`](NetworkFilter::Scope).
 pub enum Scope {
@@ -60,17 +59,6 @@ pub enum NetworkFilter {
     Scope(Scope),
     Type(NetworkType),
 }
-
-// impl Filter for NetworkPruneFilter {
-//     fn query_key_val(&self) -> (&'static str, String) {
-//         use NetworkPruneFilter::*;
-//         match &self {
-//             Until(until) => ("until", until.to_owned()),
-//             LabelKey(label) => ("label", label.to_owned()),
-//             LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
-//         }
-//     }
-// }
 
 impl Filter for NetworkFilter {
     fn query_key_val(&self) -> (&'static str, String) {
@@ -207,30 +195,123 @@ impl ContainerConnectionOpts {
 #[derive(Default)]
 pub struct ContainerConnectionOptsBuilder {
     params: HashMap<&'static str, Value>,
+    container: String,
+}
+
+#[derive(Default)]
+/// Used to configure endpoint IPAM configuration when connection a container to a network.
+/// See [`ipam_config`](ContainerConnectOptsBuilder::ipam_config).
+pub struct EndpointIpamConfig {
+    params: HashMap<&'static str, serde_json::Value>,
+}
+
+impl EndpointIpamConfig {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn ipv4<A>(mut self, address: A) -> Self
+    where
+        A: Into<String>,
+    {
+        self.params.insert("IPv4Address", json!(address.into()));
+        self
+    }
+
+    pub fn ipv6<A>(mut self, address: A) -> Self
+    where
+        A: Into<String>,
+    {
+        self.params.insert("IPv6Address", json!(address.into()));
+        self
+    }
+
+    pub fn link_local_ips<I>(mut self, ips: I) -> Self
+    where
+        I: IntoIterator,
+        I::Item: Into<String>,
+    {
+        self.params.insert(
+            "LinkLocalIPs",
+            json!(ips.into_iter().map(I::Item::into).collect::<Vec<_>>()),
+        );
+        self
+    }
 }
 
 impl ContainerConnectionOptsBuilder {
     pub(crate) fn new(container_id: &str) -> Self {
-        let mut params = HashMap::new();
-        params.insert("Container", json!(container_id));
-        ContainerConnectionOptsBuilder { params }
+        ContainerConnectionOptsBuilder {
+            params: HashMap::new(),
+            container: container_id.to_string(),
+        }
     }
 
-    pub fn aliases<A, S>(&mut self, aliases: A) -> &mut Self
-    where
-        A: IntoIterator<Item = S>,
-        S: AsRef<str> + Serialize,
-    {
-        self.params.insert(
-            "EndpointConfig",
-            json!({ "Aliases": json!(aliases.into_iter().collect::<Vec<_>>()) }),
-        );
+    /// Endpoint's IPAM configuration.
+    pub fn ipam_config(&mut self, config: EndpointIpamConfig) -> &mut Self {
+        self.params.insert("EndpointConfig", json!(config.params));
         self
     }
 
-    // TODO: more connection options
+    impl_vec_field!(aliases: A => "Aliases");
+
+    impl_vec_field!(links: L => "Links");
+
+    impl_str_field!(
+        /// Unique ID of the network.
+        network_id: I => "NetworkID"
+    );
+
+    impl_str_field!(
+        /// Unique ID for the service endpoint in a Sandbox.
+        endpoint_id: I => "EndpointID"
+    );
+
+    impl_str_field!(
+        /// Gateway address for this network.
+        gateway: G => "Gateway"
+    );
+
+    impl_str_field!(
+        /// IPv4 address.
+        ipv4: A => "IPAddress"
+    );
+
+    impl_field!(
+        /// Mask length of the IPv4 address.
+        prefix_len: isize => "IPPrefixLen"
+    );
+
+    impl_str_field!(
+        /// IPv6 gateway address.
+        ipv6_gateway: G => "IPv6Gateway"
+    );
+
+    impl_str_field!(
+        /// Global IPv6 address.
+        ipv6: A => "GlobalIPv6Address"
+    );
+
+    impl_field!(
+        /// Mask length of the global IPv6 address.
+        ipv6_prefix_len: i64 => "GlobalIPv6PrefixLen"
+    );
+
+    impl_str_field!(
+        /// MAC address for the endpoint on this network.
+        mac: M => "MacAddress"
+    );
+
+    impl_map_field!(json
+        /// DriverOpts is a mapping of driver options and values. These options are passed directly
+        /// to the driver and are driver specific.
+        driver_opts: O => "DriverOpts"
+    );
 
     pub fn build(&self) -> ContainerConnectionOpts {
+        let mut params = HashMap::new();
+        params.insert("EndpointConfig", json!(self.params));
+        params.insert("Container", json!(self.container));
         ContainerConnectionOpts {
             params: self.params.clone(),
         }
