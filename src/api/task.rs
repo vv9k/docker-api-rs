@@ -21,8 +21,8 @@ impl<'docker> Tasks<'docker> {
 
 pub mod data {
     use crate::api::{
-        Driver, Isolation, Labels, Mount, NetworkAttachmentConfig, ObjectVersion, Platform,
-        ResourceObject, Sysctls, Ulimit,
+        Driver, HealthConfig, Isolation, Labels, Mount, NetworkAttachmentConfig, ObjectVersion,
+        Platform, ResourceObject, Sysctls, Ulimit,
     };
     use serde::{Deserialize, Serialize};
 
@@ -86,11 +86,11 @@ pub mod data {
         pub state: TaskState,
         pub message: String,
         pub err: String,
-        pub container_status: ContainerStatus,
+        pub container_status: TaskContainerStatus,
     }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
-    pub struct ContainerStatus {
+    pub struct TaskContainerStatus {
         #[serde(rename = "ContainerID")]
         pub container_id: String,
         #[serde(rename = "PID")]
@@ -229,16 +229,6 @@ pub mod data {
         pub nameservers: Option<Vec<String>>,
         pub search: Option<Vec<String>>,
         pub options: Option<Vec<String>>,
-    }
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    pub struct HealthConfig {
-        pub test: Option<Vec<String>>,
-        pub interval: Option<isize>,
-        pub timeout: Option<isize>,
-        pub retries: Option<isize>,
-        pub start_period: Option<isize>,
     }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]

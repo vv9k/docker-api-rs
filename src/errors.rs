@@ -43,4 +43,8 @@ pub enum Error {
     InvalidUrl(url::ParseError),
     #[error("Failed to parse uri - {0}")]
     InvalidUri(http::uri::InvalidUri),
+    #[error("Invalid port - {0}")]
+    InvalidPort(String),
+    #[error("Invalid protocol - {0}")]
+    InvalidProtocol(String),
 }

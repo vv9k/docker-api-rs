@@ -14,15 +14,42 @@ pub struct PortBinding {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
+pub struct Address {
+    pub addr: String,
+    pub prefix_len: isize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct NetworkSettings {
     pub bridge: String,
+    #[serde(rename = "SandboxID")]
+    pub sandbox_id: String,
+    pub hairpin_mode: bool,
+    #[serde(rename = "LinkLocalIPv6Address")]
+    pub link_local_ipv6_addr: String,
+    #[serde(rename = "LinkLocalIPv6PrefixLen")]
+    pub link_local_ipv6_prefix_len: isize,
+    pub ports: Option<PortMap>,
+    pub sandbox_key: String,
+    #[serde(rename = "SecondaryIPAddresses")]
+    pub secondary_ip_addresses: Option<Vec<Address>>,
+    #[serde(rename = "SecondaryIPv6Addresses")]
+    pub secondary_ipv6_addresses: Option<Vec<Address>>,
+    #[serde(rename = "EndpointID")]
+    pub endpoint_id: String,
     pub gateway: String,
+    #[serde(rename = "GlobalIPv6Address")]
+    pub global_ipv6_addr: String,
+    #[serde(rename = "GlobalIPv6PrefixLen")]
+    pub global_ipv6_prefix_len: String,
     #[serde(rename = "IPAddress")]
     pub ip_address: String,
     #[serde(rename = "IPPrefixLen")]
     pub ip_prefix_len: u64,
+    #[serde(rename = "IPv6Gateway")]
+    pub ipv6_gateway: String,
     pub mac_address: String,
-    pub ports: Option<PortMap>,
     pub networks: HashMap<String, NetworkEntry>,
 }
 

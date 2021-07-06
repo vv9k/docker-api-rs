@@ -1,14 +1,16 @@
-use crate::api::{ConfigMap, Driver, DriverData, Labels, Options};
+use crate::api::{ConfigMap, Driver, DriverData, Labels, NetworkSettings, Options, PublishPort};
 
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, str};
+use std::{
+    collections::HashMap,
+    str::{self, FromStr},
+};
 
 #[cfg(feature = "chrono")]
 use crate::util::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
-
-use crate::api::{image::ContainerConfig, network::NetworkSettings};
+use serde_json::Value;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -44,7 +46,7 @@ pub struct ContainerDetails {
     pub created: String,
     pub path: String,
     pub args: Vec<String>,
-    pub state: State,
+    pub state: ContainerState,
     pub image: String,
     pub resolv_conf_path: String,
     pub hostname_path: String,
@@ -61,9 +63,70 @@ pub struct ContainerDetails {
     pub exec_ids: Option<Vec<String>>,
     pub host_config: HostConfig,
     pub graph_driver: DriverData,
+    pub size_rw: Option<i64>,
+    pub size_root_fs: Option<i64>,
     pub mounts: Vec<MountPoint>,
     pub config: ContainerConfig,
     pub network_settings: NetworkSettings,
+}
+
+fn deserialize_exposed_ports<'de, D>(deserializer: D) -> Result<Vec<PublishPort>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let mut ports = Vec::new();
+    let port_map = HashMap::<String, serde_json::Value>::deserialize(deserializer)
+        .ok()
+        .unwrap_or_default(); // optional
+    for (port, _) in port_map {
+        ports.push(PublishPort::from_str(port.as_str()).map_err(serde::de::Error::custom)?);
+    }
+
+    Ok(ports)
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ContainerConfig {
+    pub hostname: String,
+    pub domainname: String,
+    pub user: String,
+    pub attach_stdin: bool,
+    pub attach_stdout: bool,
+    pub attach_stderr: bool,
+    #[serde(deserialize_with = "deserialize_exposed_ports")]
+    pub exposed_ports: Vec<PublishPort>,
+    pub tty: bool,
+    pub open_stdin: bool,
+    pub stdin_once: bool,
+    pub env: Vec<String>,
+    pub cmd: Vec<String>,
+    pub healthcheck: Option<HealthConfig>,
+    pub args_escaped: Option<bool>,
+    pub image: String,
+    pub volumes: VolumesMap,
+    pub working_dir: String,
+    pub entrypoint: Vec<String>,
+    pub network_disabled: Option<bool>,
+    pub mac_address: Option<String>,
+    pub on_build: Vec<String>,
+    pub labels: Labels,
+    pub stop_signal: Option<String>,
+    pub stop_timeout: Option<isize>,
+    pub shell: Option<Vec<String>>,
+}
+
+pub type VolumesMap = HashMap<String, Value>;
+
+impl ContainerConfig {
+    pub fn env(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        for e in &self.env {
+            let pair: Vec<&str> = e.split('=').collect();
+            map.insert(pair[0].to_owned(), pair[1].to_owned());
+        }
+        map
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -147,25 +210,96 @@ pub struct MountPoint {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ContainerStatus {
+    Created,
+    Restarting,
+    Running,
+    Removing,
+    Paused,
+    Exited,
+    Dead,
+}
+
+impl AsRef<str> for ContainerStatus {
+    fn as_ref(&self) -> &str {
+        use ContainerStatus::*;
+        match &self {
+            Created => "created",
+            Restarting => "restarting",
+            Running => "running",
+            Removing => "removing",
+            Paused => "paused",
+            Exited => "exited",
+            Dead => "dead",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct State {
-    pub error: String,
-    pub exit_code: u64,
-    #[cfg(feature = "chrono")]
-    pub finished_at: DateTime<Utc>,
-    #[cfg(not(feature = "chrono"))]
-    pub finished_at: String,
+pub struct ContainerState {
+    pub status: ContainerStatus,
+    pub running: bool,
+    pub paused: bool,
+    pub restarting: bool,
     #[serde(rename = "OOMKilled")]
     pub oom_killed: bool,
-    pub paused: bool,
+    pub dead: bool,
     pub pid: u64,
-    pub restarting: bool,
-    pub running: bool,
+    pub exit_code: u64,
+    pub error: String,
     #[cfg(feature = "chrono")]
     pub started_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub started_at: String,
-    pub status: String,
+    #[cfg(feature = "chrono")]
+    pub finished_at: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub finished_at: String,
+    pub health: Option<ContainerHealth>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ContainerHealth {
+    pub status: HealthStatus,
+    pub failing_streak: isize,
+    pub log: Vec<HealthcheckResult>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct HealthConfig {
+    pub test: Option<Vec<String>>,
+    pub interval: Option<isize>,
+    pub timeout: Option<isize>,
+    pub retries: Option<isize>,
+    pub start_period: Option<isize>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum HealthStatus {
+    None,
+    Starting,
+    Healthy,
+    Unhealthy,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct HealthcheckResult {
+    #[cfg(feature = "chrono")]
+    pub started: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub started: String,
+    #[cfg(feature = "chrono")]
+    pub end: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub end: String,
+    pub exit_code: isize,
+    pub output: String,
 }
 
 pub type Sysctls = HashMap<String, String>;

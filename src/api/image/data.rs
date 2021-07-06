@@ -1,6 +1,4 @@
-use crate::api::{DriverData, Labels};
-
-use std::collections::HashMap;
+use crate::api::{ContainerConfig, DriverData, Labels};
 
 use serde::{Deserialize, Serialize};
 
@@ -77,44 +75,6 @@ pub struct ImageMetadata {
     pub last_tag_timed: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub last_tag_timed: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ContainerConfig {
-    pub hostname: String,
-    pub domainname: String,
-    pub user: String,
-    pub attach_stdin: bool,
-    pub attach_stdout: bool,
-    pub attach_stderr: bool,
-    pub exposed_ports: Option<HashMap<String, serde_json::Value>>,
-    pub tty: bool,
-    pub open_stdin: bool,
-    pub stdin_once: bool,
-    pub env: Vec<String>,
-    pub cmd: Vec<String>,
-    pub image: String,
-    pub working_dir: String,
-    pub entrypoint: Vec<String>,
-    pub network_disabled: Option<bool>,
-    pub mac_address: Option<String>,
-    pub on_build: Vec<String>,
-    pub labels: Labels,
-    pub stop_signal: Option<String>,
-    pub stop_timeout: Option<isize>,
-    pub shell: Option<Vec<String>>,
-}
-
-impl ContainerConfig {
-    pub fn env(&self) -> HashMap<String, String> {
-        let mut map = HashMap::new();
-        for e in &self.env {
-            let pair: Vec<&str> = e.split('=').collect();
-            map.insert(pair[0].to_owned(), pair[1].to_owned());
-        }
-        map
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

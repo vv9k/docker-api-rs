@@ -1,7 +1,12 @@
-use crate::api::{Filter, ImageName, Labels};
+use crate::api::{ContainerStatus, Filter, ImageName, Labels};
 
 use std::{
-    collections::HashMap, hash::Hash, iter::Peekable, str, string::ToString, time::Duration,
+    collections::HashMap,
+    hash::Hash,
+    iter::Peekable,
+    str::{self, FromStr},
+    string::ToString,
+    time::Duration,
 };
 
 use serde::{Deserialize, Serialize};
@@ -45,31 +50,6 @@ impl AsRef<str> for Isolation {
     }
 }
 
-pub enum ContainerStatusEnum {
-    Created,
-    Restarting,
-    Running,
-    Removing,
-    Paused,
-    Exited,
-    Dead,
-}
-
-impl AsRef<str> for ContainerStatusEnum {
-    fn as_ref(&self) -> &str {
-        use ContainerStatusEnum::*;
-        match &self {
-            Created => "created",
-            Restarting => "restarting",
-            Running => "running",
-            Removing => "removing",
-            Paused => "paused",
-            Exited => "exited",
-            Dead => "dead",
-        }
-    }
-}
-
 /// Filter Opts for container listings
 pub enum ContainerFilter {
     Ancestor(ImageName),
@@ -94,7 +74,7 @@ pub enum ContainerFilter {
     Network(String),
     /// Container ID or name.
     Since(String),
-    Status(ContainerStatusEnum),
+    Status(ContainerStatus),
     /// Volume name or mount point destination.
     Volume(String),
 }
@@ -220,6 +200,7 @@ pub struct ContainerOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// Network protocol on which a port can be exposed.
 pub enum Protocol {
     Tcp,
@@ -237,36 +218,72 @@ impl AsRef<str> for Protocol {
     }
 }
 
+impl FromStr for Protocol {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "tcp" => Ok(Protocol::Tcp),
+            "udp" => Ok(Protocol::Udp),
+            "sctp" => Ok(Protocol::Sctp),
+            proto => Err(Error::InvalidProtocol(proto.into())),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// Structure used to expose a port on a container with [`expose`](ContainerOptsBuilder::expose) or
 /// [`publish`](ContainerOptsBuilder::publish).
 pub struct PublishPort {
-    protocol: Protocol,
     port: u32,
+    protocol: Protocol,
 }
 
 impl PublishPort {
     /// Expose a TCP port.
     pub fn tcp(port: u32) -> Self {
         Self {
-            protocol: Protocol::Tcp,
             port,
+            protocol: Protocol::Tcp,
         }
     }
 
     /// Expose a UDP port.
     pub fn udp(port: u32) -> Self {
         Self {
-            protocol: Protocol::Udp,
             port,
+            protocol: Protocol::Udp,
         }
     }
 
     // Expose a SCTP port.
     pub fn sctp(port: u32) -> Self {
         Self {
-            protocol: Protocol::Sctp,
             port,
+            protocol: Protocol::Sctp,
         }
+    }
+}
+
+impl FromStr for PublishPort {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let mut elems = s.split('/');
+        let port = elems
+            .next()
+            .ok_or_else(|| Error::InvalidPort("missing port number".into()))
+            .and_then(|port| {
+                port.parse::<u32>()
+                    .map_err(|e| Error::InvalidPort(format!("expected port number - {}", e)))
+            })?;
+
+        let protocol = elems
+            .next()
+            .ok_or_else(|| Error::InvalidPort("missing protocol".into()))
+            .and_then(Protocol::from_str)?;
+
+        Ok(PublishPort { port, protocol })
     }
 }
 
