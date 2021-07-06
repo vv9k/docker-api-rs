@@ -6,6 +6,8 @@
   as input parameter.
 - Add missing fields to `NetworkCreateOptsBuilder`
 - Add missing fields to `ContainerConnectionOptsBuilder`
+- Rename `Mount` to `MountPoint`, add `Mount` struct  
+- Add missing fields to `TaskSpec`
 
 # 0.3.3
 - Fix return type of `Image::inspect`

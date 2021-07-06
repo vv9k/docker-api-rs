@@ -37,7 +37,7 @@ impl AsRef<str> for Availability {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum NodeRole {
     Manager,
@@ -53,7 +53,7 @@ impl AsRef<str> for NodeRole {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum NodeReachability {
     Unknown,

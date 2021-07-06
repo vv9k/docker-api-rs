@@ -1,4 +1,4 @@
-use super::data::{Availability, Membership, Role};
+use super::data::{Availability, Membership, NodeRole};
 use crate::{api::Filter, Error, Result};
 
 use serde::Serialize;
@@ -29,7 +29,7 @@ impl NodeUpdateOpts {
 
     impl_str_enum_field!(
         /// Role of the node.
-        role: Role => "Role"
+        role: NodeRole => "Role"
     );
 
     impl_str_enum_field!(
@@ -69,7 +69,7 @@ pub enum NodeFilter {
     Membership(Membership),
     Name(String),
     NodeLabel(String),
-    Role(Role),
+    Role(NodeRole),
 }
 
 impl Filter for NodeFilter {
