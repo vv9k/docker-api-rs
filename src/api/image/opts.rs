@@ -505,6 +505,53 @@ impl ImagePruneOptsBuilder {
     impl_filter_func!(ImagesPruneFilter);
 }
 
+impl_url_opts_builder!(derives = Default | ClearCache);
+
+pub enum CacheFilter {
+    /// Duration relative to daemon's time, during which build cache was not used,
+    /// in Go's duration format (e.g., '24h').
+    Until(String),
+    Id(String),
+    // ID of the parent.
+    Parent(String),
+    Type(String),
+    Description(String),
+    InUse,
+    Shared,
+    Private,
+}
+
+impl Filter for CacheFilter {
+    fn query_key_val(&self) -> (&'static str, String) {
+        use CacheFilter::*;
+        match &self {
+            Until(until) => ("until", until.to_owned()),
+            Id(id) => ("id", id.to_owned()),
+            Parent(parent) => ("parent", parent.to_owned()),
+            Type(type_) => ("type_", type_.to_owned()),
+            Description(description) => ("description", description.to_owned()),
+            InUse => ("inuse", "".to_owned()),
+            Shared => ("shared", "".to_owned()),
+            Private => ("private", "".to_owned()),
+        }
+    }
+}
+
+impl ClearCacheOptsBuilder {
+    impl_url_field!(
+        /// Amount of disk space in bytes to keep for cache.
+        keep_storage: i64 => "keep-storage"
+    );
+    impl_url_bool_field!(
+        /// Remove all types of build cache
+        all => "all"
+    );
+    impl_filter_func!(
+        /// Filter the builder cache with variants of the enum.
+        CacheFilter
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -209,3 +209,10 @@ pub struct ImageDeleteItem {
     pub untagged: String,
     pub deleted: String,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ClearCacheInfo {
+    pub caches_deleted: Vec<String>,
+    pub space_reclaimed: i64,
+}

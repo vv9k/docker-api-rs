@@ -180,4 +180,17 @@ impl<'docker> Images<'docker> {
             .try_flatten_stream(),
         )
     }}
+
+    // api_doc! { Build => Prune
+    // /// Clear image build cache.
+    // |
+    pub async fn clear_cache(&self, opts: &ClearCacheOpts) -> Result<ClearCacheInfo> {
+        self.docker
+            .post_json(
+                construct_ep("/build/prune", opts.serialize()),
+                Payload::empty(),
+            )
+            .await
+    }
+    // }
 }
