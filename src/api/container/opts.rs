@@ -91,7 +91,7 @@ pub enum ContainerFilter {
     Label(String, String),
     /// The container's name.
     Name(String),
-    // TODO: ContainerFilter::Publish
+    Publish(PublishPort),
     /// Network ID or name.
     Network(String),
     /// Container ID or name.
@@ -116,6 +116,7 @@ impl Filter for ContainerFilter {
             LabelKey(key) => ("label", key.to_owned()),
             Label(key, val) => ("label", format!("{}={}", key, val)),
             Name(name) => ("name", name.to_owned()),
+            Publish(port) => ("publsh", port.to_string()),
             Network(net) => ("net", net.to_owned()),
             Since(since) => ("since", since.to_owned()),
             Status(s) => ("status", s.as_ref().to_string()),
