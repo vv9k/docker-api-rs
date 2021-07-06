@@ -1,5 +1,5 @@
 use crate::{
-    api::{Attributes, Isolation, Labels, Mount, NetworkEntry, Port, VolumeInfo},
+    api::{Attributes, Isolation, Labels, MountPoint, NetworkEntry, Port, VolumeInfo},
     errors::{Error, Result},
 };
 
@@ -179,7 +179,7 @@ pub struct ContainerSummary {
     pub status: String,
     pub host_config: SummaryHostConfig,
     pub network_settings: SummaryNetworkSettings,
-    pub mounts: Vec<Mount>,
+    pub mounts: Vec<MountPoint>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-use crate::api::{ConfigMap, DriverData, Labels, Options};
+use crate::api::{ConfigMap, Driver, DriverData, Labels, Options};
 
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str};
@@ -30,6 +30,8 @@ pub struct ContainerInfo {
     pub status: String,
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
+    pub mounts: Option<Vec<Mount>>,
+    // TODO: review this fields
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -59,19 +61,89 @@ pub struct ContainerDetails {
     pub exec_ids: Option<Vec<String>>,
     pub host_config: HostConfig,
     pub graph_driver: DriverData,
-    pub mounts: Vec<Mount>,
+    pub mounts: Vec<MountPoint>,
     pub config: ContainerConfig,
     pub network_settings: NetworkSettings,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MountType {
+    Bind,
+    Volume,
+    TmpFs,
+    NPipe,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MountConsistency {
+    Default,
+    Consistent,
+    Cached,
+    Delegated,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Mount {
+    #[serde(rename = "Type")]
+    pub type_: Option<MountType>,
+    pub source: Option<String>,
+    pub target: Option<String>,
+    pub read_only: Option<bool>,
+    pub consistency: Option<MountConsistency>,
+    pub bind_options: Option<BindOptions>,
+    pub volume_options: Option<VolumeOptions>,
+    pub tmpfs_options: Option<TmpfsOptions>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TmpfsOptions {
+    pub size_bytes: Option<i64>,
+    pub mode: Option<isize>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct VolumeOptions {
+    pub no_copy: Option<bool>,
+    pub labels: Option<Labels>,
+    pub driver_config: Option<Driver>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BindPropagation {
+    Private,
+    RPrivate,
+    Shared,
+    RShared,
+    Slave,
+    RSlave,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct BindOptions {
+    pub propagation: Option<BindPropagation>,
+    pub non_recursive: Option<bool>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct MountPoint {
+    #[serde(rename = "Type")]
+    pub type_: Option<String>,
+    pub name: Option<String>,
     pub source: String,
     pub destination: String,
+    pub driver: Option<String>,
     pub mode: String,
     #[serde(rename = "RW")]
     pub rw: bool,
+    pub propagation: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -149,7 +221,7 @@ pub struct HostConfig {
     pub auto_remove: bool,
     pub volume_driver: String,
     pub volumes_from: Option<Vec<String>>,
-    pub mounts: Option<Vec<Mount>>,
+    pub mounts: Option<Vec<MountPoint>>,
     pub cap_add: Option<Vec<String>>,
     pub cap_drop: Option<Vec<String>>,
     pub dns: Option<Vec<String>>,
