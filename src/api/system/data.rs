@@ -1,5 +1,5 @@
 use crate::{
-    api::{Attributes, Labels, Mount, NetworkEntry, Port, VolumeInfo},
+    api::{Attributes, Isolation, Labels, Mount, NetworkEntry, Port, VolumeInfo},
     errors::{Error, Result},
 };
 
@@ -98,8 +98,7 @@ pub struct Info {
     // TODO:
     //pub swarm: SwarmInfo,
     pub live_restore_enabled: bool,
-    // TODO: could be an enum
-    pub isolation: String,
+    pub isolation: Isolation,
     pub init_binary: String,
     pub containerd_commit: Commit,
     pub runc_commit: Commit,

@@ -27,14 +27,14 @@ impl AsRef<str> for Health {
     }
 }
 
-#[cfg(windows)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Isolation {
     Default,
     Process,
     HyperV,
 }
 
-#[cfg(windows)]
 impl AsRef<str> for Isolation {
     fn as_ref(&self) -> &str {
         match &self {
@@ -80,8 +80,6 @@ pub enum ContainerFilter {
     Health(Health),
     /// The container's ID.
     Id(String),
-    #[cfg(windows)]
-    #[cfg_attr(docsrs, doc(cfg(windows)))]
     /// Applies only to Windows daemon.
     Isolation(Isolation),
     IsTask(bool),
@@ -110,7 +108,6 @@ impl Filter for ContainerFilter {
             ExitCode(c) => ("exit", c.to_string()),
             Health(health) => ("health", health.as_ref().to_string()),
             Id(id) => ("id", id.to_owned()),
-            #[cfg(windows)]
             Isolation(isolation) => ("isolation", isolation.as_ref().to_string()),
             IsTask(is_task) => ("is-task", is_task.to_string()),
             LabelKey(key) => ("label", key.to_owned()),
