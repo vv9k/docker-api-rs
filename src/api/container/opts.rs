@@ -4,7 +4,7 @@ use std::{
     collections::HashMap, hash::Hash, iter::Peekable, str, string::ToString, time::Duration,
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 use crate::{Error, Result};
@@ -27,7 +27,7 @@ impl AsRef<str> for Health {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Isolation {
     Default,

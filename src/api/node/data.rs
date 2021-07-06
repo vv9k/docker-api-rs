@@ -38,18 +38,27 @@ impl AsRef<str> for Availability {
 }
 
 #[derive(Serialize, Debug)]
-pub enum Role {
+#[serde(rename_all = "lowercase")]
+pub enum NodeRole {
     Manager,
     Worker,
 }
 
-impl AsRef<str> for Role {
+impl AsRef<str> for NodeRole {
     fn as_ref(&self) -> &str {
         match &self {
-            Role::Manager => "manager",
-            Role::Worker => "worker",
+            NodeRole::Manager => "manager",
+            NodeRole::Worker => "worker",
         }
     }
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum NodeReachability {
+    Unknown,
+    Unreachable,
+    Reachable,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -73,10 +82,26 @@ pub struct NodeInfo {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NodeState {
+    Unknown,
+    Down,
+    Ready,
+    Disconnected,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NodeAvailability {
+    Active,
+    Pause,
+    Drain,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct NodeStatus {
-    // TODO: use an enum here
-    pub state: Option<String>,
+    pub state: Option<NodeState>,
     pub message: Option<String>,
     pub addr: Option<String>,
 }
@@ -86,10 +111,8 @@ pub struct NodeStatus {
 pub struct NodeSpec {
     pub name: Option<String>,
     pub labels: Labels,
-    // TODO: use an enum here
-    pub role: Option<String>,
-    // TODO: use an enum here
-    pub availability: Option<String>,
+    pub role: Option<NodeRole>,
+    pub availability: Option<NodeAvailability>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -123,15 +146,14 @@ pub struct ResourceObject {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Platform {
-    architecture: Option<String>,
-    os: Option<String>,
+    pub architecture: Option<String>,
+    pub os: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ManagerStatus {
     pub leader: Option<bool>,
-    // TODO: use an enum here
-    pub reachability: Option<String>,
+    pub reachability: Option<NodeReachability>,
     pub addr: Option<String>,
 }
