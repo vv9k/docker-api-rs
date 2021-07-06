@@ -1,6 +1,6 @@
 use crate::api::Filter;
 
-impl_json_opts_builder!(VolumeCreate);
+impl_opts_builder!(json => VolumeCreate);
 
 impl VolumeCreateOptsBuilder {
     impl_str_field!(
@@ -24,9 +24,9 @@ impl VolumeCreateOptsBuilder {
     );
 }
 
-impl_url_opts_builder!(derives = Default | VolumePrune);
+impl_opts_builder!(url => VolumePrune);
 
-impl_url_opts_builder!(derives = Default | VolumeList);
+impl_opts_builder!(url => VolumeList);
 
 /// Filter type used to filter volumes by one of the variants.
 pub enum VolumeFilter {

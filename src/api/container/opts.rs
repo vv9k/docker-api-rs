@@ -124,7 +124,7 @@ impl Filter for ContainerFilter {
     }
 }
 
-impl_url_opts_builder!(derives = Default | ContainerList);
+impl_opts_builder!(url => ContainerList);
 
 impl ContainerListOptsBuilder {
     impl_filter_func!(
@@ -486,7 +486,7 @@ impl ContainerOptsBuilder {
     }
 }
 
-impl_url_opts_builder!(derives = Default | RmContainer);
+impl_opts_builder!(url => RmContainer);
 
 impl RmContainerOptsBuilder {
     impl_url_bool_field!(
@@ -505,7 +505,7 @@ impl RmContainerOptsBuilder {
     );
 }
 
-impl_url_opts_builder!(derives = Default | ContainerPrune);
+impl_opts_builder!(url => ContainerPrune);
 
 pub enum ContainerPruneFilter {
     /// Prune containers created before this timestamp. The <timestamp> can be Unix timestamps,
@@ -594,8 +594,8 @@ mod tests {
         test_case!(
             ContainerOptsBuilder::new("test_image")
                 .expose(PublishPort::udp(80), 8080)
-                .expose(PublishPort::sctp(81), 8080),
-            r#"{"ExposedPorts":{"80/udp":{},"81/sctp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}],"81/tcp":[{"HostPort":"8081"}]}},"Image":"test_image"}"#
+                .expose(PublishPort::sctp(81), 8081),
+            r#"{"ExposedPorts":{"80/udp":{},"81/sctp":{}},"HostConfig":{"PortBindings":{"80/udp":[{"HostPort":"8080"}],"81/sctp":[{"HostPort":"8081"}]}},"Image":"test_image"}"#
         );
 
         test_case!(

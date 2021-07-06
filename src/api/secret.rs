@@ -121,7 +121,7 @@ pub use data::*;
 pub mod opts {
     use crate::api::Filter;
 
-    impl_url_opts_builder!(SecretList);
+    impl_opts_builder!(url => SecretList);
 
     pub enum SecretFilter {
         /// The ID of the secret.

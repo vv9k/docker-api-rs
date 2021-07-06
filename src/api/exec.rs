@@ -157,7 +157,7 @@ impl<'docker> Exec<'docker> {
     }}
 }
 
-impl_json_opts_builder!(ExecContainer);
+impl_opts_builder!(json => ExecContainer);
 
 impl ExecContainerOptsBuilder {
     impl_vec_field!(
@@ -208,7 +208,7 @@ impl ExecContainerOptsBuilder {
     );
 }
 
-impl_json_opts_builder!(ExecResize);
+impl_opts_builder!(json => ExecResize);
 
 impl ExecResizeOptsBuilder {
     impl_field!(height: u64 => "Height");

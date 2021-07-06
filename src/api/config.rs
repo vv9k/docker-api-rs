@@ -115,7 +115,7 @@ pub use data::*;
 pub mod opts {
     use crate::api::Filter;
 
-    impl_url_opts_builder!(ConfigList);
+    impl_opts_builder!(url => ConfigList);
 
     pub enum ConfigFilter {
         /// The ID of the config.

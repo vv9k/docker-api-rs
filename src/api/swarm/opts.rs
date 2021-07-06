@@ -1,6 +1,6 @@
 use crate::api::SwarmSpec;
 
-impl_json_opts_builder!(SwarmJoin);
+impl_opts_builder!(json => SwarmJoin);
 
 impl SwarmJoinOptsBuilder {
     impl_str_field!(
@@ -33,7 +33,7 @@ impl SwarmJoinOptsBuilder {
     );
 }
 
-impl_json_opts_builder!(SwarmInit);
+impl_opts_builder!(json => SwarmInit);
 
 impl SwarmInitOptsBuilder {
     impl_str_field!(

@@ -1,6 +1,6 @@
 use crate::api::Filter;
 
-impl_url_opts_builder!(PluginList);
+impl_opts_builder!(url => PluginList);
 
 pub enum PluginFilter {
     Capability(String),

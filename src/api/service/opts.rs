@@ -31,7 +31,7 @@ impl Filter for ServiceFilter {
     }
 }
 
-impl_url_opts_builder!(ServiceList);
+impl_opts_builder!(url => ServiceList);
 
 impl ServiceListOptsBuilder {
     impl_filter_func!(ServiceFilter);

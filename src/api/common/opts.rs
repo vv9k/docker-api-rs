@@ -1,4 +1,4 @@
-impl_url_opts_builder!(Logs);
+impl_opts_builder!(url => Logs);
 
 impl LogsOptsBuilder {
     impl_url_bool_field!(

@@ -109,7 +109,7 @@ impl RegistryAuthBuilder {
     }
 }
 
-impl_url_opts_builder!(Tag);
+impl_opts_builder!(url => Tag);
 
 impl TagOptsBuilder {
     impl_url_str_field!(repo: R => "repo");
@@ -437,7 +437,7 @@ impl Filter for ImageFilter {
     }
 }
 
-impl_url_opts_builder!(derives = Default | ImageList);
+impl_opts_builder!(url => ImageList);
 
 impl ImageListOptsBuilder {
     impl_url_bool_field!(
@@ -454,7 +454,7 @@ impl ImageListOptsBuilder {
     );
 }
 
-impl_url_opts_builder!(derives = Default | RmImage);
+impl_opts_builder!(url => RmImage);
 
 impl RmImageOptsBuilder {
     impl_url_bool_field!(
@@ -467,7 +467,7 @@ impl RmImageOptsBuilder {
     );
 }
 
-impl_url_opts_builder!(derives = Default | ImagePrune);
+impl_opts_builder!(url => ImagePrune);
 
 pub enum ImagesPruneFilter {
     /// When set to `true`, prune only unused and untagged images.
@@ -505,7 +505,7 @@ impl ImagePruneOptsBuilder {
     impl_filter_func!(ImagesPruneFilter);
 }
 
-impl_url_opts_builder!(derives = Default | ClearCache);
+impl_opts_builder!(url => ClearCache);
 
 pub enum CacheFilter {
     /// Duration relative to daemon's time, during which build cache was not used,

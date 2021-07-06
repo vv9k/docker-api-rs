@@ -85,7 +85,7 @@ impl Filter for NodeFilter {
     }
 }
 
-impl_url_opts_builder!(NodeList);
+impl_opts_builder!(url => NodeList);
 
 impl NodeListOptsBuilder {
     impl_filter_func!(NodeFilter);

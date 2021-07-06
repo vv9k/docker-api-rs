@@ -5,10 +5,9 @@ use std::{collections::HashMap, convert::AsRef};
 use serde::Serialize;
 use serde_json::{json, Value};
 
-impl_url_opts_builder!(
-    derives = Default
-        | /// Options for filtering networks list results"
-        NetworkList
+impl_opts_builder!(url =>
+    /// Options for filtering networks list results"
+    NetworkList
 );
 // TODO: implement `filters` field on network list
 
@@ -195,7 +194,7 @@ impl ContainerConnectionOptsBuilder {
     }
 }
 
-impl_url_opts_builder!(derives = Default | NetworkPrune);
+impl_opts_builder!(url => NetworkPrune);
 
 pub enum NetworkPruneFilter {
     /// Prune networks created before this timestamp. The <timestamp> can be Unix timestamps,
