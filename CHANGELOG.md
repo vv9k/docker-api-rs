@@ -4,6 +4,7 @@
 - Add lots of missing filter variants and document them
 - `ContainerOptsBuilder::expose` and `ContainerOptsBuilder::publish` now take a strongly typed `PublishPort`
   as input parameter.
+- Add missing fields to `NetworkCreateOptsBuilder`
 
 # 0.3.3
 - Fix return type of `Image::inspect`

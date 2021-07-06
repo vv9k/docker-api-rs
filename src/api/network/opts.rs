@@ -129,9 +129,52 @@ impl NetworkCreateOptsBuilder {
         NetworkCreateOptsBuilder { params }
     }
 
-    impl_str_field!(driver: D => "Driver");
+    impl_field!(
+        /// Check for networks with duplicate names. Since Network is primarily keyed based on a
+        /// random ID and not on the name, and network name is strictly a user-friendly alias to
+        /// the network which is uniquely identified using ID, there is no guaranteed way to check
+        /// for duplicates. CheckDuplicate is there to provide a best effort checking of any
+        /// networks which has the same name but it is not guaranteed to catch all name collisions.
+        check_duplicate: bool => "CheckDuplicate"
+    );
 
-    impl_map_field!(json labels: L => "Labels");
+    impl_str_field!(
+        /// Name of the network driver plugin to use.
+        driver: D => "Driver"
+    );
+
+    impl_field!(
+        /// Restrict external access to the network.
+        internal: bool => "Internal"
+    );
+
+    impl_field!(
+        /// Globally scoped network is manually attachable by regular containers from workers
+        /// in swarm mode.
+        attachable: bool => "Attachable"
+    );
+
+    impl_field!(
+        /// Ingress network is the network which provides the routing-mesh in swarm mode.
+        ingress: bool => "Ingress"
+    );
+
+    impl_field!(
+        /// Enable IPv6 on the network.
+        enable_ipv6: bool => "EnableIPv6"
+    );
+
+    impl_map_field!(json
+        /// Network specific options to be used by the drivers.
+        options: O => "Options"
+    );
+
+    impl_map_field!(json
+        /// User-defined key/value metadata.
+        labels: L => "Labels"
+    );
+
+    // TODO: add IPAM
 
     pub fn build(&self) -> NetworkCreateOpts {
         NetworkCreateOpts {
