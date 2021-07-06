@@ -1,6 +1,8 @@
 use crate::api::{Filter, ImageName, Labels};
 
-use std::{collections::HashMap, hash::Hash, iter::Peekable, str, time::Duration};
+use std::{
+    collections::HashMap, hash::Hash, iter::Peekable, str, string::ToString, time::Duration,
+};
 
 use serde::Serialize;
 use serde_json::{json, Map, Value};
@@ -178,7 +180,7 @@ where
 }
 
 impl ContainerCreateOpts {
-    /// return a new instance of a builder for Opts
+    /// Returns a builder for creating a new container.
     pub fn builder<N>(name: N) -> ContainerOptsBuilder
     where
         N: AsRef<str>,
@@ -186,7 +188,7 @@ impl ContainerCreateOpts {
         ContainerOptsBuilder::new(name.as_ref())
     }
 
-    /// serialize Opts as a string. returns None if no Opts are defined
+    /// Serialize options as a JSON string.
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.to_json()).map_err(Error::from)
     }
@@ -201,7 +203,7 @@ impl ContainerCreateOpts {
         body
     }
 
-    pub fn parse_from<'a, K, V>(&self, params: &'a HashMap<K, V>, body: &mut Value)
+    fn parse_from<'a, K, V>(&self, params: &'a HashMap<K, V>, body: &mut Value)
     where
         &'a HashMap<K, V>: IntoIterator,
         K: ToString + Eq + Hash,
@@ -220,6 +222,62 @@ pub struct ContainerOptsBuilder {
     params: HashMap<&'static str, Value>,
 }
 
+/// Network protocol on which a port can be exposed.
+pub enum Protocol {
+    Tcp,
+    Udp,
+    Sctp,
+}
+
+impl AsRef<str> for Protocol {
+    fn as_ref(&self) -> &str {
+        match &self {
+            Self::Tcp => "tcp",
+            Self::Udp => "udp",
+            Self::Sctp => "sctp",
+        }
+    }
+}
+
+/// Structure used to expose a port on a container with [`expose`](ContainerOptsBuilder::expose) or
+/// [`publish`](ContainerOptsBuilder::publish).
+pub struct PublishPort {
+    protocol: Protocol,
+    port: u32,
+}
+
+impl PublishPort {
+    /// Expose a TCP port.
+    pub fn tcp(port: u32) -> Self {
+        Self {
+            protocol: Protocol::Tcp,
+            port,
+        }
+    }
+
+    /// Expose a UDP port.
+    pub fn udp(port: u32) -> Self {
+        Self {
+            protocol: Protocol::Udp,
+            port,
+        }
+    }
+
+    // Expose a SCTP port.
+    pub fn sctp(port: u32) -> Self {
+        Self {
+            protocol: Protocol::Sctp,
+            port,
+        }
+    }
+}
+
+impl ToString for PublishPort {
+    fn to_string(&self) -> String {
+        format!("{}/{}", self.port, self.protocol.as_ref())
+    }
+}
+
 impl ContainerOptsBuilder {
     pub(crate) fn new(image: &str) -> Self {
         let mut params = HashMap::new();
@@ -228,6 +286,7 @@ impl ContainerOptsBuilder {
         ContainerOptsBuilder { name: None, params }
     }
 
+    /// Set the name of the container.
     pub fn name<N>(&mut self, name: N) -> &mut Self
     where
         N: Into<String>,
@@ -243,10 +302,7 @@ impl ContainerOptsBuilder {
         self
     }
 
-    pub fn expose<P>(&mut self, srcport: u32, protocol: P, hostport: u32) -> &mut Self
-    where
-        P: AsRef<str>,
-    {
+    pub fn expose(&mut self, srcport: PublishPort, hostport: u32) -> &mut Self {
         let mut exposedport: HashMap<String, String> = HashMap::new();
         exposedport.insert("HostPort".to_string(), hostport.to_string());
 
@@ -263,10 +319,7 @@ impl ContainerOptsBuilder {
         {
             port_bindings.insert(key.to_string(), json!(val));
         }
-        port_bindings.insert(
-            format!("{}/{}", srcport, protocol.as_ref()),
-            json!(vec![exposedport]),
-        );
+        port_bindings.insert(srcport.to_string(), json!(vec![exposedport]));
 
         self.params
             .insert("HostConfig.PortBindings", json!(port_bindings));
@@ -284,10 +337,7 @@ impl ContainerOptsBuilder {
     }
 
     /// Publish a port in the container without assigning a port on the host
-    pub fn publish<P>(&mut self, srcport: u32, protocol: P) -> &mut Self
-    where
-        P: AsRef<str>,
-    {
+    pub fn publish(&mut self, port: PublishPort) -> &mut Self {
         /* The idea here is to go thought the 'old' port binds
          * and to apply them to the local 'exposedport_bindings' variable,
          * add the bind we want and replace the 'old' value */
@@ -302,7 +352,7 @@ impl ContainerOptsBuilder {
         {
             exposed_port_bindings.insert(key.to_string(), json!(val));
         }
-        exposed_port_bindings.insert(format!("{}/{}", srcport, protocol.as_ref()), json!({}));
+        exposed_port_bindings.insert(port.to_string(), json!({}));
 
         // Replicate the port bindings over to the exposed ports config
         let mut exposed_ports: HashMap<String, Value> = HashMap::new();
@@ -493,155 +543,87 @@ impl ContainerPruneOptsBuilder {
 mod tests {
     use super::*;
 
-    #[test]
-    fn container_options_simple() {
-        let builder = ContainerOptsBuilder::new("test_image");
-        let options = builder.build();
+    macro_rules! test_case {
+        ($opts:expr, $want:expr) => {
+            let opts = $opts.build();
 
-        assert_eq!(
-            r#"{"HostConfig":{},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
+            pretty_assertions::assert_eq!($want, opts.serialize().unwrap())
+        };
     }
 
     #[test]
-    fn container_options_env() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .env(vec!["foo", "bar"])
-            .build();
-
-        assert_eq!(
-            r#"{"Env":["foo","bar"],"HostConfig":{},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    #[test]
-    fn container_options_env_dynamic() {
-        let env: Vec<String> = ["foo", "bar", "baz"]
-            .iter()
-            .map(|s| String::from(*s))
-            .collect();
-
-        let options = ContainerOptsBuilder::new("test_image").env(&env).build();
-
-        assert_eq!(
-            r#"{"Env":["foo","bar","baz"],"HostConfig":{},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    #[test]
-    fn container_options_user() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .user("alice")
-            .build();
-
-        assert_eq!(
-            r#"{"HostConfig":{},"Image":"test_image","User":"alice"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    #[test]
-    fn container_options_host_config() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .network_mode("host")
-            .auto_remove(true)
-            .privileged(true)
-            .build();
-
-        assert_eq!(
-            r#"{"HostConfig":{"AutoRemove":true,"NetworkMode":"host","Privileged":true},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    #[test]
-    fn container_options_expose() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .expose(80, "tcp", 8080)
-            .build();
-        assert_eq!(
-            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}]}},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-        // try exposing two
-        let options = ContainerOptsBuilder::new("test_image")
-            .expose(80, "tcp", 8080)
-            .expose(81, "tcp", 8081)
-            .build();
-        assert_eq!(
-            r#"{"ExposedPorts":{"80/tcp":{},"81/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}],"81/tcp":[{"HostPort":"8081"}]}},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    #[test]
-    fn container_options_publish() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .publish(80, "tcp")
-            .build();
-        assert_eq!(
-            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-        // try exposing two
-        let options = ContainerOptsBuilder::new("test_image")
-            .publish(80, "tcp")
-            .publish(81, "tcp")
-            .build();
-        assert_eq!(
-            r#"{"ExposedPorts":{"80/tcp":{},"81/tcp":{}},"HostConfig":{},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    /// Test container option PublishAllPorts
-    #[test]
-    fn container_options_publish_all_ports() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .publish_all_ports()
-            .build();
-
-        assert_eq!(
-            r#"{"HostConfig":{"PublishAllPorts":true},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    /// Test container Opts that are nested 3 levels deep.
-    #[test]
-    fn container_options_nested() {
-        let options = ContainerOptsBuilder::new("test_image")
-            .log_driver("fluentd")
-            .build();
-
-        assert_eq!(
-            r#"{"HostConfig":{"LogConfig":{"Type":"fluentd"}},"Image":"test_image"}"#,
-            options.serialize().unwrap()
-        );
-    }
-
-    /// Test the restart policy settings
-    #[test]
-    fn container_options_restart_policy() {
-        let mut options = ContainerOptsBuilder::new("test_image")
-            .restart_policy("on-failure", 10)
-            .build();
-
-        assert_eq!(
-            r#"{"HostConfig":{"RestartPolicy":{"MaximumRetryCount":10,"Name":"on-failure"}},"Image":"test_image"}"#,
-            options.serialize().unwrap()
+    fn create_container_opts() {
+        test_case!(
+            ContainerOptsBuilder::new("test_image"),
+            r#"{"HostConfig":{},"Image":"test_image"}"#
         );
 
-        options = ContainerOptsBuilder::new("test_image")
-            .restart_policy("always", 0)
-            .build();
+        test_case!(
+            ContainerOptsBuilder::new("test_image").env(vec!["foo", "bar"]),
+            r#"{"Env":["foo","bar"],"HostConfig":{},"Image":"test_image"}"#
+        );
 
-        assert_eq!(
-            r#"{"HostConfig":{"RestartPolicy":{"Name":"always"}},"Image":"test_image"}"#,
-            options.serialize().unwrap()
+        test_case!(
+            ContainerOptsBuilder::new("test_image").env(&["foo", "bar", "baz"]),
+            r#"{"Env":["foo","bar","baz"],"HostConfig":{},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").env(std::iter::once("test")),
+            r#"{"Env":["test"],"HostConfig":{},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").user("alice"),
+            r#"{"HostConfig":{},"Image":"test_image","User":"alice"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image")
+                .network_mode("host")
+                .auto_remove(true)
+                .privileged(true),
+            r#"{"HostConfig":{"AutoRemove":true,"NetworkMode":"host","Privileged":true},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").expose(PublishPort::tcp(80), 8080),
+            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}]}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image")
+                .expose(PublishPort::udp(80), 8080)
+                .expose(PublishPort::sctp(81), 8080),
+            r#"{"ExposedPorts":{"80/udp":{},"81/sctp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}],"81/tcp":[{"HostPort":"8081"}]}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image")
+                .publish(PublishPort::udp(80))
+                .publish(PublishPort::sctp(6969))
+                .publish(PublishPort::tcp(1337)),
+            r#"{"ExposedPorts":{"1337/tcp":{},"6969/sctp":{},"80/udp":{}},"HostConfig":{},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").publish_all_ports(),
+            r#"{"HostConfig":{"PublishAllPorts":true},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").log_driver("fluentd"),
+            r#"{"HostConfig":{"LogConfig":{"Type":"fluentd"}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").restart_policy("on-failure", 10),
+            r#"{"HostConfig":{"RestartPolicy":{"MaximumRetryCount":10,"Name":"on-failure"}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerOptsBuilder::new("test_image").restart_policy("always", 0),
+            r#"{"HostConfig":{"RestartPolicy":{"Name":"always"}},"Image":"test_image"}"#
         );
     }
 }

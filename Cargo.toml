@@ -51,6 +51,7 @@ env_logger = "0.8"
 futures = "0.3.1"
 tokio = { version="1.0", features=["macros", "rt-multi-thread"] }
 clap = "3.0.0-beta.2"
+pretty_assertions = "0.7"
 
 [features]
 default = ["chrono"]
