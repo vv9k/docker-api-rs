@@ -46,14 +46,32 @@ pub mod data {
         pub slot: isize,
         #[serde(rename = "NodeID")]
         pub node_id: String,
+        // TODO: generic resources field
         // pub assigned_generic_resources: Vec<serde_json::Value>, ??
         pub status: TaskStatus,
         pub desired_state: TaskState,
         pub job_iteration: ObjectVersion,
     }
 
-    // TODO: should be an enum
-    pub type TaskState = String;
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum TaskState {
+        New,
+        Allocated,
+        Pending,
+        Assigned,
+        Accepted,
+        Preparing,
+        Ready,
+        Starting,
+        Running,
+        Complete,
+        Shutdown,
+        Failed,
+        Rejected,
+        Remove,
+        Orphaned,
+    }
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
@@ -79,7 +97,9 @@ pub mod data {
 
     #[derive(Clone, Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
-    pub struct TaskSpec {}
+    pub struct TaskSpec {
+        // TODO: TaskSpec fields
+    }
 }
 
 pub use data::*;
@@ -90,13 +110,13 @@ pub mod opts {
     impl_url_opts_builder!(TaskList);
 
     #[derive(Clone, Copy, Debug)]
-    pub enum State {
+    pub enum TaskStateFilter {
         Running,
         Shutdown,
         Accepted,
     }
 
-    impl AsRef<str> for State {
+    impl AsRef<str> for TaskStateFilter {
         fn as_ref(&self) -> &str {
             match &self {
                 Self::Running => "running",
@@ -107,12 +127,19 @@ pub mod opts {
     }
 
     pub enum TaskFilter {
-        DesiredState(State),
+        /// The state that the task should be in.
+        DesiredState(TaskStateFilter),
+        /// The ID of the config.
         Id(String),
+        /// Label in the form of `label=key`
         LabelKey(String),
-        LabelKeyVal(String, String),
+        /// Label in the form of `label=key=val`
+        Label(String, String),
+        /// The name of the config.
         Name(String),
+        /// Name of the node.
         Node(String),
+        /// Name of the service.
         Service(String),
     }
 
@@ -123,7 +150,7 @@ pub mod opts {
                 DesiredState(state) => ("desired-state", state.as_ref().to_string()),
                 Id(id) => ("id", id.to_owned()),
                 LabelKey(key) => ("label", key.to_owned()),
-                LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+                Label(key, val) => ("label", format!("{}={}", key, val)),
                 Name(name) => ("name", name.to_owned()),
                 Node(node) => ("node", node.to_owned()),
                 Service(service) => ("service", service.to_owned()),
@@ -132,7 +159,10 @@ pub mod opts {
     }
 
     impl TaskListOptsBuilder {
-        impl_filter_func!(TaskFilter);
+        impl_filter_func!(
+            /// Filter listed tasks by variants of the enum.
+            TaskFilter
+        );
     }
 }
 

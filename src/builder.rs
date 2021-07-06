@@ -1,5 +1,5 @@
 macro_rules! impl_vec_field {
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -17,7 +17,7 @@ macro_rules! impl_vec_field {
 }
 
 macro_rules! impl_field {
-    ($($docs:literal)* $name:ident: $ty:ty => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:ty => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -32,7 +32,7 @@ macro_rules! impl_field {
 }
 
 macro_rules! impl_str_field {
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -49,7 +49,7 @@ macro_rules! impl_str_field {
 }
 
 macro_rules! impl_url_str_field {
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -66,7 +66,7 @@ macro_rules! impl_url_str_field {
 }
 
 macro_rules! impl_url_field {
-    ($($docs:literal)* $name:ident : $ty:tt => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident : $ty:tt => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -80,7 +80,7 @@ macro_rules! impl_url_field {
 }
 
 macro_rules! impl_url_bool_field {
-    ($($docs:literal)* $name:ident => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -95,7 +95,7 @@ macro_rules! impl_url_bool_field {
 
 #[allow(unused_macros)]
 macro_rules! impl_str_enum_field {
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -110,13 +110,13 @@ macro_rules! impl_str_enum_field {
 }
 
 macro_rules! impl_map_field {
-    (url $($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
-        impl_map_field! { $($docs)* $name: $ty => $docker_name => serde_json::to_string(&$name.into_iter().collect::<std::collections::HashMap<_, _>>()).unwrap_or_default() }
+    (url $(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
+        impl_map_field! { $(#[doc = $docs])* $name: $ty => $docker_name => serde_json::to_string(&$name.into_iter().collect::<std::collections::HashMap<_, _>>()).unwrap_or_default() }
     };
-    (json $($docs:literal)* $name:ident: $ty:tt => $docker_name:literal) => {
-        impl_map_field! { $($docs)* $name: $ty => $docker_name => serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()) }
+    (json $(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
+        impl_map_field! { $(#[doc = $docs])* $name: $ty => $docker_name => serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()) }
     };
-    ($($docs:literal)* $name:ident: $ty:tt => $docker_name:literal => $ret:expr) => {
+    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal => $ret:expr) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -135,7 +135,7 @@ macro_rules! impl_map_field {
 }
 
 macro_rules! impl_json_opts_builder {
-    ($($docs:literal)* $name:ident) => {
+    ($(#[doc = $docs:expr])* $name:ident) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -182,10 +182,10 @@ macro_rules! impl_json_opts_builder {
 }
 
 macro_rules! impl_url_opts_builder {
-    ($($docs:literal)* $name:ident) => {
-        impl_url_opts_builder!{derives = | $($docs)* $name}
+    ($(#[doc = $docs:expr])* $name:ident) => {
+        impl_url_opts_builder!{derives = | $(#[doc = $docs])* $name}
     };
-    (derives = $($derives:ident),* | $($docs:literal)* $name:ident) => {
+    (derives = $($derives:ident),* | $(#[doc = $docs:expr])* $name:ident) => {
         paste::item! {
             $(
                 #[doc= $docs]
@@ -253,7 +253,7 @@ macro_rules! calculated_doc {
 }
 
 macro_rules! impl_api_ty {
-    ($($docs:literal)* $name:ident => $name_field:ident : $name_field_tt:tt) => {
+    ($(#[doc = $docs:expr])* $name:ident => $name_field:ident : $name_field_tt:tt) => {
         paste::item! {
             calculated_doc!{
             #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n", api_url!($name))]

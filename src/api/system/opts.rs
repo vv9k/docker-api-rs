@@ -30,17 +30,19 @@ pub enum EventFilterType {
     Daemon,
 }
 
-fn event_filter_type_to_string(filter: EventFilterType) -> &'static str {
-    match filter {
-        EventFilterType::Container => "container",
-        EventFilterType::Image => "image",
-        EventFilterType::Volume => "volume",
-        EventFilterType::Network => "network",
-        EventFilterType::Daemon => "daemon",
+impl AsRef<str> for EventFilterType {
+    fn as_ref(&self) -> &str {
+        match &self {
+            EventFilterType::Container => "container",
+            EventFilterType::Image => "image",
+            EventFilterType::Volume => "volume",
+            EventFilterType::Network => "network",
+            EventFilterType::Daemon => "daemon",
+        }
     }
 }
 
-/// Filter Opts for image listings
+/// An enumartion used to filter system events.
 pub enum EventFilter {
     Container(String),
     Event(String),
@@ -52,8 +54,8 @@ pub enum EventFilter {
     Daemon(String),
 }
 
-/// Builder interface for `EventOpts`
 #[derive(Default)]
+/// Builder interface for [`EventOpts`](EventOpts).
 pub struct EventsOptsBuilder {
     params: HashMap<&'static str, String>,
     events: Vec<String>,
@@ -103,6 +105,7 @@ impl EventsOptsBuilder {
         self
     }
 
+    /// Filter the events by a list of event filters.
     pub fn filter(&mut self, filters: Vec<EventFilter>) -> &mut Self {
         let mut params = HashMap::new();
         for f in filters {
@@ -136,8 +139,7 @@ impl EventsOptsBuilder {
                     params.insert("daemon", self.daemons.clone())
                 }
                 EventFilter::Type(n) => {
-                    let event_type = event_filter_type_to_string(n).to_string();
-                    self.types.push(event_type);
+                    self.types.push(n.as_ref().to_string());
                     params.insert("type", self.types.clone())
                 }
             };
@@ -149,6 +151,7 @@ impl EventsOptsBuilder {
         self
     }
 
+    /// Build the final event options.
     pub fn build(&self) -> EventsOpts {
         EventsOpts {
             params: self.params.clone(),

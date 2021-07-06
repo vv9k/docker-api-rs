@@ -5,7 +5,11 @@ use std::{collections::HashMap, convert::AsRef};
 use serde::Serialize;
 use serde_json::{json, Value};
 
-impl_url_opts_builder!(derives = Default | "Options for filtering networks list results" NetworkList);
+impl_url_opts_builder!(
+    derives = Default
+        | /// Options for filtering networks list results"
+        NetworkList
+);
 // TODO: implement `filters` field on network list
 
 /// Used for [`NetworkFilter::Scope`](NetworkFilter::Scope).

@@ -163,26 +163,26 @@ impl Default for PullOptsBuilder {
 
 impl PullOptsBuilder {
     impl_str_field!(
-    " Name of the image to pull. The name may include a tag or digest."
-    "This parameter may only be used when pulling an image."
-    "If an untagged value is provided and no `tag` is provided, _all_"
-    "tags will be pulled"
-    "The pull is cancelled if the HTTP connection is closed."
+    /// Name of the image to pull. The name may include a tag or digest.
+    /// This parameter may only be used when pulling an image.
+    /// If an untagged value is provided and no `tag` is provided, _all_
+    /// tags will be pulled
+    /// The pull is cancelled if the HTTP connection is closed.
     image: I => "fromImage");
 
     impl_str_field!(src: S => "fromSrc");
 
     impl_str_field!(
-    "Repository name given to an image when it is imported. The repo may include a tag."
-    "This parameter may only be used when importing an image."
-    ""
-    "By default a `latest` tag is added when calling"
-    "[PullOptsBuilder::default](PullOptsBuilder::default]."
+    /// Repository name given to an image when it is imported. The repo may include a tag.
+    /// This parameter may only be used when importing an image.
+    /// 
+    /// By default a `latest` tag is added when calling
+    /// [PullOptsBuilder::default](PullOptsBuilder::default).
     repo: S => "repo");
 
     impl_str_field!(
-    "Tag or digest. If empty when pulling an image,"
-    "this causes all tags for the given image to be pulled."
+    /// Tag or digest. If empty when pulling an image,
+    /// this causes all tags for the given image to be pulled.
     tag: T => "tag");
 
     pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
@@ -244,64 +244,109 @@ impl BuildOptsBuilder {
         }
     }
 
-    impl_url_str_field!("set the name of the docker file. defaults to `DockerFile`" dockerfile: P => "dockerfile");
+    impl_url_str_field!(
+        /// Set the name of the docker file. defaults to `DockerFile`.
+        dockerfile: P => "dockerfile"
+    );
 
-    impl_url_str_field!("tag this image with a name after building it" tag: T => "t");
+    impl_url_str_field!(
+        /// Tag this image with a name after building it.
+        tag: T => "t"
+    );
 
-    impl_url_str_field!("Extra hosts to add to /etc/hosts." extra_hosts: H => "extrahosts");
+    impl_url_str_field!(
+        /// Extra hosts to add to /etc/hosts.
+        extra_hosts: H => "extrahosts"
+    );
 
     impl_url_str_field!(remote: R => "remote");
 
-    impl_url_bool_field!("Suppress verbose build output." quiet => "q");
+    impl_url_bool_field!(
+        /// Suppress verbose build output.
+        quiet => "q"
+    );
 
-    impl_url_bool_field!("Don't use the image cache when building image." nocahe => "nocache");
+    impl_url_bool_field!(
+        /// Don't use the image cache when building image.
+        nocahe => "nocache"
+    );
 
-    impl_url_str_field!("Attempt to pull the image even if an older image exists locally."
-                        pull: I => "pull");
+    impl_url_str_field!(
+        /// Attempt to pull the image even if an older image exists locally.
+        pull: I => "pull"
+    );
 
     impl_url_bool_field!(rm => "rm");
 
     impl_url_bool_field!(forcerm => "forcerm");
 
-    impl_url_field!("Set memory limit for build." memory: usize => "memory");
-
-    impl_url_field!("Total memory (memory + swap). Set as -1 to disable swap." memswap: usize => "memswap");
-
-    impl_url_field!("CPU shares (relative weight)." cpu_shares: usize => "cpushares");
-
-    impl_url_str_field!("CPUs in which to allow execution (eg. `0-3`, `0,1`)" cpu_set_cpus: C => "cpusetcpus");
-
-    impl_url_field!("The length of a CPU period in microseconds." cpu_period: usize => "cpuperiod");
+    impl_url_field!(
+        /// Set memory limit for build.
+        memory: usize => "memory"
+    );
 
     impl_url_field!(
-        "Microseconds of CPU time that the container can get in a CPU period."
+        /// Total memory (memory + swap). Set as -1 to disable swap.
+        memswap: usize => "memswap"
+    );
+
+    impl_url_field!(
+        /// CPU shares (relative weight).
+        cpu_shares: usize => "cpushares"
+    );
+
+    impl_url_str_field!(
+        /// CPUs in which to allow execution (eg. `0-3`, `0,1`)
+        cpu_set_cpus: C => "cpusetcpus"
+    );
+
+    impl_url_field!(
+        /// The length of a CPU period in microseconds.
+        cpu_period: usize => "cpuperiod"
+    );
+
+    impl_url_field!(
+        /// Microseconds of CPU time that the container can get in a CPU period.
         cpu_quota: usize => "cpuquota"
     );
 
     // TODO: buildargs
 
     impl_url_field!(
-        "Size of /dev/shm in bytes. The size must be greater than 0. If omitted the system uses 64MB."
+        /// Size of /dev/shm in bytes. The size must be greater than 0. If omitted the system uses 64MB.
         shm_size: usize => "shmsize"
     );
 
     impl_url_bool_field!(
-        "Squash the resulting images layers into a single layer. (Experimental release only.)"
+        /// Squash the resulting images layers into a single layer. (Experimental release only.)
         squash => "squash"
     );
 
+    // TODO: use an enum?
     impl_url_str_field!(
-        "`bridge`, `host`, `none`, `container:<name|id>`, or a custom network name."
-        network_mode: T => "networkmode"
+        /// bridge`, `host`, `none`, `container:<name|id>`, or a custom network name.
+        network_mode: M => "networkmode"
     );
 
-    impl_url_str_field!("Platform in the format os[/arch[/variant]]." platform: P => "platform");
+    impl_url_str_field!(
+        /// Platform in the format os[/arch[/variant]].
+        platform: P => "platform"
+    );
 
-    impl_url_str_field!("Target build stage." target: T => "target");
+    impl_url_str_field!(
+        /// Target build stage.
+        target: T => "target"
+    );
 
-    impl_url_str_field!("BuildKit output configuration." outputs: C => "outputs");
+    impl_url_str_field!(
+        /// BuildKit output configuration.
+        outputs: C => "outputs"
+    );
 
-    impl_map_field!(url "Add labels to this image." labels: L => "labels");
+    impl_map_field!(url
+        /// Add labels to this image.
+        labels: L => "labels"
+    );
 
     pub fn build(&self) -> BuildOpts {
         BuildOpts {
@@ -396,11 +441,11 @@ impl_url_opts_builder!(derives = Default | ImageList);
 
 impl ImageListOptsBuilder {
     impl_url_bool_field!(
-        "Show all images. Only images from a final layer (no children) are shown by default."
+        /// Show all images. Only images from a final layer (no children) are shown by default.
         all => "all"
     );
     impl_url_bool_field!(
-        "Show digest information as a RepoDigests field on each image."
+        /// Show digest information as a RepoDigests field on each image.
         digests => "digests"
     );
     impl_filter_func!(
@@ -413,10 +458,13 @@ impl_url_opts_builder!(derives = Default | RmImage);
 
 impl RmImageOptsBuilder {
     impl_url_bool_field!(
-        "Remove the image even if it is being used by stopped containers or has other tags."
+        /// Remove the image even if it is being used by stopped containers or has other tags.
         force => "force"
     );
-    impl_url_bool_field!("Do not delete untagged parent images." noprune => "noprune");
+    impl_url_bool_field!(
+        /// Do not delete untagged parent images.
+        noprune => "noprune"
+    );
 }
 
 impl_url_opts_builder!(derives = Default | ImagePrune);

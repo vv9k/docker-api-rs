@@ -19,5 +19,8 @@ impl Filter for PluginFilter {
 }
 
 impl PluginListOptsBuilder {
-    impl_filter_func!(PluginFilter);
+    impl_filter_func!(
+        /// Filter listed plugins by the variants of the enum.
+        PluginFilter
+    );
 }

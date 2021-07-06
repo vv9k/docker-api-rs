@@ -130,13 +130,19 @@ impl ContainerListOptsBuilder {
         ContainerFilter
     );
 
-    impl_url_bool_field!("If set to true all containers will be returned" all => "all");
+    impl_url_bool_field!(
+        /// If set to true all containers will be returned
+        all => "all"
+    );
 
     impl_url_str_field!(since: S => "since");
 
     impl_url_str_field!(before: B => "before");
 
-    impl_url_bool_field!("If set to true the sizes of the containers will be returned" sized => "size");
+    impl_url_bool_field!(
+        /// If set to true the sizes of the containers will be returned
+        sized => "size"
+    );
 }
 
 /// Interface for building a new docker container from an existing image
@@ -311,12 +317,12 @@ impl ContainerOptsBuilder {
     }
 
     impl_str_field!(
-        "Specify the working dir (corresponds to the `-w` docker cli argument)"
+        /// Specify the working dir (corresponds to the `-w` docker cli argument)
         working_dir: W => "WorkingDir"
     );
 
     impl_vec_field!(
-        "Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`"
+        /// Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`
         volumes: V => "HostConfig.Binds"
     );
 
@@ -325,15 +331,15 @@ impl ContainerOptsBuilder {
     impl_field!(memory: u64 => "HostConfig.Memory");
 
     impl_field!(
-        "Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap."
+        /// Total memory limit (memory + swap) in bytes. Set to -1 (default) to enable unlimited swap.
         memory_swap: i64 => "HostConfig.MemorySwap"
     );
 
     impl_field!(
-        "CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit."
-        ""
-        "For example, setting `nano_cpus` to `500_000_000` results in the container being allocated"
-        "50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs."
+        /// CPU quota in units of 10<sup>-9</sup> CPUs. Set to 0 (default) for there to be no limit.
+        ///
+        /// For example, setting `nano_cpus` to `500_000_000` results in the container being allocated
+        /// 50% of a single CPU, while `2_000_000_000` results in the container being allocated 2 CPUs.
         nano_cpus: u64 => "HostConfig.NanoCpus"
     );
 
@@ -345,8 +351,7 @@ impl ContainerOptsBuilder {
     }
 
     impl_field!(
-    "Sets an integer value representing the container's relative CPU weight versus other"
-    "containers."
+    /// Sets an integer value representing the container's relative CPU weight versus other containers.
     cpu_shares: u32 => "HostConfig.CpuShares");
 
     impl_map_field!(json labels: L => "Labels");
@@ -359,15 +364,15 @@ impl ContainerOptsBuilder {
     }
 
     impl_field!(
-    "Whether to attach to `stdout`."
+    /// Whether to attach to `stdout`.
     attach_stdout: bool => "AttachStdout");
 
     impl_field!(
-    "Whether to attach to `stderr`."
+    /// Whether to attach to `stderr`.
     attach_stderr: bool => "AttachStderr");
 
     impl_field!(
-    "Whether standard streams should be attached to a TTY."
+    /// Whether standard streams should be attached to a TTY.
     tty: bool => "Tty");
 
     impl_vec_field!(extra_hosts: H => "HostConfig.ExtraHosts");
@@ -406,15 +411,15 @@ impl ContainerOptsBuilder {
     impl_field!(auto_remove: bool => "HostConfig.AutoRemove");
 
     impl_str_field!(
-    "Signal to stop a container as a string. Default is \"SIGTERM\""
+    /// Signal to stop a container as a string. Default is \"SIGTERM\"
     stop_signal: S => "StopSignal");
 
     impl_field!(
-    "Signal to stop a container as an integer. Default is 15 (SIGTERM)."
+    /// Signal to stop a container as an integer. Default is 15 (SIGTERM).
     stop_signal_num: u64 => "StopSignal");
 
     impl_field!(
-    "Timeout to stop a container. Only seconds are counted. Default is 10s"
+    /// Timeout to stop a container. Only seconds are counted. Default is 10s
     stop_timeout: Duration => "StopTimeout");
 
     impl_str_field!(userns_mode: M => "HostConfig.UsernsMode");
@@ -434,11 +439,20 @@ impl ContainerOptsBuilder {
 impl_url_opts_builder!(derives = Default | RmContainer);
 
 impl RmContainerOptsBuilder {
-    impl_url_bool_field!("If the container is running, kill it before removing it." force => "force");
+    impl_url_bool_field!(
+        /// If the container is running, kill it before removing it.
+        force => "force"
+    );
 
-    impl_url_bool_field!("Remove anonymous volumes associated with the container." volumes => "v");
+    impl_url_bool_field!(
+        /// Remove anonymous volumes associated with the container.
+        volumes => "v"
+    );
 
-    impl_url_bool_field!("Remove the specified link associated with the container." link => "link");
+    impl_url_bool_field!(
+        /// Remove the specified link associated with the container.
+        link => "link"
+    );
 }
 
 impl_url_opts_builder!(derives = Default | ContainerPrune);

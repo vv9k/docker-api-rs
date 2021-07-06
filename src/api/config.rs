@@ -118,9 +118,13 @@ pub mod opts {
     impl_url_opts_builder!(ConfigList);
 
     pub enum ConfigFilter {
+        /// The ID of the config.
         Id(String),
+        /// Label in the form of `label=key`
         LabelKey(String),
-        LabelKeyVal(String, String),
+        /// Label in the form of `label=key=val`
+        Label(String, String),
+        /// The name of the config.
         Name(String),
         Names(String),
     }
@@ -131,7 +135,7 @@ pub mod opts {
             match &self {
                 Id(id) => ("id", id.to_owned()),
                 LabelKey(label) => ("label", label.to_owned()),
-                LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+                Label(key, val) => ("label", format!("{}={}", key, val)),
                 Name(name) => ("name", name.to_owned()),
                 Names(names) => ("names", names.to_owned()),
             }
@@ -139,7 +143,10 @@ pub mod opts {
     }
 
     impl ConfigListOptsBuilder {
-        impl_filter_func!(ConfigFilter);
+        impl_filter_func!(
+            /// Filter listed configs by variants of the enum.
+            ConfigFilter
+        );
     }
 }
 

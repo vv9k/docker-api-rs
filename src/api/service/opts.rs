@@ -37,7 +37,7 @@ impl ServiceListOptsBuilder {
     impl_filter_func!(ServiceFilter);
 
     impl_url_bool_field!(
-        "Include service status, with count of running and desired tasks."
+        /// Include service status, with count of running and desired tasks.
         status => "status"
     );
 }

@@ -1,15 +1,30 @@
 impl_url_opts_builder!(Logs);
 
 impl LogsOptsBuilder {
-    impl_url_bool_field!("Keep connection after returning logs." follow => "follow");
+    impl_url_bool_field!(
+        /// Keep connection after returning logs.
+        follow => "follow"
+    );
 
-    impl_url_bool_field!("Return logs from `stdout`." stdout => "stdout");
+    impl_url_bool_field!(
+        /// Return logs from `stdout`.
+        stdout => "stdout"
+    );
 
-    impl_url_bool_field!("Return logs from `stderr`." stderr => "stderr");
+    impl_url_bool_field!(
+        /// Return logs from `stderr`.
+        stderr => "stderr"
+    );
 
-    impl_url_bool_field!("Add timestamps to every log line." timestamps => "timestamps");
+    impl_url_bool_field!(
+        /// Add timestamps to every log line.
+        timestamps => "timestamps"
+    );
 
-    impl_url_field!("Only return this number of log lines from the end of logs" n_lines: usize => "tail");
+    impl_url_field!(
+        /// Only return this number of log lines from the end of logs
+        n_lines: usize => "tail"
+    );
 
     /// Return all log lines.
     pub fn all(&mut self) -> &mut Self {

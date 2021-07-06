@@ -124,9 +124,13 @@ pub mod opts {
     impl_url_opts_builder!(SecretList);
 
     pub enum SecretFilter {
+        /// The ID of the secret.
         Id(String),
+        /// Label in the form of `label=key`
         LabelKey(String),
-        LabelKeyVal(String, String),
+        /// Label in the form of `label=key=val`
+        Label(String, String),
+        /// The name of the secret.
         Name(String),
         Names(String),
     }
@@ -137,7 +141,7 @@ pub mod opts {
             match &self {
                 Id(id) => ("id", id.to_owned()),
                 LabelKey(label) => ("label", label.to_owned()),
-                LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
+                Label(key, val) => ("label", format!("{}={}", key, val)),
                 Name(name) => ("name", name.to_owned()),
                 Names(names) => ("names", names.to_owned()),
             }
@@ -145,7 +149,10 @@ pub mod opts {
     }
 
     impl SecretListOptsBuilder {
-        impl_filter_func!(SecretFilter);
+        impl_filter_func!(
+            /// Filter the list of filters by one of the variants of the enum.
+            SecretFilter
+        );
     }
 }
 
