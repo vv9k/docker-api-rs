@@ -25,7 +25,7 @@ pub type DeleteStatus = Vec<Status>;
 impl<'docker> Image<'docker> {
     impl_api_ep! {img: Image, resp
         Inspect -> &format!("/images/{}/json", img.name), Details
-        DeleteWithOpts -> &format!("/images/{}", img.name), DeleteStatus
+        DeleteWithOpts -> &format!("/images/{}", img.name), DeleteStatus, delete_json
     }
 
     api_doc! { Image => History

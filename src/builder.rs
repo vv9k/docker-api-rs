@@ -444,6 +444,11 @@ macro_rules! impl_api_ep {
     (
         DeleteWithOpts $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt $(,$extra:expr)*
     ) => {
+        impl_api_ep! { DeleteWithOpts $it: $base -> $resp $ep, $ret => $($extra)* }
+    };
+    (
+        DeleteWithOpts $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:tt => $fn:expr
+    ) => {
         paste::item! {
         api_doc! { $base => Delete
         #[doc = concat!("Delete this ", stringify!($base), ".")]
@@ -452,7 +457,7 @@ macro_rules! impl_api_ep {
         pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<[< $ret >]> {
             let $it = self;
             let ep = crate::util::url::construct_ep($ep, opts.serialize());
-            self.docker.delete_json(ep.as_ref()).await
+            self.docker.$fn(ep.as_ref()).await
         }}
         }
         paste::item! {
@@ -462,7 +467,7 @@ macro_rules! impl_api_ep {
         |
         pub async fn delete(&self) -> Result<[< $ret >]> {
             let $it = self;
-            self.docker.delete_json($ep).await
+            self.docker.$fn($ep).await
         }}
         }
     };

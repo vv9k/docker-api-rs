@@ -22,13 +22,11 @@ use crate::{
 
 impl_api_ty!(Container => id: I);
 
-type Void = ();
-
 impl<'docker> Container<'docker> {
     impl_api_ep! {container: Container, resp
         Inspect -> &format!("/containers/{}/json", container.id)
         Logs -> &format!("/containers/{}/logs", container.id)
-        DeleteWithOpts -> &format!("/containers/{}", container.id), Void
+        DeleteWithOpts -> &format!("/containers/{}", container.id), String, delete
     }
 
     api_doc! { Container => Top

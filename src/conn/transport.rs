@@ -234,6 +234,11 @@ impl Transport {
         B: Into<Body>,
     {
         let response = self.request(method, endpoint, body, headers).await?;
+        log::trace!(
+            "got response {} {:?}",
+            response.status(),
+            response.headers()
+        );
 
         let status = response.status();
 
@@ -349,6 +354,7 @@ impl Transport {
 
     /// Send the given request to the docker daemon and return a Future of the response.
     async fn send_request(&self, req: Request<Body>) -> Result<Response<Body>> {
+        log::trace!("sending request {} {}", req.method(), req.uri());
         match self {
             Transport::Tcp { ref client, .. } => client.request(req),
             #[cfg(feature = "tls")]

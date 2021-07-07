@@ -305,6 +305,7 @@ impl Docker {
     {
         self.stream_json_post(endpoint, body, headers)
             .and_then(|chunk| async move {
+                trace!("got chunk {:?}", chunk);
                 let stream = futures_util::stream::iter(
                     serde_json::Deserializer::from_slice(&chunk)
                         .into_iter()

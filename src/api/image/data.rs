@@ -72,9 +72,9 @@ pub struct ImageRootFs {
 #[serde(rename_all = "PascalCase")]
 pub struct ImageMetadata {
     #[cfg(feature = "chrono")]
-    pub last_tag_timed: DateTime<Utc>,
+    pub last_tag_timed: Option<DateTime<Utc>>,
     #[cfg(not(feature = "chrono"))]
-    pub last_tag_timed: String,
+    pub last_tag_timed: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

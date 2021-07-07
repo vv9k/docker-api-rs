@@ -8,6 +8,9 @@
 - Add missing fields to `ContainerConnectionOptsBuilder`
 - Rename `Mount` to `MountPoint`, add `Mount` struct  
 - Add missing fields to `TaskSpec`
+- Fix types on `ContainerConfig`, fix deserializing `ContainerConfig::exposed_ports`
+- Add logging on transport for easier debugging
+- Fix delete endpoints from failing to deserialize the return type
 
 # 0.3.3
 - Fix return type of `Image::inspect`

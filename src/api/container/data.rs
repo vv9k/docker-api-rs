@@ -74,10 +74,9 @@ fn deserialize_exposed_ports<'de, D>(deserializer: D) -> Result<Vec<PublishPort>
 where
     D: serde::Deserializer<'de>,
 {
+    let port_map = HashMap::<String, serde_json::Value>::deserialize(deserializer)?;
+
     let mut ports = Vec::new();
-    let port_map = HashMap::<String, serde_json::Value>::deserialize(deserializer)
-        .ok()
-        .unwrap_or_default(); // optional
     for (port, _) in port_map {
         ports.push(PublishPort::from_str(port.as_str()).map_err(serde::de::Error::custom)?);
     }
@@ -95,6 +94,7 @@ pub struct ContainerConfig {
     pub attach_stdout: bool,
     pub attach_stderr: bool,
     #[serde(deserialize_with = "deserialize_exposed_ports")]
+    #[serde(default)]
     pub exposed_ports: Vec<PublishPort>,
     pub tty: bool,
     pub open_stdin: bool,
@@ -104,13 +104,13 @@ pub struct ContainerConfig {
     pub healthcheck: Option<HealthConfig>,
     pub args_escaped: Option<bool>,
     pub image: String,
-    pub volumes: VolumesMap,
+    pub volumes: Option<VolumesMap>,
     pub working_dir: String,
-    pub entrypoint: Vec<String>,
+    pub entrypoint: Option<Vec<String>>,
     pub network_disabled: Option<bool>,
     pub mac_address: Option<String>,
-    pub on_build: Vec<String>,
-    pub labels: Labels,
+    pub on_build: Option<Vec<String>>,
+    pub labels: Option<Labels>,
     pub stop_signal: Option<String>,
     pub stop_timeout: Option<isize>,
     pub shell: Option<Vec<String>>,
