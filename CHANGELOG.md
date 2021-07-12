@@ -1,4 +1,4 @@
-#
+# 0.4.0
 - Fix list endpoints
 - Add ability to create a image with labels
 - Add lots of missing filter variants and document them
