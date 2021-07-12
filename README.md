@@ -37,7 +37,15 @@ Swarm endpoints include:
  - Plugins
 
 ## SSL Connection
+
 To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
+
+## Default features
+
+By default only `chrono` feature is enabled. To disable it use:
+```toml
+docker-api = { version = "0.4", default-features = false }
+```
 
 ## Usage
 
