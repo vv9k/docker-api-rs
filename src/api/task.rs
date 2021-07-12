@@ -21,8 +21,8 @@ impl<'docker> Tasks<'docker> {
 
 pub mod data {
     use crate::api::{
-        Driver, HealthConfig, Isolation, Labels, Mount, NetworkAttachmentConfig, ObjectVersion,
-        Platform, ResourceObject, Sysctls, Ulimit,
+        ConfigReference, Driver, HealthConfig, Isolation, Labels, Mount, NetworkAttachmentConfig,
+        ObjectVersion, Platform, ResourceObject, SecretReference, Sysctls, Ulimit,
     };
     use serde::{Deserialize, Serialize};
 
@@ -214,7 +214,8 @@ pub mod data {
         pub hosts: Option<Vec<String>>,
         #[serde(rename = "DNSConfig")]
         pub dns_config: Option<DnsConfig>,
-        // TODO: secrets, configs
+        pub configs: Option<Vec<ConfigReference>>,
+        pub secrets: Option<Vec<SecretReference>>,
         pub isolation: Option<Isolation>,
         pub init: Option<bool>,
         pub sysctls: Option<Sysctls>,

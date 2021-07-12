@@ -1,7 +1,8 @@
-use crate::api::ObjectVersion;
+use crate::api::{ContainerSpec, ObjectVersion, PluginSpec, TaskSpec};
 
 use serde::{Deserialize, Serialize};
 
+use crate::task::NetworkAttachmentSpec;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 
@@ -99,11 +100,6 @@ pub struct ServiceSpec {
     pub networks: Option<Vec<NetworkAttachmentConfig>>,
     pub endpoint_spec: Option<EndpointSpec>,
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-// #TODO: Add missing fields...
-pub struct TaskSpec {}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]

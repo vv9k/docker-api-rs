@@ -108,6 +108,27 @@ pub mod data {
         #[serde(rename = "Id")]
         pub id: String,
     }
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct ConfigReference {
+        pub file: Option<ConfigReferenceFileTarget>,
+        pub runtime: Option<ConfigReferenceRuntimeTarget>,
+        #[serde(rename = "ConfigID")]
+        pub config_id: String,
+        pub config_name: String,
+    }
+
+    pub type ConfigReferenceRuntimeTarget = serde_json::Value;
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct ConfigReferenceFileTarget {
+        pub name: String,
+        pub uid: String,
+        pub gid: String,
+        pub mode: u32,
+    }
 }
 
 pub use data::*;

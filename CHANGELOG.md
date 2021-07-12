@@ -1,3 +1,6 @@
+#
+- Add missing `ContainerSpec` fields, use correct `TaskSpec` in `ServiceSpec`
+
 # 0.4.0
 - Fix list endpoints
 - Add ability to create a image with labels

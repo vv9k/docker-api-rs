@@ -114,6 +114,24 @@ pub mod data {
         #[serde(rename = "Id")]
         pub id: String,
     }
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SecretReference {
+        pub file: Option<SecretReferenceFileTarget>,
+        #[serde(rename = "SecretID")]
+        pub secret_id: String,
+        pub secret_name: String,
+    }
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SecretReferenceFileTarget {
+        pub name: String,
+        pub uid: String,
+        pub gid: String,
+        pub mode: u32,
+    }
 }
 
 pub use data::*;
