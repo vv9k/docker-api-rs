@@ -1,8 +1,7 @@
-use crate::api::{ContainerSpec, ObjectVersion, PluginSpec, TaskSpec};
+use crate::api::{ObjectVersion, TaskSpec};
 
 use serde::{Deserialize, Serialize};
 
-use crate::task::NetworkAttachmentSpec;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
 

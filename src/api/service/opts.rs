@@ -1,6 +1,8 @@
-use super::data::*;
 use crate::{
-    api::{Filter, RegistryAuth},
+    api::{
+        EndpointSpec, Filter, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig,
+        TaskSpec, UpdateConfig,
+    },
     Error, Result,
 };
 
