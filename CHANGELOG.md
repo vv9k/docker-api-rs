@@ -1,5 +1,6 @@
 #
 - Add missing `ContainerSpec` fields, use correct `TaskSpec` in `ServiceSpec`
+- Fix `ContainerConfig::exposed_ports` serialization
 
 # 0.4.0
 - Fix list endpoints

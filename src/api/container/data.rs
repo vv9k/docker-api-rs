@@ -10,6 +10,7 @@ use std::{
 use crate::util::datetime::datetime_from_unix_timestamp;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
+use serde::ser::SerializeMap;
 use serde_json::Value;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -84,6 +85,22 @@ where
     Ok(ports)
 }
 
+fn serialize_exposed_ports<S>(ports: &[PublishPort], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut map = serializer.serialize_map(Some(ports.len()))?;
+
+    for port in ports {
+        map.serialize_entry(
+            &port.to_string(),
+            &serde_json::Value::Object(serde_json::Map::new()),
+        )?;
+    }
+
+    map.end()
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContainerConfig {
@@ -94,6 +111,7 @@ pub struct ContainerConfig {
     pub attach_stdout: bool,
     pub attach_stderr: bool,
     #[serde(deserialize_with = "deserialize_exposed_ports")]
+    #[serde(serialize_with = "serialize_exposed_ports")]
     #[serde(default)]
     pub exposed_ports: Vec<PublishPort>,
     pub tty: bool,
