@@ -118,7 +118,7 @@ pub struct ContainerConfig {
     pub open_stdin: bool,
     pub stdin_once: bool,
     pub env: Vec<String>,
-    pub cmd: Vec<String>,
+    pub cmd: Option<Vec<String>>,
     pub healthcheck: Option<HealthConfig>,
     pub args_escaped: Option<bool>,
     pub image: String,
