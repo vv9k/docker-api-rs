@@ -1,7 +1,10 @@
-#
+# 0.5.1
+- Fix `ContainerConfig` desserialization (`cmd` field might be ommited from the response)
+
+# 0.5.0
 - Add missing `ContainerSpec` fields, use correct `TaskSpec` in `ServiceSpec`
 - Fix `ContainerConfig::exposed_ports` serialization
-- Fix `ContainerConfig` desserialization (`cmd` field might be ommited from the response)
+
 
 # 0.4.0
 - Fix list endpoints
