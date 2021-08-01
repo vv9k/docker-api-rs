@@ -110,14 +110,14 @@ pub mod tarball {
         {
             if fs::metadata(dir)?.is_dir() {
                 if bundle_dir {
-                    f(&dir)?;
+                    f(dir)?;
                 }
                 for entry in fs::read_dir(dir)? {
                     let entry = entry?;
                     if fs::metadata(entry.path())?.is_dir() {
                         bundle(&entry.path(), f, true)?;
                     } else {
-                        f(&entry.path().as_path())?;
+                        f(entry.path().as_path())?;
                     }
                 }
             }

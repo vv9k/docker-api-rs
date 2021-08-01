@@ -215,7 +215,7 @@ impl Docker {
             .await?;
         trace!("{}", raw_string);
 
-        Ok(serde_json::from_str::<T>(&&raw_string)?)
+        Ok(serde_json::from_str::<T>(&raw_string)?)
     }
 
     #[allow(dead_code)]
