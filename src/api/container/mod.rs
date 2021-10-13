@@ -13,6 +13,7 @@ use futures_util::{
 };
 use hyper::Body;
 
+use crate::util::url::construct_ep;
 use crate::{
     api::{Exec, ExecContainerOpts},
     conn::{Multiplexer as TtyMultiplexer, Payload, TtyChunk},
@@ -321,6 +322,19 @@ impl<'docker> Containers<'docker> {
     impl_api_ep! {__: Container, resp
         List -> "/containers/json"
         Prune ->  "/containers/prune"
-        Create -> "/containers/create", resp.id
     }
+
+    api_doc! { Containers => Create
+    /// Create a container
+    |
+    pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container<'docker>>
+    {
+        let ep = if let Some(name) = opts.name().as_ref() {
+            construct_ep("/containers/create", Some(encoded_pair("name", name)))
+        } else {
+            "/containers/create".to_owned()
+        };
+        self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
+        .map(|resp: ContainerCreateInfo| Container::new(self.docker, resp.id))
+    }}
 }

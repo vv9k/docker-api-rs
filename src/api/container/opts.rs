@@ -192,6 +192,10 @@ impl ContainerCreateOpts {
             insert(&mut key_string.split('.').peekable(), v, body)
         }
     }
+
+    pub(crate) fn name(&self) -> &Option<String> {
+        &self.name
+    }
 }
 
 #[derive(Default)]

@@ -1,3 +1,4 @@
+#![allow(clippy::suspicious_else_formatting)]
 mod common;
 use clap::Clap;
 use common::{new_docker, print_chunk};
