@@ -1,3 +1,6 @@
+# ...
+- `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
+
 # 0.5.1
 - Fix `ContainerConfig` desserialization (`cmd` field might be ommited from the response)
 

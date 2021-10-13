@@ -128,7 +128,7 @@ impl ContainerListOptsBuilder {
 /// Interface for building a new docker container from an existing image
 #[derive(Serialize, Debug)]
 pub struct ContainerCreateOpts {
-    pub name: Option<String>,
+    name: Option<String>,
     params: HashMap<&'static str, Value>,
 }
 
