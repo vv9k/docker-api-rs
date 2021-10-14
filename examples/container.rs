@@ -1,3 +1,4 @@
+#![allow(clippy::suspicious_else_formatting)]
 mod common;
 use clap::Clap;
 use common::{new_docker, print_chunk};
@@ -27,7 +28,12 @@ enum Cmd {
         remote_path: PathBuf,
     },
     /// Create a new container.
-    Create { image: String },
+    Create {
+        image: String,
+        #[clap(short, long)]
+        /// The name of the container to create.
+        name: Option<String>,
+    },
     /// Delete an existing container.
     Delete {
         id: String,
@@ -128,13 +134,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("Error: {}", e)
             }
         }
-        Cmd::Create { image } => {
+        Cmd::Create { image, name } => {
             use docker_api::api::ContainerCreateOpts;
-            match docker
-                .containers()
-                .create(&ContainerCreateOpts::builder(image).build())
-                .await
-            {
+            let opts = if let Some(name) = name {
+                ContainerCreateOpts::builder(image).name(name).build()
+            } else {
+                ContainerCreateOpts::builder(image).build()
+            };
+            match docker.containers().create(&opts).await {
                 Ok(info) => println!("{:?}", info),
                 Err(e) => eprintln!("Error: {}", e),
             }
