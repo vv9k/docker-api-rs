@@ -2,19 +2,19 @@
 mod common;
 
 #[cfg(feature = "swarm")]
-use clap::Clap;
+use clap::Parser;
 #[cfg(feature = "swarm")]
 use common::{new_docker, print_chunk};
 
 #[cfg(feature = "swarm")]
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct Opts {
     #[clap(subcommand)]
     subcmd: Cmd,
 }
 
 #[cfg(feature = "swarm")]
-#[derive(Clap)]
+#[derive(Parser)]
 enum Cmd {
     Delete {
         service: String,

@@ -1,17 +1,17 @@
 #![allow(clippy::suspicious_else_formatting)]
 mod common;
-use clap::Clap;
+use clap::Parser;
 use common::{new_docker, print_chunk};
 use futures::StreamExt;
 use std::path::PathBuf;
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     #[clap(subcommand)]
     subcmd: Cmd,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum Cmd {
     /// Attach to a running containers TTY.
     Attach { id: String },
@@ -30,9 +30,9 @@ enum Cmd {
     /// Create a new container.
     Create {
         image: String,
-        #[clap(short, long)]
+        #[clap(short, long = "name")] // for some reason naming field `name` makes clap error. Possibly a bug?
         /// The name of the container to create.
-        name: Option<String>,
+        nam: Option<String>,
     },
     /// Delete an existing container.
     Delete {
@@ -134,9 +134,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("Error: {}", e)
             }
         }
-        Cmd::Create { image, name } => {
+        Cmd::Create { image, nam } => {
             use docker_api::api::ContainerCreateOpts;
-            let opts = if let Some(name) = name {
+            let opts = if let Some(name) = nam {
                 ContainerCreateOpts::builder(image).name(name).build()
             } else {
                 ContainerCreateOpts::builder(image).build()

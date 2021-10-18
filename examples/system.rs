@@ -1,14 +1,14 @@
 mod common;
-use clap::Clap;
+use clap::Parser;
 use common::new_docker;
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     #[clap(subcommand)]
     subcmd: Cmd,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum Cmd {
     Info,
     Ping,
