@@ -33,8 +33,7 @@ pub struct ContainerInfo {
     pub status: String,
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
-    pub mounts: Option<Vec<Mount>>,
-    // TODO: review this fields
+    pub mounts: Vec<Mount>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
