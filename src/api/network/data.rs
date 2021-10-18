@@ -42,7 +42,7 @@ pub struct NetworkSettings {
     #[serde(rename = "GlobalIPv6Address")]
     pub global_ipv6_addr: String,
     #[serde(rename = "GlobalIPv6PrefixLen")]
-    pub global_ipv6_prefix_len: String,
+    pub global_ipv6_prefix_len: isize,
     #[serde(rename = "IPAddress")]
     pub ip_address: String,
     #[serde(rename = "IPPrefixLen")]
