@@ -308,9 +308,9 @@ pub enum HealthStatus {
 #[serde(rename_all = "PascalCase")]
 pub struct HealthcheckResult {
     #[cfg(feature = "chrono")]
-    pub started: DateTime<Utc>,
+    pub start: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
-    pub started: String,
+    pub start: String,
     #[cfg(feature = "chrono")]
     pub end: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
@@ -329,7 +329,8 @@ pub struct HostConfig {
     pub cpu_shares: Option<i64>,
     pub memory: Option<i64>,
     pub cgroup_parent: Option<String>,
-    pub blkio_weight_device: Option<Vec<ThrottleDevice>>,
+    pub blkio_weight: u16,
+    pub blkio_weight_device: Option<Vec<ThrottleWeightDevice>>,
     pub blkio_device_read_bps: Option<Vec<ThrottleDevice>>,
     pub blkio_device_write_bps: Option<Vec<ThrottleDevice>>,
     #[serde(rename = "BlkioDeviceReadIOps")]
@@ -343,8 +344,9 @@ pub struct HostConfig {
     pub cpuset_cpus: Option<String>,
     pub cpuset_mems: Option<String>,
     pub devices: Option<Vec<DeviceMapping>>,
-    pub device_cgroup_rules: Option<String>,
+    pub device_cgroup_rules: Option<Vec<String>>,
     pub device_requests: Option<Vec<DeviceRequest>>,
+    pub kernel_memory: i64,
     #[serde(rename = "KernelMemoryTCP")]
     pub kernel_memory_tcp: i64,
     pub memory_reservation: Option<i64>,
@@ -408,6 +410,13 @@ pub struct HostConfig {
 pub struct ThrottleDevice {
     pub path: String,
     pub rate: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ThrottleWeightDevice {
+    pub path: String,
+    pub weight: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

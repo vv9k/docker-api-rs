@@ -3,6 +3,8 @@
 - Use missing `name` parameter when creating a container [#6](https://github.com/vv9k/docker-api-rs/pull/6)
 - `NetworkSettings::global_ipv6_prefix_len` is now correctly a number
 - Fix return type of inspecting a container
+- Add new fields to `HostConfig` - `blkio_weight`, `blkio_weight_device`, `device_cgroup_rules`, `kernel_memory`
+- Fix name of `HealthcheckResult` field from `started` to `start`.
 
 # 0.5.1
 - Fix `ContainerConfig` desserialization (`cmd` field might be ommited from the response)
