@@ -1,15 +1,15 @@
 mod common;
-use clap::Clap;
+use clap::Parser;
 use common::new_docker;
 use docker_api::Exec;
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct Opts {
     #[clap(subcommand)]
     subcmd: Cmd,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum Cmd {
     /// Run a command in container and inspect it
     Inspect {

@@ -1,16 +1,16 @@
 mod common;
-use clap::Clap;
+use clap::Parser;
 use common::new_docker;
 use futures::StreamExt;
 use std::path::PathBuf;
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct Opts {
     #[clap(subcommand)]
     subcmd: Cmd,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum Cmd {
     /// Build an image.
     Build {
