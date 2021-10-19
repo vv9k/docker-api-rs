@@ -10,7 +10,7 @@ Add the following to your `Cargo.toml` file
 
 ```toml
 [dependencies]
-docker-api = "0.5"
+docker-api = "0.6"
 ```
 
 ## Supported API
@@ -24,7 +24,7 @@ Default endpoints include:
 
 To enable swarm endpoints add a `swarm` feature to `Cargo.toml` like so:
 ```toml
-docker-api = { version = "0.5", features = ["swarm"] }
+docker-api = { version = "0.6", features = ["swarm"] }
 ```
 
 Swarm endpoints include:
@@ -44,7 +44,7 @@ To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
 
 By default only `chrono` feature is enabled. To disable it use:
 ```toml
-docker-api = { version = "0.5", default-features = false }
+docker-api = { version = "0.6", default-features = false }
 ```
 
 ## Usage
