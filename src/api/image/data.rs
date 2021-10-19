@@ -142,18 +142,18 @@ pub struct ProgressDetail {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Descriptor {
-    media_type: String,
-    digest: String,
-    size: u64,
+    pub media_type: String,
+    pub digest: String,
+    pub size: u64,
     #[serde(rename = "URLs")]
-    urls: Vec<String>,
+    pub urls: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct DistributionInspectInfo {
-    descriptor: Descriptor,
-    platforms: Vec<serde_json::Value>,
+    pub descriptor: Descriptor,
+    pub platforms: Vec<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

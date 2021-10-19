@@ -1,3 +1,6 @@
+#
+- Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
+
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
 - Use missing `name` parameter when creating a container [#6](https://github.com/vv9k/docker-api-rs/pull/6)

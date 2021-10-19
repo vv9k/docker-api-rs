@@ -503,8 +503,8 @@ pub struct StorageStats {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PidsStats {
-    current: Option<u64>,
-    limit: Option<u64>,
+    pub current: Option<u64>,
+    pub limit: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
