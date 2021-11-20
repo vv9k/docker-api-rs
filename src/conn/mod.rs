@@ -6,6 +6,8 @@ pub(crate) mod tty;
 pub use transport::*;
 pub use tty::*;
 
+pub(crate) const AUTH_HEADER: &str = "X-Registry-Auth";
+
 use hyper::client::HttpConnector;
 
 #[cfg(feature = "tls")]

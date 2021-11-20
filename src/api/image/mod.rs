@@ -10,7 +10,7 @@ use std::io::Read;
 use futures_util::{stream::Stream, TryFutureExt, TryStreamExt};
 
 use crate::{
-    conn::{Headers, Payload},
+    conn::{Headers, Payload, AUTH_HEADER},
     util::{
         tarball,
         url::{append_query, construct_ep, encoded_pair, encoded_pairs},
@@ -69,7 +69,7 @@ impl<'docker> Image<'docker> {
         }
         let headers = opts
             .auth_header()
-            .map(|auth| Headers::single("X-Registry-Auth", auth))
+            .map(|auth| Headers::single(AUTH_HEADER, auth))
             .unwrap_or_else(Headers::default);
 
         self.docker
@@ -150,7 +150,7 @@ impl<'docker> Images<'docker> {
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
         let headers = opts
             .auth_header()
-            .map(|a| Headers::single("X-Registry-Auth", a));
+            .map(|a| Headers::single(AUTH_HEADER, a));
 
         Box::pin(self.docker.stream_post_into(
             construct_ep("/images/create", opts.serialize()),
