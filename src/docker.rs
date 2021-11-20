@@ -191,6 +191,20 @@ impl Docker {
             .await
     }
 
+    pub(crate) async fn post_headers<B>(
+        &self,
+        endpoint: &str,
+        body: Payload<B>,
+        headers: Headers,
+    ) -> Result<String>
+    where
+        B: Into<Body>,
+    {
+        self.transport
+            .request_string(Method::POST, endpoint, body, Some(headers))
+            .await
+    }
+
     pub(crate) async fn put<B>(&self, endpoint: &str, body: Payload<B>) -> Result<String>
     where
         B: Into<Body>,

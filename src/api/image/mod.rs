@@ -59,6 +59,25 @@ impl<'docker> Image<'docker> {
         self.docker.post(&ep, Payload::empty()).await.map(|_| ())
     }}
 
+    api_doc! { Image => Push
+    /// Push an image to registry.
+    |
+    pub async fn push(&self, opts: &ImagePushOpts) -> Result<()> {
+        let mut ep = format!("/images/{}/push", self.name);
+        if let Some(query) = opts.serialize() {
+            append_query(&mut ep, query);
+        }
+        let headers = opts
+            .auth_header()
+            .map(|auth| Headers::single("X-Registry-Auth", auth))
+            .unwrap_or_else(Headers::default);
+
+        self.docker
+            .post_headers(&ep, Payload::empty(), headers)
+            .await
+            .map(|_| ())
+    }}
+
     api_doc! { Distribution => Inspect
     /// Return image digest and platform information by contacting the registry.
     |
@@ -179,6 +198,14 @@ impl<'docker> Images<'docker> {
             }
             .try_flatten_stream(),
         )
+    }}
+
+    api_doc! { Image => Push
+    /// Push an image to registry.
+    |
+    pub async fn push(&self, name: impl Into<String>, opts: &ImagePushOpts) -> Result<()> {
+        let image = Image::new(&self.docker, name);
+        image.push(opts).await
     }}
 
     // api_doc! { Build => Prune

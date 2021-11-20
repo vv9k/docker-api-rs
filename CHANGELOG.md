@@ -1,5 +1,6 @@
 #
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
+- Add ability to push image to registry with `Image::push` or `Images::push`.
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.

@@ -552,6 +552,62 @@ impl ClearCacheOptsBuilder {
     );
 }
 
+pub struct ImagePushOpts {
+    auth: Option<RegistryAuth>,
+    params: HashMap<&'static str, String>,
+}
+
+impl ImagePushOpts {
+    pub fn builder() -> ImagePushOptsBuilder {
+        ImagePushOptsBuilder::default()
+    }
+
+    pub fn serialize(&self) -> Option<String> {
+        if self.params.is_empty() {
+            None
+        } else {
+            Some(encoded_pairs(self.params.iter()))
+        }
+    }
+
+    pub(crate) fn auth_header(&self) -> Option<String> {
+        self.auth.clone().map(|a| a.serialize())
+    }
+}
+
+pub struct ImagePushOptsBuilder {
+    auth: Option<RegistryAuth>,
+    params: HashMap<&'static str, String>,
+}
+
+impl Default for ImagePushOptsBuilder {
+    fn default() -> Self {
+        Self {
+            auth: None,
+            params: [("tag", "latest".into())].into(),
+        }
+    }
+}
+
+impl ImagePushOptsBuilder {
+    impl_url_str_field!(
+        /// The tag to associate with the image on the registry.
+        tag: T => "tag"
+    );
+
+    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
+        self.auth = Some(auth);
+        self
+    }
+
+    pub fn build(self) -> ImagePushOpts {
+        ImagePushOpts {
+            auth: self.auth,
+            params: self.params,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
