@@ -13,7 +13,7 @@ use crate::{
     conn::{Headers, Payload, AUTH_HEADER},
     util::{
         tarball,
-        url::{append_query, construct_ep, encoded_pair, encoded_pairs},
+        url::{construct_ep, encoded_pair, encoded_pairs},
     },
     Result,
 };
@@ -52,10 +52,7 @@ impl<'docker> Image<'docker> {
     /// Adds a tag to an image.
     |
     pub async fn tag(&self, opts: &TagOpts) -> Result<()> {
-        let mut ep = format!("/images/{}/tag", self.name);
-        if let Some(query) = opts.serialize() {
-            append_query(&mut ep, query);
-        }
+        let ep = construct_ep(format!("/images/{}/tag", self.name), opts.serialize());
         self.docker.post(&ep, Payload::empty()).await.map(|_| ())
     }}
 
@@ -63,10 +60,8 @@ impl<'docker> Image<'docker> {
     /// Push an image to registry.
     |
     pub async fn push(&self, opts: &ImagePushOpts) -> Result<()> {
-        let mut ep = format!("/images/{}/push", self.name);
-        if let Some(query) = opts.serialize() {
-            append_query(&mut ep, query);
-        }
+        let ep = construct_ep(format!("/images/{}/push", self.name), opts.serialize());
+
         let headers = opts
             .auth_header()
             .map(|auth| Headers::single(AUTH_HEADER, auth))
@@ -137,7 +132,7 @@ impl<'docker> Images<'docker> {
         T: AsRef<str>,
     {
         self.docker
-            .get_json(&format!("/images/search?{}", encoded_pair("term", term.as_ref())))
+            .get_json(&construct_ep("/images/search", Some(encoded_pair("term", term.as_ref()))))
             .await
     }}
 
@@ -204,7 +199,7 @@ impl<'docker> Images<'docker> {
     /// Push an image to registry.
     |
     pub async fn push(&self, name: impl Into<String>, opts: &ImagePushOpts) -> Result<()> {
-        let image = Image::new(&self.docker, name);
+        let image = Image::new(self.docker, name);
         image.push(opts).await
     }}
 
