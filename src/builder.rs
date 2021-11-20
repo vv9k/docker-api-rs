@@ -536,7 +536,7 @@ macro_rules! impl_api_ep {
         pub fn logs(
             &self,
             opts: &crate::api::LogsOpts
-        ) -> impl futures_util::Stream<Item = crate::Result<crate::conn::TtyChunk>> + Unpin + 'docker {
+        ) -> impl futures_util::stream::Stream<Item = crate::Result<crate::conn::TtyChunk>> + Unpin + 'docker {
             let $it = self;
             let ep = crate::util::url::construct_ep($ep, opts.serialize());
 

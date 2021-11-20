@@ -3,9 +3,9 @@
 use crate::{Error, Result};
 
 use futures_util::{
+    future::TryFutureExt,
     io::{AsyncRead, AsyncWrite},
-    stream::{self, Stream},
-    StreamExt, TryFutureExt,
+    stream::{self, Stream, StreamExt},
 };
 use hyper::{
     body::Bytes,

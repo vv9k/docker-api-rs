@@ -6,7 +6,7 @@ pub use opts::*;
 
 use crate::{util::url::construct_ep, Docker, Error, Result};
 
-use futures_util::{Stream, TryStreamExt};
+use futures_util::stream::{Stream, TryStreamExt};
 
 use std::{convert::TryFrom, io};
 

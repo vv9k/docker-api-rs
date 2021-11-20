@@ -9,7 +9,7 @@ use std::{io, path::Path, str, time::Duration};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
-    Stream, TryStreamExt,
+    stream::{Stream, TryStreamExt},
 };
 use hyper::Body;
 

@@ -17,8 +17,7 @@ use crate::conn::get_unix_connector;
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
-    stream::Stream,
-    TryStreamExt,
+    stream::{TryStreamExt,Stream},
 };
 use hyper::{body::Bytes, Body, Client, Method, Response};
 use log::trace;
