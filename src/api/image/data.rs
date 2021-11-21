@@ -89,7 +89,7 @@ pub struct History {
     pub created_by: String,
     pub comment: String,
     pub size: i64,
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
