@@ -567,6 +567,7 @@ pub struct CpuStats {
     pub cpu_usage: CpuUsage,
     pub system_cpu_usage: Option<u64>,
     pub throttling_data: Option<ThrottlingData>,
+    pub online_cpus: Option<u32>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
