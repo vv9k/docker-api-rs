@@ -205,17 +205,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Cmd::Logs { id, stdout, stderr } => {
             use docker_api::api::LogsOpts;
-            let mut logs_stream = docker
-                .containers()
-                .get(&id)
-                .logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
+            let container = docker.containers().get(&id);
+            let logs_stream =
+                container.logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
 
-            while let Some(log_result) = logs_stream.next().await {
-                match log_result {
-                    Ok(chunk) => print_chunk(chunk),
-                    Err(e) => eprintln!("Error: {}", e),
-                }
-            }
+            let logs: Vec<_> = logs_stream
+                .map(|chunk| match chunk {
+                    Ok(chunk) => chunk.to_vec(),
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                        vec![]
+                    }
+                })
+                .collect::<Vec<_>>()
+                .await
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>();
+            print!("{}", String::from_utf8_lossy(&logs));
         }
         Cmd::Prune { until } => {
             use docker_api::api::{ContainerPruneFilter, ContainerPruneOpts};

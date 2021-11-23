@@ -4,7 +4,7 @@ mod common;
 #[cfg(feature = "swarm")]
 use clap::Parser;
 #[cfg(feature = "swarm")]
-use common::{new_docker, print_chunk};
+use common::new_docker;
 
 #[cfg(feature = "swarm")]
 #[derive(Parser)]
@@ -83,12 +83,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .get(&service)
                 .logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
 
-            while let Some(log_result) = logs_stream.next().await {
-                match log_result {
-                    Ok(chunk) => print_chunk(chunk),
-                    Err(e) => eprintln!("Error: {}", e),
-                }
-            }
+            let logs: Vec<_> = logs_stream
+                .map(|chunk| match chunk {
+                    Ok(chunk) => chunk.to_vec(),
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                        vec![]
+                    }
+                })
+                .collect::<Vec<_>>()
+                .await
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>();
+            print!("{}", String::from_utf8_lossy(&logs));
         }
     }
 
