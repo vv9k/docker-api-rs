@@ -490,7 +490,7 @@ pub struct Stats {
     pub precpu_stats: Option<CpuStats>,
     pub pids_stats: Option<PidsStats>,
     pub storage_stats: Option<StorageStats>,
-    pub network_stats: Option<HashMap<String, NetworkStats>>,
+    pub networks: Option<HashMap<String, NetworkStats>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -4,6 +4,7 @@
 - Add `online_cpus` field to `CpuStats`
 - Fix `Image::history` response deserialization
 - Fix `Container::logs` and `Service::logs` endpoints
+- Fix `Stats` field name from `network_stats` -> `networks`
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
