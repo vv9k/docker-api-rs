@@ -98,7 +98,7 @@ pub enum Status {
     Deleted(String),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 /// Represents a response chunk from Docker api when building, pulling or importing an image.
 pub enum ImageBuildChunk {
@@ -122,24 +122,24 @@ pub enum ImageBuildChunk {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Aux {
     #[serde(rename = "ID")]
     pub id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ErrorDetail {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ProgressDetail {
     pub current: Option<u64>,
     pub total: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Descriptor {
     pub media_type: String,
@@ -149,21 +149,21 @@ pub struct Descriptor {
     pub urls: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct DistributionInspectInfo {
     pub descriptor: Descriptor,
     pub platforms: Vec<serde_json::Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct ImagesPruneInfo {
     pub images_deleted: Vec<ImageDeleteItem>,
     pub space_reclaimed: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct ImageDeleteItem {
     pub untagged: String,
