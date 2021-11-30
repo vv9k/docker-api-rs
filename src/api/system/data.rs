@@ -98,6 +98,7 @@ pub struct Info {
     // TODO:
     //pub swarm: SwarmInfo,
     pub live_restore_enabled: bool,
+    #[serde(default)]
     pub isolation: Isolation,
     pub init_binary: String,
     pub containerd_commit: Commit,

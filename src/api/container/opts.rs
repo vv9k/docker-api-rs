@@ -35,9 +35,16 @@ impl AsRef<str> for Health {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Isolation {
+    #[serde(alias = "")]
     Default,
     Process,
     HyperV,
+}
+
+impl Default for Isolation {
+    fn default() -> Self {
+        Isolation::Default
+    }
 }
 
 impl AsRef<str> for Isolation {
