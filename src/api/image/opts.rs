@@ -62,7 +62,7 @@ pub struct RegistryAuthBuilder {
 
 impl RegistryAuthBuilder {
     /// The username used for authentication.
-    pub fn username<U>(&mut self, username: U) -> &mut Self
+    pub fn username<U>(mut self, username: U) -> Self
     where
         U: Into<String>,
     {
@@ -71,7 +71,7 @@ impl RegistryAuthBuilder {
     }
 
     /// The password used for authentication.
-    pub fn password<P>(&mut self, password: P) -> &mut Self
+    pub fn password<P>(mut self, password: P) -> Self
     where
         P: Into<String>,
     {
@@ -80,7 +80,7 @@ impl RegistryAuthBuilder {
     }
 
     /// The email addres used for authentication.
-    pub fn email<E>(&mut self, email: E) -> &mut Self
+    pub fn email<E>(mut self, email: E) -> Self
     where
         E: Into<String>,
     {
@@ -90,7 +90,7 @@ impl RegistryAuthBuilder {
 
     /// The server address of registry, should be a domain/IP without a protocol.
     /// Example: `10.92.0.1`, `docker.corp.local`
-    pub fn server_address<A>(&mut self, server_address: A) -> &mut Self
+    pub fn server_address<A>(mut self, server_address: A) -> Self
     where
         A: Into<String>,
     {
@@ -185,15 +185,15 @@ impl PullOptsBuilder {
     /// this causes all tags for the given image to be pulled.
     tag: T => "tag");
 
-    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
+    pub fn auth(mut self, auth: RegistryAuth) -> Self {
         self.auth = Some(auth);
         self
     }
 
-    pub fn build(&mut self) -> PullOpts {
+    pub fn build(self) -> PullOpts {
         PullOpts {
-            auth: self.auth.take(),
-            params: self.params.clone(),
+            auth: self.auth,
+            params: self.params,
         }
     }
 }
@@ -595,7 +595,7 @@ impl ImagePushOptsBuilder {
         tag: T => "tag"
     );
 
-    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
+    pub fn auth(mut self, auth: RegistryAuth) -> Self {
         self.auth = Some(auth);
         self
     }

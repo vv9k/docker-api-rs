@@ -306,7 +306,7 @@ impl ContainerOptsBuilder {
     }
 
     /// Set the name of the container.
-    pub fn name<N>(&mut self, name: N) -> &mut Self
+    pub fn name<N>(mut self, name: N) -> Self
     where
         N: Into<String>,
     {
@@ -315,13 +315,13 @@ impl ContainerOptsBuilder {
     }
 
     /// enable all exposed ports on the container to be mapped to random, available, ports on the host
-    pub fn publish_all_ports(&mut self) -> &mut Self {
+    pub fn publish_all_ports(mut self) -> Self {
         self.params
             .insert("HostConfig.PublishAllPorts", Value::Bool(true));
         self
     }
 
-    pub fn expose(&mut self, srcport: PublishPort, hostport: u32) -> &mut Self {
+    pub fn expose(mut self, srcport: PublishPort, hostport: u32) -> Self {
         let mut exposedport: HashMap<String, String> = HashMap::new();
         exposedport.insert("HostPort".to_string(), hostport.to_string());
 
@@ -356,7 +356,7 @@ impl ContainerOptsBuilder {
     }
 
     /// Publish a port in the container without assigning a port on the host
-    pub fn publish(&mut self, port: PublishPort) -> &mut Self {
+    pub fn publish(mut self, port: PublishPort) -> Self {
         /* The idea here is to go thought the 'old' port binds
          * and to apply them to the local 'exposedport_bindings' variable,
          * add the bind we want and replace the 'old' value */
@@ -415,7 +415,7 @@ impl ContainerOptsBuilder {
     /// CPU quota in units of CPUs. This is a wrapper around `nano_cpus` to do the unit conversion.
     ///
     /// See [`nano_cpus`](#method.nano_cpus).
-    pub fn cpus(&mut self, cpus: f64) -> &mut Self {
+    pub fn cpus(self, cpus: f64) -> Self {
         self.nano_cpus((1_000_000_000.0 * cpus) as u64)
     }
 
@@ -426,7 +426,7 @@ impl ContainerOptsBuilder {
     impl_map_field!(json labels: L => "Labels");
 
     /// Whether to attach to `stdin`.
-    pub fn attach_stdin(&mut self, attach: bool) -> &mut Self {
+    pub fn attach_stdin(mut self, attach: bool) -> Self {
         self.params.insert("AttachStdin", json!(attach));
         self.params.insert("OpenStdin", json!(attach));
         self
@@ -458,14 +458,14 @@ impl ContainerOptsBuilder {
 
     impl_vec_field!(capabilities: C => "HostConfig.CapAdd");
 
-    pub fn devices(&mut self, devices: Vec<Labels>) -> &mut Self {
+    pub fn devices(mut self, devices: Vec<Labels>) -> Self {
         self.params.insert("HostConfig.Devices", json!(devices));
         self
     }
 
     impl_str_field!(log_driver: L => "HostConfig.LogConfig.Type");
 
-    pub fn restart_policy(&mut self, name: &str, maximum_retry_count: u64) -> &mut Self {
+    pub fn restart_policy(mut self, name: &str, maximum_retry_count: u64) -> Self {
         self.params
             .insert("HostConfig.RestartPolicy.Name", json!(name));
         if name == "on-failure" {

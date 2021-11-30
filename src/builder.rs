@@ -4,7 +4,7 @@ macro_rules! impl_vec_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name  >]<[< $ty >], S>(&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name  >]<[< $ty >], S>(mut self, $name: $ty)-> Self
             where
                 $ty: IntoIterator<Item = S>,
                 S: AsRef<str> + serde::Serialize
@@ -22,7 +22,7 @@ macro_rules! impl_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >](&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name >](mut self, $name: $ty)-> Self
             {
                 self.params.insert($docker_name, serde_json::json!($name));
                 self
@@ -37,7 +37,7 @@ macro_rules! impl_str_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name >]<[< $ty >]>(mut self, $name: $ty)-> Self
             where
                 $ty: AsRef<str> + serde::Serialize,
             {
@@ -54,7 +54,7 @@ macro_rules! impl_url_str_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >]<[< $ty >]>(&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name >]<[< $ty >]>(mut self, $name: $ty)-> Self
             where
                 $ty: Into<String>,
             {
@@ -71,7 +71,7 @@ macro_rules! impl_url_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >](&mut self, $name: $ty)-> &mut Self {
+            pub fn [< $name >](mut self, $name: $ty)-> Self {
                 self.params.insert($docker_name, $name.to_string());
                 self
             }
@@ -85,7 +85,7 @@ macro_rules! impl_url_bool_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >](&mut self, $name: bool)-> &mut Self {
+            pub fn [< $name >](mut self, $name: bool)-> Self {
                 self.params.insert($docker_name, $name.to_string());
                 self
             }
@@ -100,7 +100,7 @@ macro_rules! impl_str_enum_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name >](&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name >](mut self, $name: $ty)-> Self
             {
                 self.params.insert($docker_name, serde_json::json!($name.as_ref()));
                 self
@@ -121,7 +121,7 @@ macro_rules! impl_map_field {
             $(
                 #[doc= $docs]
             )*
-            pub fn [< $name  >]<[< $ty >], K, V>(&mut self, $name: $ty)-> &mut Self
+            pub fn [< $name  >]<[< $ty >], K, V>(mut self, $name: $ty)-> Self
             where
                 $ty: IntoIterator<Item = (K, V)>,
                 K: AsRef<str> + serde::Serialize + Eq + std::hash::Hash,
@@ -294,7 +294,7 @@ macro_rules! impl_filter_func {
         $(
             #[doc = $doc]
         )*
-        pub fn filter<F>(&mut self, filters: F) -> &mut Self
+        pub fn filter<F>(mut self, filters: F) -> Self
         where
             F: IntoIterator<Item = $filter_ty>,
         {

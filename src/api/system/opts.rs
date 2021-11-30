@@ -71,7 +71,7 @@ pub struct EventsOptsBuilder {
 impl EventsOptsBuilder {
     #[cfg(feature = "chrono")]
     /// Only return events since this time.
-    pub fn since<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    pub fn since<Tz>(mut self, timestamp: &chrono::DateTime<Tz>) -> Self
     where
         Tz: chrono::TimeZone,
     {
@@ -82,14 +82,14 @@ impl EventsOptsBuilder {
 
     #[cfg(not(feature = "chrono"))]
     /// Only return events since this time, as a UNIX timestamp.
-    pub fn since(&mut self, timestamp: i64) -> &mut Self {
+    pub fn since(mut self, timestamp: i64) -> Self {
         self.params.insert("since", timestamp.to_string());
         self
     }
 
     #[cfg(feature = "chrono")]
     /// Only return events before this time.
-    pub fn until<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    pub fn until<Tz>(mut self, timestamp: &chrono::DateTime<Tz>) -> Self
     where
         Tz: chrono::TimeZone,
     {
@@ -100,13 +100,13 @@ impl EventsOptsBuilder {
 
     #[cfg(not(feature = "chrono"))]
     /// Only return events before this time, as a UNIX timestamp.
-    pub fn until(&mut self, timestamp: i64) -> &mut Self {
+    pub fn until(mut self, timestamp: i64) -> Self {
         self.params.insert("until", timestamp.to_string());
         self
     }
 
     /// Filter the events by a list of event filters.
-    pub fn filter(&mut self, filters: Vec<EventFilter>) -> &mut Self {
+    pub fn filter(mut self, filters: Vec<EventFilter>) -> Self {
         let mut params = HashMap::new();
         for f in filters {
             match f {
@@ -152,9 +152,9 @@ impl EventsOptsBuilder {
     }
 
     /// Build the final event options.
-    pub fn build(&self) -> EventsOpts {
+    pub fn build(self) -> EventsOpts {
         EventsOpts {
-            params: self.params.clone(),
+            params: self.params,
         }
     }
 }

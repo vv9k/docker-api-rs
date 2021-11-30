@@ -86,22 +86,25 @@ pub mod data {
         }
 
         /// Set the driver of this secret.
-        pub fn set_driver(&mut self, driver: Driver) {
+        pub fn set_driver(mut self, driver: Driver) -> Self {
             self.driver = driver;
+            self
         }
 
         /// Set the templating driver of this secret.
-        pub fn set_templating(&mut self, driver: Driver) {
+        pub fn set_templating(mut self, driver: Driver) -> Self {
             self.templating = driver;
+            self
         }
 
         /// Add a label to this secret
-        pub fn add_label<K, V>(&mut self, key: K, val: V) -> Option<String>
+        pub fn add_label<K, V>(mut self, key: K, val: V) -> Self
         where
             K: Into<String>,
             V: Into<String>,
         {
-            self.labels.insert(key.into(), val.into())
+            self.labels.insert(key.into(), val.into());
+            self
         }
 
         pub fn serialize(&self) -> Result<String> {

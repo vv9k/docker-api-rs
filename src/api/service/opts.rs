@@ -73,7 +73,7 @@ pub struct ServiceOptsBuilder {
 }
 
 impl ServiceOptsBuilder {
-    pub fn name<S>(&mut self, name: S) -> &mut Self
+    pub fn name<S>(mut self, name: S) -> Self
     where
         S: AsRef<str>,
     {
@@ -81,7 +81,7 @@ impl ServiceOptsBuilder {
         self
     }
 
-    pub fn labels<L, K, V>(&mut self, labels: L) -> &mut Self
+    pub fn labels<L, K, V>(mut self, labels: L) -> Self
     where
         L: IntoIterator<Item = (K, V)>,
         K: AsRef<str> + Serialize + Eq + Hash,
@@ -94,27 +94,27 @@ impl ServiceOptsBuilder {
         self
     }
 
-    pub fn task_template(&mut self, spec: &TaskSpec) -> &mut Self {
+    pub fn task_template(mut self, spec: &TaskSpec) -> Self {
         self.params.insert("TaskTemplate", to_value_result(spec));
         self
     }
 
-    pub fn mode(&mut self, mode: &Mode) -> &mut Self {
+    pub fn mode(mut self, mode: &Mode) -> Self {
         self.params.insert("Mode", to_value_result(mode));
         self
     }
 
-    pub fn update_config(&mut self, conf: &UpdateConfig) -> &mut Self {
+    pub fn update_config(mut self, conf: &UpdateConfig) -> Self {
         self.params.insert("UpdateConfig", to_value_result(conf));
         self
     }
 
-    pub fn rollback_config(&mut self, conf: &RollbackConfig) -> &mut Self {
+    pub fn rollback_config(mut self, conf: &RollbackConfig) -> Self {
         self.params.insert("RollbackConfig", to_value_result(conf));
         self
     }
 
-    pub fn networks<N>(&mut self, networks: N) -> &mut Self
+    pub fn networks<N>(mut self, networks: N) -> Self
     where
         N: IntoIterator<Item = NetworkAttachmentConfig>,
     {
@@ -129,24 +129,23 @@ impl ServiceOptsBuilder {
         self
     }
 
-    pub fn endpoint_spec(&mut self, spec: &EndpointSpec) -> &mut Self {
+    pub fn endpoint_spec(mut self, spec: &EndpointSpec) -> Self {
         self.params.insert("EndpointSpec", to_value_result(spec));
         self
     }
 
-    pub fn auth(&mut self, auth: RegistryAuth) -> &mut Self {
+    pub fn auth(mut self, auth: RegistryAuth) -> Self {
         self.auth = Some(auth);
         self
     }
 
-    pub fn build(&mut self) -> Result<ServiceOpts> {
-        let params = std::mem::take(&mut self.params);
+    pub fn build(self) -> Result<ServiceOpts> {
         let mut new_params = HashMap::new();
-        for (k, v) in params.into_iter() {
+        for (k, v) in self.params.into_iter() {
             new_params.insert(k, v?);
         }
         Ok(ServiceOpts {
-            auth: self.auth.take(),
+            auth: self.auth,
             params: new_params,
         })
     }

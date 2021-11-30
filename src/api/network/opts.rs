@@ -248,7 +248,7 @@ impl ContainerConnectionOptsBuilder {
     }
 
     /// Endpoint's IPAM configuration.
-    pub fn ipam_config(&mut self, config: EndpointIpamConfig) -> &mut Self {
+    pub fn ipam_config(mut self, config: EndpointIpamConfig) -> Self {
         self.params.insert("EndpointConfig", json!(config.params));
         self
     }
@@ -308,13 +308,11 @@ impl ContainerConnectionOptsBuilder {
         driver_opts: O => "DriverOpts"
     );
 
-    pub fn build(&self) -> ContainerConnectionOpts {
+    pub fn build(self) -> ContainerConnectionOpts {
         let mut params = HashMap::new();
         params.insert("EndpointConfig", json!(self.params));
         params.insert("Container", json!(self.container));
-        ContainerConnectionOpts {
-            params: self.params.clone(),
-        }
+        ContainerConnectionOpts { params }
     }
 }
 
