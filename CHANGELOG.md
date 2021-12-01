@@ -8,6 +8,7 @@
 - Add missing clone implementations to some image api data types
 - All builder pattern methods now take an owned value and consume the builder on final build
 - Add a default implementation to `Isolation` to fix deserialization of `Info`
+- Fix `Docker::data_usage` response deserialization - fields of `VolumeInfo`: `labels`, `options`, `status` are now an `Option`
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.

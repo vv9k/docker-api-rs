@@ -29,9 +29,9 @@ pub struct VolumeInfo {
     pub created_at: DateTime<Utc>,
     #[cfg(not(feature = "chrono"))]
     pub created_at: String,
-    pub status: StatusMap,
-    pub labels: Labels,
-    pub options: Options,
+    pub status: Option<StatusMap>,
+    pub labels: Option<Labels>,
+    pub options: Option<Options>,
     pub scope: String,
     pub usage_data: Option<UsageData>,
 }
