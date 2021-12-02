@@ -10,6 +10,7 @@
 - Add a default implementation to `Isolation` to fix deserialization of `Info`
 - Fix `Docker::data_usage` response deserialization - fields of `VolumeInfo`: `labels`, `options`, `status` are now an `Option`
 - Add a way to initialize Docker with a different API version
+- Fix `ImageSummary` deserialization - `repo_tags` field is now an option as it can be a null sometimes
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.

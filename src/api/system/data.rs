@@ -140,7 +140,7 @@ pub struct DataUsage {
 pub struct ImageSummary {
     pub id: String,
     pub parent_id: String,
-    pub repo_tags: Vec<String>,
+    pub repo_tags: Option<Vec<String>>,
     pub repo_digests: Option<Vec<String>>,
     pub created: isize,
     pub size: isize,
