@@ -19,7 +19,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 /// Latest Docker API version supported by this crate.
-pub const LATEST_API_VERSION: docker::Version = docker::Version::new(1, 41);
+pub const LATEST_API_VERSION: ApiVersion = ApiVersion::new(1, 41);
 
 /// https://github.com/rust-lang/rust/issues/53749
 macro_rules! version {
@@ -31,6 +31,7 @@ macro_rules! version {
 #[macro_use]
 mod builder;
 mod util;
+mod version;
 
 pub mod api;
 pub mod conn;
@@ -45,8 +46,9 @@ pub use crate::{
         network::{self, Network, Networks},
         volume::{self, Volume, Volumes},
     },
-    docker::{Docker, Version},
+    docker::Docker,
     errors::{Error, Result},
+    version::ApiVersion,
 };
 
 #[cfg(feature = "swarm")]

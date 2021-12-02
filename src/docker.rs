@@ -4,7 +4,7 @@
 use crate::{
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
-    Containers, Images, Networks, Volumes, LATEST_API_VERSION,
+    ApiVersion, Containers, Images, Networks, Volumes, LATEST_API_VERSION,
 };
 
 #[cfg(feature = "swarm")]
@@ -25,82 +25,11 @@ use log::trace;
 use serde::de::DeserializeOwned;
 
 use std::path::Path;
-use std::str::FromStr;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Version {
-    major: usize,
-    minor: usize,
-}
-
-impl Version {
-    pub const fn new(major: usize, minor: usize) -> Self {
-        Self { major, minor }
-    }
-    fn make_endpoint(&self, ep: impl AsRef<str>) -> String {
-        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
-        // should be prefixed with the API version as the ones without will stop being supported in future releases
-
-        let ep = ep.as_ref();
-        format!(
-            "/v{}{}{}",
-            self,
-            if !ep.starts_with('/') { "/" } else { "" },
-            ep
-        )
-    }
-}
-
-impl std::fmt::Display for Version {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.major, self.minor)
-    }
-}
-
-impl From<(usize, usize)> for Version {
-    fn from(v: (usize, usize)) -> Self {
-        Version {
-            major: v.0,
-            minor: v.1,
-        }
-    }
-}
-
-impl FromStr for Version {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self> {
-        let mut elems = s.split('.');
-        let major = if let Some(maj) = elems.next() {
-            match maj.parse::<usize>() {
-                Ok(maj) => maj,
-                Err(e) => return Err(Error::MalformedVersion(e.to_string())),
-            }
-        } else {
-            return Err(Error::MalformedVersion(s.to_string()));
-        };
-        let minor = if let Some(min) = elems.next() {
-            match min.parse::<usize>() {
-                Ok(min) => min,
-                Err(e) => return Err(Error::MalformedVersion(e.to_string())),
-            }
-        } else {
-            return Err(Error::MalformedVersion(
-                "expected minor version".to_string(),
-            ));
-        };
-        if elems.next().is_some() {
-            return Err(Error::MalformedVersion(
-                "unexpected extra tokens".to_string(),
-            ));
-        }
-        Ok(Self { major, minor })
-    }
-}
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
 pub struct Docker {
-    version: Version,
+    version: ApiVersion,
     transport: Transport,
 }
 
@@ -126,7 +55,7 @@ impl Docker {
     }
 
     /// Same as [`Docker::new`](Docker::new) but the API version can be explicitly specified.
-    pub fn new_versioned<U>(uri: U, version: impl Into<Version>) -> Result<Docker>
+    pub fn new_versioned<U>(uri: U, version: impl Into<ApiVersion>) -> Result<Docker>
     where
         U: AsRef<str>,
     {
@@ -175,7 +104,7 @@ impl Docker {
     }
 
     /// Same as [`Docker::unix`](Docker::unix) but the API version can be explicitly specified.
-    pub fn unix_versioned<P>(socket_path: P, version: impl Into<Version>) -> Docker
+    pub fn unix_versioned<P>(socket_path: P, version: impl Into<ApiVersion>) -> Docker
     where
         P: AsRef<Path>,
     {
@@ -218,7 +147,7 @@ impl Docker {
     /// Same as [`Docker::tls`](Docker::tls) but the API version can be explicitly specified.
     pub fn tls_versioned<H, P>(
         host: H,
-        version: impl Into<Version>,
+        version: impl Into<ApiVersion>,
         cert_path: P,
         verify: bool,
     ) -> Result<Docker>
@@ -254,7 +183,7 @@ impl Docker {
     }
 
     /// Same as [`Docker::tcp`](Docker::tcp) but the API version can be explicitly specified.
-    pub fn tcp_versioned<H>(host: H, version: impl Into<Version>) -> Result<Docker>
+    pub fn tcp_versioned<H>(host: H, version: impl Into<ApiVersion>) -> Result<Docker>
     where
         H: AsRef<str>,
     {
@@ -286,6 +215,19 @@ impl Docker {
     /// Exports an interface for interacting with Docker volumes
     pub fn volumes(&'_ self) -> Volumes<'_> {
         Volumes::new(self)
+    }
+
+    /// Verifies the API version returned by the server and adjusts the version used by this client
+    /// in future requests.
+    pub async fn adjust_api_version(&mut self) -> Result<()> {
+        let server_version: ApiVersion =
+            self.version().await.and_then(|v| v.api_version.parse())?;
+
+        if server_version <= self.version {
+            self.version = server_version;
+        }
+
+        Ok(())
     }
 
     //####################################################################################################

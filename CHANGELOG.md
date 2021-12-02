@@ -11,6 +11,8 @@
 - Fix `Docker::data_usage` response deserialization - fields of `VolumeInfo`: `labels`, `options`, `status` are now an `Option`
 - Add a way to initialize Docker with a different API version
 - Fix `ImageSummary` deserialization - `repo_tags` field is now an option as it can be a null sometimes
+- Add `Docker::new_versioned`, `Docker::unix_versioned`, `Docker::tls_versioned`, `Docker::tcp_versioned` initializers that let the user specify initially used client API version
+- Add `Docker::adjust_api_version` that verifies the API version returned by the server and adjusts the client version for further requests
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
