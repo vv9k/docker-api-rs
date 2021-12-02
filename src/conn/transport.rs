@@ -317,7 +317,7 @@ impl Transport {
                 .parse()
                 .map_err(Error::InvalidUri)?,
             #[cfg(unix)]
-            Transport::Unix { path, .. } => DomainUri::new(&path, &ep).into(),
+            Transport::Unix { path, .. } => DomainUri::new(&path, ep).into(),
         };
         let req = builder.method(method).uri(&uri);
         let mut req = req.header(header::HOST, "");

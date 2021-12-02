@@ -57,11 +57,11 @@ impl std::fmt::Display for Version {
     }
 }
 
-impl Into<Version> for (usize, usize) {
-    fn into(self) -> Version {
+impl From<(usize, usize)> for Version {
+    fn from(v: (usize, usize)) -> Self {
         Version {
-            major: self.0,
-            minor: self.1,
+            major: v.0,
+            minor: v.1,
         }
     }
 }
