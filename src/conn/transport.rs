@@ -308,15 +308,6 @@ impl Transport {
         B: Into<Body>,
     {
         let ep = endpoint.as_ref();
-        let ep = format!(
-            "/{}{}{}",
-            crate::VERSION,
-            if !ep.starts_with('/') { "/" } else { "" },
-            ep
-        );
-
-        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
-        // should be prefixed with the API version as the ones without will stop being supported in future releases
         let uri: hyper::Uri = match self {
             Transport::Tcp { host, .. } => format!("{}{}", host, ep)
                 .parse()

@@ -19,7 +19,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 /// Latest Docker API version supported by this crate.
-pub static VERSION: &str = "v1.41";
+pub const LATEST_API_VERSION: docker::Version = docker::Version::new(1, 41);
 
 /// https://github.com/rust-lang/rust/issues/53749
 macro_rules! version {
@@ -45,7 +45,7 @@ pub use crate::{
         network::{self, Network, Networks},
         volume::{self, Volume, Volumes},
     },
-    docker::Docker,
+    docker::{Docker, Version},
     errors::{Error, Result},
 };
 

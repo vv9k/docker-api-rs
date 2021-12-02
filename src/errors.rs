@@ -47,4 +47,6 @@ pub enum Error {
     InvalidPort(String),
     #[error("Invalid protocol - {0}")]
     InvalidProtocol(String),
+    #[error("Invalid version - {0}")]
+    MalformedVersion(String),
 }

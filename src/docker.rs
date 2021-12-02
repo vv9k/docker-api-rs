@@ -4,7 +4,7 @@
 use crate::{
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
-    Containers, Images, Networks, Volumes,
+    Containers, Images, Networks, Volumes, LATEST_API_VERSION,
 };
 
 #[cfg(feature = "swarm")]
@@ -25,10 +25,82 @@ use log::trace;
 use serde::de::DeserializeOwned;
 
 use std::path::Path;
+use std::str::FromStr;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Version {
+    major: usize,
+    minor: usize,
+}
+
+impl Version {
+    pub const fn new(major: usize, minor: usize) -> Self {
+        Self { major, minor }
+    }
+    fn make_endpoint(&self, ep: impl AsRef<str>) -> String {
+        // As noted in [Versioning](https://docs.docker.com/engine/api/v1.41/#section/Versioning), all requests
+        // should be prefixed with the API version as the ones without will stop being supported in future releases
+
+        let ep = ep.as_ref();
+        format!(
+            "/v{}{}{}",
+            self,
+            if !ep.starts_with('/') { "/" } else { "" },
+            ep
+        )
+    }
+}
+
+impl std::fmt::Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}", self.major, self.minor)
+    }
+}
+
+impl Into<Version> for (usize, usize) {
+    fn into(self) -> Version {
+        Version {
+            major: self.0,
+            minor: self.1,
+        }
+    }
+}
+
+impl FromStr for Version {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
+        let mut elems = s.split('.');
+        let major = if let Some(maj) = elems.next() {
+            match maj.parse::<usize>() {
+                Ok(maj) => maj,
+                Err(e) => return Err(Error::MalformedVersion(e.to_string())),
+            }
+        } else {
+            return Err(Error::MalformedVersion(s.to_string()));
+        };
+        let minor = if let Some(min) = elems.next() {
+            match min.parse::<usize>() {
+                Ok(min) => min,
+                Err(e) => return Err(Error::MalformedVersion(e.to_string())),
+            }
+        } else {
+            return Err(Error::MalformedVersion(
+                "expected minor version".to_string(),
+            ));
+        };
+        if elems.next().is_some() {
+            return Err(Error::MalformedVersion(
+                "unexpected extra tokens".to_string(),
+            ));
+        }
+        Ok(Self { major, minor })
+    }
+}
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
 pub struct Docker {
+    version: Version,
     transport: Transport,
 }
 
@@ -43,10 +115,22 @@ impl Docker {
     ///
     ///  To create a Docker instance utilizing TLS use explicit [Docker::tls](Docker::tls)
     ///  constructor (this requires `tls` feature enabled).
+    ///  
+    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
+    ///  [`Docker::new_versioned`](Docker::new_versioned).
     pub fn new<U>(uri: U) -> Result<Docker>
     where
         U: AsRef<str>,
     {
+        Self::new_versioned(uri, LATEST_API_VERSION)
+    }
+
+    /// Same as [`Docker::new`](Docker::new) but the API version can be explicitly specified.
+    pub fn new_versioned<U>(uri: U, version: impl Into<Version>) -> Result<Docker>
+    where
+        U: AsRef<str>,
+    {
+        let version = version.into();
         let uri = uri.as_ref();
         let mut it = uri.split("://");
 
@@ -54,7 +138,7 @@ impl Docker {
             #[cfg(unix)]
             Some("unix") => {
                 if let Some(path) = it.next() {
-                    Ok(Docker::unix(path))
+                    Ok(Docker::unix_versioned(path, version))
                 } else {
                     Err(Error::MissingAuthority)
                 }
@@ -63,7 +147,7 @@ impl Docker {
             Some("unix") => Err(Error::UnsupportedScheme("unix".to_string())),
             Some("tcp") | Some("http") => {
                 if let Some(host) = it.next() {
-                    Docker::tcp(host)
+                    Docker::tcp_versioned(host, version)
                 } else {
                     Err(Error::MissingAuthority)
                 }
@@ -74,17 +158,29 @@ impl Docker {
         }
     }
 
+    #[cfg(unix)]
+    #[cfg_attr(docsrs, doc(cfg(unix)))]
     /// Creates a new docker instance for a docker host listening on a given Unix socket.
     ///
     /// `socket_path` is the part of URI that comes after the `unix://`. For example a URI `unix:///run/docker.sock` has a
     /// `socket_path` == "/run/docker.sock".
-    #[cfg(unix)]
-    #[cfg_attr(docsrs, doc(cfg(unix)))]
+    ///  
+    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
+    ///  [`Docker::unix_versioned`](Docker::unix_versioned).
     pub fn unix<P>(socket_path: P) -> Docker
     where
         P: AsRef<Path>,
     {
+        Self::unix_versioned(socket_path, LATEST_API_VERSION)
+    }
+
+    /// Same as [`Docker::unix`](Docker::unix) but the API version can be explicitly specified.
+    pub fn unix_versioned<P>(socket_path: P, version: impl Into<Version>) -> Docker
+    where
+        P: AsRef<Path>,
+    {
         Docker {
+            version: version.into(),
             transport: Transport::Unix {
                 client: Client::builder()
                     .pool_max_idle_per_host(0)
@@ -106,12 +202,32 @@ impl Docker {
     ///
     /// Returns an error if the provided host will fail to parse as URL or reading the certificate
     /// files will fail.
+    ///  
+    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
+    ///  [`Docker::tls_versioned`](Docker::tls_versioned).
     pub fn tls<H, P>(host: H, cert_path: P, verify: bool) -> Result<Docker>
     where
         H: AsRef<str>,
         P: AsRef<Path>,
     {
+        Self::tls_versioned(host, LATEST_API_VERSION, cert_path, verify)
+    }
+
+    #[cfg(feature = "tls")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "tls")))]
+    /// Same as [`Docker::tls`](Docker::tls) but the API version can be explicitly specified.
+    pub fn tls_versioned<H, P>(
+        host: H,
+        version: impl Into<Version>,
+        cert_path: P,
+        verify: bool,
+    ) -> Result<Docker>
+    where
+        H: AsRef<str>,
+        P: AsRef<Path>,
+    {
         Ok(Docker {
+            version: version.into(),
             transport: Transport::EncryptedTcp {
                 client: Client::builder().build(get_https_connector(cert_path.as_ref(), verify)?),
                 host: url::Url::parse(&format!("https://{}", host.as_ref()))
@@ -127,11 +243,23 @@ impl Docker {
     /// TLS is supported with feature `tls` enabled through [Docker::tls](Docker::tls) constructor.
     ///
     /// Returns an error if the provided host will fail to parse as URL.
+    ///  
+    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
+    ///  [`Docker::tcp_versioned`](Docker::tcp_versioned).
     pub fn tcp<H>(host: H) -> Result<Docker>
     where
         H: AsRef<str>,
     {
+        Self::tcp_versioned(host, LATEST_API_VERSION)
+    }
+
+    /// Same as [`Docker::tcp`](Docker::tcp) but the API version can be explicitly specified.
+    pub fn tcp_versioned<H>(host: H, version: impl Into<Version>) -> Result<Docker>
+    where
+        H: AsRef<str>,
+    {
         Ok(Docker {
+            version: version.into(),
             transport: Transport::Tcp {
                 client: Client::builder().build(get_http_connector()),
                 host: url::Url::parse(&format!("tcp://{}", host.as_ref()))
@@ -168,14 +296,24 @@ impl Docker {
 
     pub(crate) async fn get(&self, endpoint: &str) -> Result<Response<Body>> {
         self.transport
-            .request(Method::GET, endpoint, Payload::empty(), Headers::none())
+            .request(
+                Method::GET,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
     }
 
     pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request_string(Method::GET, endpoint, Payload::empty(), Headers::none())
+            .request_string(
+                Method::GET,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await?;
         trace!("{}", raw_string);
 
@@ -187,7 +325,12 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request_string(Method::POST, endpoint, body, Headers::none())
+            .request_string(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                Headers::none(),
+            )
             .await
     }
 
@@ -201,7 +344,12 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request_string(Method::POST, endpoint, body, Some(headers))
+            .request_string(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                Some(headers),
+            )
             .await
     }
 
@@ -210,7 +358,12 @@ impl Docker {
         B: Into<Body>,
     {
         self.transport
-            .request_string(Method::PUT, endpoint, body, Headers::none())
+            .request_string(
+                Method::PUT,
+                self.version.make_endpoint(endpoint),
+                body,
+                Headers::none(),
+            )
             .await
     }
 
@@ -225,7 +378,12 @@ impl Docker {
     {
         let raw_string = self
             .transport
-            .request_string(Method::POST, endpoint, body, Headers::none())
+            .request_string(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                Headers::none(),
+            )
             .await?;
         trace!("{}", raw_string);
 
@@ -245,7 +403,12 @@ impl Docker {
     {
         let raw_string = self
             .transport
-            .request_string(Method::POST, endpoint, body, headers)
+            .request_string(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                headers,
+            )
             .await?;
         trace!("{}", raw_string);
 
@@ -254,14 +417,24 @@ impl Docker {
 
     pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.transport
-            .request_string(Method::DELETE, endpoint, Payload::empty(), Headers::none())
+            .request_string(
+                Method::DELETE,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
     }
 
     pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
         let raw_string = self
             .transport
-            .request_string(Method::DELETE, endpoint, Payload::empty(), Headers::none())
+            .request_string(
+                Method::DELETE,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await?;
         trace!("{}", raw_string);
 
@@ -270,7 +443,12 @@ impl Docker {
 
     pub(crate) async fn head_response(&self, endpoint: &str) -> Result<Response<Body>> {
         self.transport
-            .request(Method::HEAD, endpoint, Payload::empty(), Headers::none())
+            .request(
+                Method::HEAD,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
     }
 
@@ -286,8 +464,12 @@ impl Docker {
     where
         B: Into<Body> + 'a,
     {
-        self.transport
-            .stream_chunks(Method::POST, endpoint, body, headers)
+        self.transport.stream_chunks(
+            Method::POST,
+            self.version.make_endpoint(endpoint),
+            body,
+            headers,
+        )
     }
 
     /// Send a streaming post request.
@@ -300,8 +482,12 @@ impl Docker {
     where
         B: Into<Body> + 'a,
     {
-        self.transport
-            .stream_json_chunks(Method::POST, endpoint, body, headers)
+        self.transport.stream_json_chunks(
+            Method::POST,
+            self.version.make_endpoint(endpoint),
+            body,
+            headers,
+        )
     }
 
     /// Send a streaming post request that returns a stream of JSON values
@@ -336,8 +522,12 @@ impl Docker {
         &'a self,
         endpoint: impl AsRef<str> + Unpin + 'a,
     ) -> impl Stream<Item = Result<Bytes>> + 'a {
-        self.transport
-            .stream_chunks(Method::GET, endpoint, Payload::empty(), Headers::none())
+        self.transport.stream_chunks(
+            Method::GET,
+            self.version.make_endpoint(endpoint),
+            Payload::empty(),
+            Headers::none(),
+        )
     }
 
     pub(crate) async fn stream_post_upgrade<'a, B>(
@@ -349,7 +539,7 @@ impl Docker {
         B: Into<Body> + 'a,
     {
         self.transport
-            .stream_upgrade(Method::POST, endpoint, body)
+            .stream_upgrade(Method::POST, self.version.make_endpoint(endpoint), body)
             .await
     }
 }
