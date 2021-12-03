@@ -303,7 +303,7 @@ macro_rules! impl_filter_func {
         {
             let mut param = std::collections::HashMap::new();
             for (key, val) in filters.into_iter().map(|f| f.query_key_val()) {
-                param.insert(key, val);
+                param.insert(key, vec![val]);
             }
             // structure is a a json encoded object mapping string keys to a list
             // of string values
