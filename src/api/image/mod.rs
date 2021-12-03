@@ -18,7 +18,7 @@ use crate::{
     Result,
 };
 
-impl_api_ty!(Image => name: N);
+impl_api_ty!(Image => name);
 
 pub type DeleteStatus = Vec<Status>;
 

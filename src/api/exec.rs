@@ -9,18 +9,21 @@ use crate::{
     Docker, Result,
 };
 
+pub type ExecId = String;
+pub type ExecIdRef<'a> = &'a str;
+
 api_doc! { Exec
 /// Interface for docker exec instance
 |
 pub struct Exec<'docker> {
     docker: &'docker Docker,
-    id: String,
+    id: ExecId,
 }}
 
 impl<'docker> Exec<'docker> {
-    fn new<S>(docker: &'docker Docker, id: S) -> Self
+    fn new<ID>(docker: &'docker Docker, id: ID) -> Self
     where
-        S: Into<String>,
+        ID: Into<ExecId>,
     {
         Exec {
             docker,
@@ -116,9 +119,9 @@ impl<'docker> Exec<'docker> {
     /// It's in callers responsibility to ensure that exec instance with specified id actually
     /// exists. Use [Exec::create](Exec::create) to ensure that the exec instance is created
     /// beforehand.
-    pub fn get<I>(docker: &'docker Docker, id: I) -> Exec<'docker>
+    pub fn get<ID>(docker: &'docker Docker, id: ID) -> Exec<'docker>
     where
-        I: Into<String>,
+        ID: Into<ExecId>,
     {
         Exec::new(docker, id)
     }

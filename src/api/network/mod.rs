@@ -8,7 +8,7 @@ pub use opts::*;
 
 use crate::{conn::Payload, Result};
 
-impl_api_ty!(Network => id: I);
+impl_api_ty!(Network => id);
 
 impl<'docker> Network<'docker> {
     impl_api_ep! { net: Network, resp

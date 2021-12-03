@@ -4,7 +4,7 @@
 
 use crate::{conn::Payload, Result};
 
-impl_api_ty!(Config => name: N);
+impl_api_ty!(Config => name);
 
 impl<'docker> Config<'docker> {
     impl_api_ep! { cfg: Config, resp

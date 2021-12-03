@@ -21,7 +21,7 @@ use crate::{
     Error, Result,
 };
 
-impl_api_ty!(Container => id: I);
+impl_api_ty!(Container => id);
 
 impl<'docker> Container<'docker> {
     impl_api_ep! {container: Container, resp

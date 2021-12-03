@@ -11,7 +11,7 @@ use crate::{
     Result,
 };
 
-impl_api_ty!(Service => name: N);
+impl_api_ty!(Service => name);
 
 impl<'docker> Service<'docker> {
     api_doc! { Service => Create

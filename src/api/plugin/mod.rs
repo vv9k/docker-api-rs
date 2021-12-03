@@ -14,7 +14,7 @@ use crate::{
 
 use std::path::Path;
 
-impl_api_ty!(Plugin => name: N);
+impl_api_ty!(Plugin => name);
 
 impl<'docker> Plugin<'docker> {
     impl_api_ep! {plug: Plugin, resp

@@ -7,7 +7,7 @@ pub use opts::*;
 
 use crate::{conn::Payload, Result};
 
-impl_api_ty!(Volume => name: N);
+impl_api_ty!(Volume => name);
 
 impl<'docker> Volume<'docker> {
     impl_api_ep! {vol: Volume, resp

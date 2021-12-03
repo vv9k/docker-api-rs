@@ -11,7 +11,7 @@ pub use opts::*;
 
 use crate::{conn::Payload, util::url::encoded_pair, Result};
 
-impl_api_ty!(Node => name: N);
+impl_api_ty!(Node => name);
 
 type Void = ();
 

@@ -222,23 +222,26 @@ macro_rules! calculated_doc {
 }
 
 macro_rules! impl_api_ty {
-    ($(#[doc = $docs:expr])* $name:ident => $name_field:ident : $name_field_tt:tt) => {
+    ($(#[doc = $docs:expr])* $name:ident => $name_field:ident) => {
         paste::item! {
+            pub type [< $name Id >] = String;
+            pub type [< $name IdRef >]<'a> = &'a str;
+
             calculated_doc!{
             #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n", api_url!($name))]
             #[derive(Debug)]
             pub struct [< $name >]<'docker> {
                 docker: &'docker crate::Docker,
-                $name_field: String,
+                $name_field: [< $name Id >],
             }
             }
             impl<'docker> [< $name >]<'docker> {
                 // TODO: this is possible on nightly, figure out what to do
                 calculated_doc!{
                 #[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), " instance.")]
-                pub fn new<$name_field_tt>(docker: &'docker crate::Docker, $name_field: $name_field_tt) -> Self
+                pub fn new<ID>(docker: &'docker crate::Docker, $name_field: ID) -> Self
                 where
-                    $name_field_tt: Into<String>,
+                    ID: Into<[< $name Id>]>,
                 {
                     [< $name >] {
                         docker,
@@ -249,7 +252,7 @@ macro_rules! impl_api_ty {
 
                 calculated_doc!{
                 #[doc = concat!("A getter for ", stringify!($name), " ", stringify!($name_field))]
-                pub fn $name_field(&self) -> &str {
+                pub fn $name_field(&self) -> [< $name IdRef >] {
                     &self.$name_field
                 }
                 }
@@ -276,9 +279,9 @@ macro_rules! impl_api_ty {
 
                 calculated_doc!{
                 #[doc = concat!("Returns a reference to a set of operations available to a specific ", stringify!($name), ".")]
-                pub fn get<$name_field_tt>(&self, $name_field: $name_field_tt) -> [< $name >]<'docker>
+                pub fn get<ID>(&self, $name_field: ID) -> [< $name >]<'docker>
                 where
-                    $name_field_tt: Into<String>,
+                    ID: Into<[< $name Id >]>,
                 {
                     [< $name >]::new(self.docker, $name_field)
                 }
