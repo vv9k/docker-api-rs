@@ -14,6 +14,7 @@
 - Add `Docker::new_versioned`, `Docker::unix_versioned`, `Docker::tls_versioned`, `Docker::tcp_versioned` initializers that let the user specify initially used client API version
 - Add `Docker::adjust_api_version` that verifies the API version returned by the server and adjusts the client version for further requests
 - Add Id and IdRef type aliases for each api type
+- Fix `Images::prune` response deserialization
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.

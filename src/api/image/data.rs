@@ -159,15 +159,15 @@ pub struct DistributionInspectInfo {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct ImagesPruneInfo {
-    pub images_deleted: Vec<ImageDeleteItem>,
+    pub images_deleted: Option<Vec<ImageDeleteItem>>,
     pub space_reclaimed: i64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct ImageDeleteItem {
-    pub untagged: String,
-    pub deleted: String,
+    pub untagged: Option<String>,
+    pub deleted: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
