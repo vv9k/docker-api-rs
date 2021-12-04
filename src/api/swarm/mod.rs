@@ -1,9 +1,9 @@
 #![cfg(feature = "swarm")]
 //! Control and manage clusters of engines also known as Swarm
-pub mod data;
+pub mod models;
 pub mod opts;
 
-pub use data::*;
+pub use models::*;
 pub use opts::*;
 
 use crate::{conn::Payload, Docker, Result};

@@ -4,7 +4,7 @@
 
 use crate::Result;
 
-impl_api_ty!(Task => id: I);
+impl_api_ty!(Task => id);
 
 impl<'docker> Task<'docker> {
     impl_api_ep! { task: Task, resp
@@ -19,7 +19,7 @@ impl<'docker> Tasks<'docker> {
     }
 }
 
-pub mod data {
+pub mod models {
     use crate::api::{
         ConfigReference, Driver, HealthConfig, Isolation, Labels, Mount, NetworkAttachmentConfig,
         ObjectVersion, Platform, ResourceObject, SecretReference, Sysctls, Ulimit,
@@ -260,7 +260,7 @@ pub mod data {
     }
 }
 
-pub use data::*;
+pub use models::*;
 
 pub mod opts {
     use crate::api::Filter;

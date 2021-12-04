@@ -1,9 +1,9 @@
 //! Create and manage user-defined networks that containers can be attached to.
 
-pub mod data;
+pub mod models;
 pub mod opts;
 
-pub use data::*;
+pub use models::*;
 pub use opts::*;
 
 use crate::{conn::Payload, Result};

@@ -1,5 +1,7 @@
-use super::data::{Availability, Membership, NodeRole};
-use crate::{api::Filter, Error, Result};
+use crate::{
+    api::{Availability, Filter, Membership, NodeRole},
+    Error, Result,
+};
 
 use serde::Serialize;
 

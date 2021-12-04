@@ -22,7 +22,7 @@ impl<'docker> Configs<'docker> {
     }
 }
 
-pub mod data {
+pub mod models {
     use crate::{
         api::{Driver, Labels, ObjectVersion},
         Error, Result,
@@ -133,7 +133,7 @@ pub mod data {
     }
 }
 
-pub use data::*;
+pub use models::*;
 
 pub mod opts {
     use crate::api::Filter;

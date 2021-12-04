@@ -3,7 +3,7 @@
 
 use crate::{conn::Payload, Result};
 
-impl_api_ty!(Secret => name: N);
+impl_api_ty!(Secret => name);
 
 impl<'docker> Secret<'docker> {
     impl_api_ep! { secret: Secret, resp
@@ -20,7 +20,7 @@ impl<'docker> Secrets<'docker> {
     }
 }
 
-pub mod data {
+pub mod models {
     use crate::{
         api::{Driver, Labels, ObjectVersion},
         Error, Result,
@@ -137,7 +137,7 @@ pub mod data {
     }
 }
 
-pub use data::*;
+pub use models::*;
 
 pub mod opts {
     use crate::api::Filter;

@@ -1,8 +1,8 @@
 //! Create and manage images.
-pub mod data;
+pub mod models;
 pub mod opts;
 
-pub use data::*;
+pub use models::*;
 pub use opts::*;
 
 use std::io::Read;

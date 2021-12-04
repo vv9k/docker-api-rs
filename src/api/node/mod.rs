@@ -3,10 +3,10 @@
 //!
 //! Nodes are instances of the Engine participating in a swarm.
 //! Swarm mode must be enabled for these endpoints to work.
-pub mod data;
+pub mod models;
 pub mod opts;
 
-pub use data::*;
+pub use models::*;
 pub use opts::*;
 
 use crate::{conn::Payload, util::url::encoded_pair, Result};

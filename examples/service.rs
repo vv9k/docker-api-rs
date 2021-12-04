@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             use docker_api::api::LogsOpts;
             use futures::StreamExt;
 
-            let mut logs_stream = docker
+            let logs_stream = docker
                 .services()
                 .get(&service)
                 .logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());

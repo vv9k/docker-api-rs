@@ -17,6 +17,7 @@
 - Fix `Images::prune` response deserialization
 - Fix filter parameters serialization like `ImagePruneFilter` etc.
 - Fix `Images::clear_cache` response deserialization
+- Rename all `data` modules to `models`
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
