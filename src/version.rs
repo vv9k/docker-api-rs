@@ -3,6 +3,7 @@ use crate::{Error, Result};
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/// Docker API version used to determine compatibility between a client and a server.
 pub struct ApiVersion {
     major: usize,
     minor: usize,
