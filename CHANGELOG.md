@@ -16,6 +16,7 @@
 - Add Id and IdRef type aliases for each api type
 - Fix `Images::prune` response deserialization
 - Fix filter parameters serialization like `ImagePruneFilter` etc.
+- Fix `Images::clear_cache` response deserialization
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.

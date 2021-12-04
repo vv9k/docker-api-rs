@@ -173,6 +173,6 @@ pub struct ImageDeleteItem {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ClearCacheInfo {
-    pub caches_deleted: Vec<String>,
+    pub caches_deleted: Option<Vec<String>>,
     pub space_reclaimed: i64,
 }
