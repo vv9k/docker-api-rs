@@ -1,4 +1,4 @@
-#
+# 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
 - Add ability to push image to registry with `Image::push` or `Images::push`.
 - Add `online_cpus` field to `CpuStats`
