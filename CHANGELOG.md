@@ -19,6 +19,7 @@
 - Fix `Images::clear_cache` response deserialization
 - Rename all `data` modules to `models`
 - Make `Change::kind` field into strongly typed value
+- Fix `Container::changes` response deserialization
 
 # 0.6.0
 - `name` field of `ContainerCreateOpts` is now private. Use the `ContainerCreateOpts::builder` function that takes in a `name` parameter.
