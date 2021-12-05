@@ -1,6 +1,6 @@
 use crate::api::{ConfigMap, Driver, DriverData, Labels, NetworkSettings, Options, PublishPort};
 
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Serialize};
 use std::{
     collections::HashMap,
     str::{self, FromStr},
@@ -605,10 +605,32 @@ pub struct BlkioStat {
     pub value: u64,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, PartialOrd)]
+pub enum ChangeKind {
+    Modified,
+    Added,
+    Deleted,
+}
+
+fn deserialize_change_kind<'de, D>(deserializer: D) -> Result<ChangeKind, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    use de::Error;
+    let num: u8 = de::Deserialize::deserialize(deserializer)?;
+    match num {
+        0 => Ok(ChangeKind::Modified),
+        1 => Ok(ChangeKind::Added),
+        2 => Ok(ChangeKind::Deleted),
+        _ => Err(D::Error::custom("invalid change kind")),
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Change {
-    pub kind: u8,
+    #[serde(deserialize_with = "deserialize_change_kind")]
+    pub kind: ChangeKind,
     pub path: String,
 }
 
