@@ -29,7 +29,7 @@ pub struct ContainerInfo {
     pub labels: Labels,
     pub names: Vec<String>,
     pub ports: Vec<Port>,
-    pub state: String,
+    pub state: ContainerStatus,
     pub status: String,
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,

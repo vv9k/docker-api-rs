@@ -1,5 +1,7 @@
 use crate::{
-    api::{Attributes, Isolation, Labels, MountPoint, NetworkEntry, Port, VolumeInfo},
+    api::{
+        Attributes, ContainerStatus, Isolation, Labels, MountPoint, NetworkEntry, Port, VolumeInfo,
+    },
     errors::{Error, Result},
 };
 
@@ -176,7 +178,7 @@ pub struct ContainerSummary {
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
     pub labels: Option<Labels>,
-    pub state: String,
+    pub state: ContainerStatus,
     pub status: String,
     pub host_config: SummaryHostConfig,
     pub network_settings: SummaryNetworkSettings,

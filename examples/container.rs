@@ -191,7 +191,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(containers) => {
                     containers.into_iter().for_each(|container| {
                         println!(
-                            "{}\t{}\t{}\t{}\t{}",
+                            "{}\t{}\t{:?}\t{}\t{}",
                             &container.id[..12],
                             container.image,
                             container.state,
