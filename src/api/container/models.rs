@@ -66,7 +66,7 @@ pub struct ContainerDetails {
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
     pub mounts: Vec<MountPoint>,
-    pub config: ContainerConfig,
+    pub config: Option<ContainerConfig>,
     pub network_settings: NetworkSettings,
 }
 
