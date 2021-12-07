@@ -155,7 +155,7 @@ pub struct ImageSummary {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SummaryHostConfig {
-    network_mode: String,
+    network_mode: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -181,8 +181,8 @@ pub struct ContainerSummary {
     pub state: ContainerStatus,
     pub status: String,
     pub host_config: SummaryHostConfig,
-    pub network_settings: SummaryNetworkSettings,
-    pub mounts: Vec<MountPoint>,
+    pub network_settings: Option<SummaryNetworkSettings>,
+    pub mounts: Option<Vec<MountPoint>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
