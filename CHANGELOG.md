@@ -5,6 +5,7 @@
 - Add missing `ContainerStatus::Configured`
 - Fix `ContainerInfo::mounts` field deserialization
 - Fix `ContainerDetails::config` field deserialization
+- Fix `LogConfig::config` field deserialization
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.

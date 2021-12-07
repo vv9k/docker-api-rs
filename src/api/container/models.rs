@@ -442,7 +442,7 @@ pub struct LogConfig {
     #[serde(rename = "Type")]
     pub type_: String,
     #[serde(rename = "Config")]
-    pub config: ConfigMap,
+    pub config: Option<ConfigMap>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
