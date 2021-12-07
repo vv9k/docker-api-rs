@@ -230,6 +230,7 @@ pub struct MountPoint {
 #[serde(rename_all = "lowercase")]
 pub enum ContainerStatus {
     Created,
+    Configured,
     Restarting,
     Running,
     Removing,
@@ -243,6 +244,7 @@ impl AsRef<str> for ContainerStatus {
         use ContainerStatus::*;
         match &self {
             Created => "created",
+            Configured => "configured",
             Restarting => "restarting",
             Running => "running",
             Removing => "removing",
