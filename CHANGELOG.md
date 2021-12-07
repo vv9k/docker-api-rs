@@ -3,6 +3,7 @@
 - Fix `Docker::info` response deserialization
 - Fix `Docker::data_usage` response deserialization
 - Add missing `ContainerStatus::Configured`
+- Fix `ContainerInfo::mounts` field
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
