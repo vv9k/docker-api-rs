@@ -174,7 +174,7 @@ pub struct ContainerSummary {
     pub image_id: String,
     pub command: String,
     pub created: i64,
-    pub ports: Vec<Port>,
+    pub ports: Option<Vec<Port>>,
     pub size_rw: Option<i64>,
     pub size_root_fs: Option<i64>,
     pub labels: Option<Labels>,
