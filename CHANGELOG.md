@@ -1,5 +1,6 @@
 # 0.8.0
 - Make `ContainerInfo::state` and `ContainerSummary::state` strongly typed.
+- Fix `Docker::info` response deserialization
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.

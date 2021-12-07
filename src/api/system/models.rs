@@ -89,7 +89,7 @@ pub struct Info {
     pub https_proxy: String,
     pub no_proxy: String,
     pub name: String,
-    pub labels: Vec<String>,
+    pub labels: Option<Vec<String>>,
     pub experimental_build: bool,
     pub server_version: String,
     pub cluster_store: Option<String>,
