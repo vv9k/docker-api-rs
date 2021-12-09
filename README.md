@@ -1,6 +1,6 @@
 # docker-api
 
-[![GitHub Actions](https://github.com/wojciechkepka/docker-api-rs/workflows/Main/badge.svg)](https://github.com/wojciechkepka/docker-api-rs/actions) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Released API docs](https://docs.rs/docker-api/badge.svg)](http://docs.rs/docker-api)
+[![GitHub Actions](https://github.com/vv9k/docker-api-rs/workflows/Main/badge.svg)](https://github.com/vv9k/docker-api-rs/actions) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Released API docs](https://docs.rs/docker-api/badge.svg)](http://docs.rs/docker-api)
 
 > a rust interface to [Docker](https://www.docker.com/) containers
 
@@ -49,11 +49,11 @@ docker-api = { version = "0.7", default-features = false }
 
 ## Usage
 
-Examples for most API endpoints can be found in the [examples directory](https://github.com/wojciechkepka/docker-api-rs/tree/master/examples).
+Examples for most API endpoints can be found in the [examples directory](https://github.com/vv9k/docker-api-rs/tree/master/examples).
 
 
 ## Notice
 This crate is a fork of [shiplift](https://github.com/softprops/shiplift).
 
 ## License
-[MIT](https://raw.githubusercontent.com/wojciechkepka/docker-api-rs/master/LICENSE)
+[MIT](https://raw.githubusercontent.com/vv9k/docker-api-rs/master/LICENSE)
