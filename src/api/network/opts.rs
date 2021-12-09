@@ -170,9 +170,53 @@ impl NetworkCreateOptsBuilder {
         }
     }
 }
+#[derive(Serialize, Debug)]
+/// Interface for disconnecting a container from a network.
+pub struct ContainerDisconnectionOpts {
+    params: HashMap<&'static str, Value>,
+}
+
+impl ContainerDisconnectionOpts {
+    /// Serializes the options as a JSON string.
+    pub fn serialize(&self) -> Result<String> {
+        serde_json::to_string(&self.params).map_err(Error::from)
+    }
+
+    /// Return a new instance of a builder for disconnecting a container from a network.
+    pub fn builder<I>(container_id: I) -> ContainerDisconnectionOptsBuilder
+    where
+        I: AsRef<str>,
+    {
+        ContainerDisconnectionOptsBuilder::new(container_id.as_ref())
+    }
+}
+
+#[derive(Default)]
+pub struct ContainerDisconnectionOptsBuilder {
+    params: HashMap<&'static str, Value>,
+}
+
+impl ContainerDisconnectionOptsBuilder {
+    pub(crate) fn new(container_id: &str) -> Self {
+        ContainerDisconnectionOptsBuilder {
+            params: [("Container", json!(container_id.to_string()))].into(),
+        }
+    }
+
+    impl_field!(
+        /// Force the container to disconnect from the network.
+        force: bool => "Force"
+    );
+
+    pub fn build(self) -> ContainerDisconnectionOpts {
+        ContainerDisconnectionOpts {
+            params: self.params,
+        }
+    }
+}
 
 #[derive(Serialize, Debug)]
-/// Interface for connect container to network
+/// Interface for connecting a container to a network.
 pub struct ContainerConnectionOpts {
     params: HashMap<&'static str, Value>,
 }
@@ -183,7 +227,7 @@ impl ContainerConnectionOpts {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
-    /// Return a new instance of a builder for connectiong to container.
+    /// Return a new instance of a builder for connecting a container to a network.
     pub fn builder<I>(container_id: I) -> ContainerConnectionOptsBuilder
     where
         I: AsRef<str>,
@@ -196,47 +240,6 @@ impl ContainerConnectionOpts {
 pub struct ContainerConnectionOptsBuilder {
     params: HashMap<&'static str, Value>,
     container: String,
-}
-
-#[derive(Default)]
-/// Used to configure endpoint IPAM configuration when connection a container to a network.
-/// See [`ipam_config`](ContainerConnectOptsBuilder::ipam_config).
-pub struct EndpointIpamConfig {
-    params: HashMap<&'static str, serde_json::Value>,
-}
-
-impl EndpointIpamConfig {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn ipv4<A>(mut self, address: A) -> Self
-    where
-        A: Into<String>,
-    {
-        self.params.insert("IPv4Address", json!(address.into()));
-        self
-    }
-
-    pub fn ipv6<A>(mut self, address: A) -> Self
-    where
-        A: Into<String>,
-    {
-        self.params.insert("IPv6Address", json!(address.into()));
-        self
-    }
-
-    pub fn link_local_ips<I>(mut self, ips: I) -> Self
-    where
-        I: IntoIterator,
-        I::Item: Into<String>,
-    {
-        self.params.insert(
-            "LinkLocalIPs",
-            json!(ips.into_iter().map(I::Item::into).collect::<Vec<_>>()),
-        );
-        self
-    }
 }
 
 impl ContainerConnectionOptsBuilder {
@@ -313,6 +316,47 @@ impl ContainerConnectionOptsBuilder {
         params.insert("EndpointConfig", json!(self.params));
         params.insert("Container", json!(self.container));
         ContainerConnectionOpts { params }
+    }
+}
+
+#[derive(Default)]
+/// Used to configure endpoint IPAM configuration when connection a container to a network.
+/// See [`ipam_config`](ContainerConnectOptsBuilder::ipam_config).
+pub struct EndpointIpamConfig {
+    params: HashMap<&'static str, serde_json::Value>,
+}
+
+impl EndpointIpamConfig {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn ipv4<A>(mut self, address: A) -> Self
+    where
+        A: Into<String>,
+    {
+        self.params.insert("IPv4Address", json!(address.into()));
+        self
+    }
+
+    pub fn ipv6<A>(mut self, address: A) -> Self
+    where
+        A: Into<String>,
+    {
+        self.params.insert("IPv6Address", json!(address.into()));
+        self
+    }
+
+    pub fn link_local_ips<I>(mut self, ips: I) -> Self
+    where
+        I: IntoIterator,
+        I::Item: Into<String>,
+    {
+        self.params.insert(
+            "LinkLocalIPs",
+            json!(ips.into_iter().map(I::Item::into).collect::<Vec<_>>()),
+        );
+        self
     }
 }
 

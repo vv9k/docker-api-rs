@@ -17,31 +17,29 @@ impl<'docker> Network<'docker> {
     }
 
     api_doc! { Network => Connect
-    /// Connect container to network.
+    /// Connect a container to a network.
     |
     pub async fn connect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
-        self.do_connection("connect", opts).await
+        self.docker
+            .post(
+                &format!("/networks/{}/connect", self.id),
+                Payload::Json(opts.serialize()?),
+            )
+            .await.map(|_| ())
     }}
 
     api_doc! { Network => Disconnect
-    /// Disconnect container to network.
+    /// Disconnect a container from a network.
     |
-    pub async fn disconnect(&self, opts: &ContainerConnectionOpts) -> Result<()> {
-        self.do_connection("disconnect", opts).await
-    }}
-
-    async fn do_connection<S>(&self, segment: S, opts: &ContainerConnectionOpts) -> Result<()>
-    where
-        S: AsRef<str>,
-    {
+    pub async fn disconnect(&self, opts: &ContainerDisconnectionOpts) -> Result<()> {
         self.docker
             .post(
-                &format!("/networks/{}/{}", self.id, segment.as_ref()),
+                &format!("/networks/{}/disconnect", &self.id),
                 Payload::Json(opts.serialize()?),
             )
-            .await?;
-        Ok(())
-    }
+            .await
+            .map(|_| ())
+    }}
 }
 
 impl<'docker> Networks<'docker> {

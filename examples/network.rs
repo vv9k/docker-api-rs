@@ -72,11 +72,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Disconnect { container, network } => {
-            use docker_api::api::ContainerConnectionOpts;
+            use docker_api::api::ContainerDisconnectionOpts;
             if let Err(e) = docker
                 .networks()
                 .get(network)
-                .disconnect(&ContainerConnectionOpts::builder(container).build())
+                .disconnect(&ContainerDisconnectionOpts::builder(container).build())
                 .await
             {
                 eprintln!("Error: {}", e)
