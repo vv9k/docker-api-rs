@@ -50,7 +50,7 @@ env_logger = "0.8"
 # Required for examples to run
 futures = "0.3.1"
 tokio = { version="1.0", features=["macros", "rt-multi-thread"] }
-clap = "3.0.0-beta.5"
+clap = { version = "3.0.0-beta.5", features = ["derive"] }
 pretty_assertions = "0.7"
 
 [features]
