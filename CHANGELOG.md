@@ -8,6 +8,7 @@
 - Fix `LogConfig::config` field deserialization
 - Fix network creation [#11](https://github.com/vv9k/docker-api-rs/pull/11)
 - Add missing `NetworkInfo::created` field
+- Fix `Network::delete` endpoint
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
