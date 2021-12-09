@@ -1,5 +1,7 @@
 use crate::api::{ConfigMap, Labels, Options};
 
+#[cfg(feature = "chrono")]
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -88,6 +90,9 @@ pub struct NetworkInfo {
     pub name: Option<String>,
     pub labels: Labels,
     pub id: String,
+    pub created: DateTime<Utc>,
+    #[cfg(not(feature = "chrono"))]
+    pub created: u64,
     pub scope: Option<String>,
     pub driver: Option<String>,
     #[serde(rename = "EnableIPv6")]
