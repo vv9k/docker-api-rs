@@ -6,6 +6,7 @@
 - Fix `ContainerInfo::mounts` field deserialization
 - Fix `ContainerDetails::config` field deserialization
 - Fix `LogConfig::config` field deserialization
+- Fix network creation [#11](https://github.com/vv9k/docker-api-rs/pull/11)
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
