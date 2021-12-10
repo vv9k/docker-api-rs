@@ -327,6 +327,11 @@ impl ContainerOptsBuilder {
             .insert("HostConfig.PublishAllPorts", Value::Bool(true));
         self
     }
+    
+    pub fn security_options(mut self, security_options: Vec<String>) -> Self {
+        self.params.insert("HostConfig.SecurityOpt", json!(security_options));
+        self
+    }
 
     pub fn expose(mut self, srcport: PublishPort, hostport: u32) -> Self {
         let mut exposedport: HashMap<String, String> = HashMap::new();
