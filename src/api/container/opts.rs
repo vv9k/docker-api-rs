@@ -327,11 +327,6 @@ impl ContainerOptsBuilder {
             .insert("HostConfig.PublishAllPorts", Value::Bool(true));
         self
     }
-    
-    pub fn security_options(mut self, security_options: Vec<String>) -> Self {
-        self.params.insert("HostConfig.SecurityOpt", json!(security_options));
-        self
-    }
 
     pub fn expose(mut self, srcport: PublishPort, hostport: u32) -> Self {
         let mut exposedport: HashMap<String, String> = HashMap::new();
@@ -402,6 +397,11 @@ impl ContainerOptsBuilder {
         working_dir: W => "WorkingDir"
     );
 
+    impl_vec_field!(
+        /// Specify a Vec of string values to customize labels for MLS systems, such as SELinux.
+        security_options: S => "HostConfig.SecurityOpt"
+    );
+    
     impl_vec_field!(
         /// Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`
         volumes: V => "HostConfig.Binds"
