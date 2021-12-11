@@ -10,6 +10,7 @@
 - Add missing `NetworkInfo::created` field
 - Fix `Network::delete` endpoint
 - Fix `Network::disconnect` endpoint. It now uses correct `ContainerDisconnectionOpts`.
+- Add `ContainerCreateOptsBuilder::security_opts` function to specify container security options [#12](https://github.com/vv9k/docker-api-rs/pull/12)
 
 # 0.7.0
 - Make `PidsStats`, `Descriptor` and `DistributionInspectInfo` struct fields publicly accessible.
