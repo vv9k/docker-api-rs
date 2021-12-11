@@ -399,9 +399,9 @@ impl ContainerOptsBuilder {
 
     impl_vec_field!(
         /// Specify a Vec of string values to customize labels for MLS systems, such as SELinux.
-        security_options: S => "HostConfig.SecurityOpt"
+        security_options: O => "HostConfig.SecurityOpt"
     );
-    
+
     impl_vec_field!(
         /// Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`
         volumes: V => "HostConfig.Binds"
