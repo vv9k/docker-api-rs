@@ -1,4 +1,7 @@
-use crate::{api::Filter, Error, Result};
+use crate::{
+    api::{Filter, Ipam},
+    Error, Result,
+};
 
 use std::{collections::HashMap, convert::AsRef};
 
@@ -162,7 +165,10 @@ impl NetworkCreateOptsBuilder {
         labels: L => "Labels"
     );
 
-    // TODO: add IPAM
+    impl_field!(
+        /// IP Address Management configuration
+        ipam: Ipam => "IPAM"
+    );
 
     pub fn build(&self) -> NetworkCreateOpts {
         NetworkCreateOpts {
