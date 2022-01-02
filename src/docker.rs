@@ -537,9 +537,10 @@ mod tests {
         d.unwrap();
 
         #[cfg(unix)]
-        let d = Docker::new("unix://127.0.0.1:80");
-        d.unwrap();
-
+        {
+            let d = Docker::new("unix://127.0.0.1:80");
+            d.unwrap();
+        }
         #[cfg(not(unix))]
         {
             let d = Docker::new("unix://127.0.0.1:80");

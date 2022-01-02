@@ -146,6 +146,7 @@ impl Transport {
             Self::Tcp { ref host, .. } => host.as_ref(),
             #[cfg(feature = "tls")]
             Self::EncryptedTcp { ref host, .. } => host.as_ref(),
+            #[cfg(unix)]
             Self::Unix { ref path, .. } => path.to_str().unwrap_or_default(),
         }
     }
