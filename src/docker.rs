@@ -103,6 +103,8 @@ impl Docker {
         Self::unix_versioned(socket_path, LATEST_API_VERSION)
     }
 
+    #[cfg(unix)]
+    #[cfg_attr(docsrs, doc(cfg(unix)))]
     /// Same as [`Docker::unix`](Docker::unix) but the API version can be explicitly specified.
     pub fn unix_versioned<P>(socket_path: P, version: impl Into<ApiVersion>) -> Docker
     where
