@@ -12,6 +12,8 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
+containers-api-conn = "0.1"
+
 log = "0.4"
 paste = "1"
 thiserror = "1"
@@ -55,8 +57,8 @@ pretty_assertions = "0.7"
 
 [features]
 default = ["chrono"]
-tls = ["openssl", "hyper-openssl"]
-vendored-ssl = ["tls", "openssl/vendored"]
+tls = ["containers-api-conn/tls"]
+vendored-ssl = ["tls", "containers-api-conn/vendored-ssl"]
 swarm = []
 
 

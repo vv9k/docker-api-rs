@@ -17,8 +17,7 @@ use crate::conn::get_unix_connector;
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
-    stream::Stream,
-    TryStreamExt,
+    stream::{Stream, TryStreamExt},
 };
 use hyper::{body::Bytes, Body, Client, Method, Response};
 use log::trace;
@@ -247,6 +246,7 @@ impl Docker {
                 Headers::none(),
             )
             .await
+            .map_err(Error::from)
     }
 
     pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
@@ -276,6 +276,7 @@ impl Docker {
                 Headers::none(),
             )
             .await
+            .map_err(Error::from)
     }
 
     pub(crate) async fn post_headers<B>(
@@ -295,6 +296,7 @@ impl Docker {
                 Some(headers),
             )
             .await
+            .map_err(Error::from)
     }
 
     pub(crate) async fn put<B>(&self, endpoint: &str, body: Payload<B>) -> Result<String>
@@ -309,6 +311,7 @@ impl Docker {
                 Headers::none(),
             )
             .await
+            .map_err(Error::from)
     }
 
     pub(crate) async fn post_json<B, T>(
@@ -368,6 +371,7 @@ impl Docker {
                 Headers::none(),
             )
             .await
+            .map_err(Error::from)
     }
 
     pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
@@ -394,6 +398,7 @@ impl Docker {
                 Headers::none(),
             )
             .await
+            .map_err(Error::from)
     }
 
     /// Send a streaming post request.
@@ -408,12 +413,14 @@ impl Docker {
     where
         B: Into<Body> + 'a,
     {
-        self.transport.stream_chunks(
-            Method::POST,
-            self.version.make_endpoint(endpoint),
-            body,
-            headers,
-        )
+        self.transport
+            .stream_chunks(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                headers,
+            )
+            .map_err(Error::from)
     }
 
     /// Send a streaming post request.
@@ -426,12 +433,14 @@ impl Docker {
     where
         B: Into<Body> + 'a,
     {
-        self.transport.stream_json_chunks(
-            Method::POST,
-            self.version.make_endpoint(endpoint),
-            body,
-            headers,
-        )
+        self.transport
+            .stream_json_chunks(
+                Method::POST,
+                self.version.make_endpoint(endpoint),
+                body,
+                headers,
+            )
+            .map_err(Error::from)
     }
 
     /// Send a streaming post request that returns a stream of JSON values
@@ -466,12 +475,14 @@ impl Docker {
         &'a self,
         endpoint: impl AsRef<str> + Unpin + 'a,
     ) -> impl Stream<Item = Result<Bytes>> + 'a {
-        self.transport.stream_chunks(
-            Method::GET,
-            self.version.make_endpoint(endpoint),
-            Payload::empty(),
-            Headers::none(),
-        )
+        self.transport
+            .stream_chunks(
+                Method::GET,
+                self.version.make_endpoint(endpoint),
+                Payload::empty(),
+                Headers::none(),
+            )
+            .map_err(Error::from)
     }
 
     pub(crate) async fn stream_post_upgrade<'a, B>(
@@ -485,6 +496,7 @@ impl Docker {
         self.transport
             .stream_upgrade(Method::POST, self.version.make_endpoint(endpoint), body)
             .await
+            .map_err(Error::from)
     }
 }
 

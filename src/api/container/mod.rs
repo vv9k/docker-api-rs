@@ -205,7 +205,7 @@ impl<'docker> Container<'docker> {
     pub fn exec(
         &'docker self,
         opts: &ExecContainerOpts,
-    ) -> impl Stream<Item = Result<TtyChunk>> + Unpin + 'docker {
+    ) -> impl Stream<Item = crate::conn::Result<TtyChunk>> + Unpin + 'docker {
         Exec::create_and_start(self.docker, &self.id, opts)
     }}
 

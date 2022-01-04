@@ -1,6 +1,9 @@
 //! Run new commands inside running containers.
 
-use futures_util::{stream::Stream, TryFutureExt};
+use futures_util::{
+    stream::{Stream, TryStreamExt},
+    TryFutureExt,
+};
 use hyper::Body;
 use serde::{Deserialize, Serialize};
 
@@ -76,7 +79,7 @@ impl<'docker> Exec<'docker> {
         docker: &'docker Docker,
         container_id: C,
         opts: &ExecContainerOpts,
-    ) -> impl Stream<Item = Result<tty::TtyChunk>> + Unpin + 'docker
+    ) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + Unpin + 'docker
     where
         C: AsRef<str>,
     {
@@ -98,15 +101,25 @@ impl<'docker> Exec<'docker> {
         Box::pin(
             async move {
                 let exec_id = docker
-                    .post_json(&container_endpoint, Payload::Json(body_result?))
+                    .post_json(
+                        &container_endpoint,
+                        Payload::Json(
+                            body_result.map_err(|e| crate::conn::Error::Any(Box::new(e)))?,
+                        ),
+                    )
                     .await
-                    .map(|resp: Response| resp.id)?;
+                    .map(|resp: Response| resp.id)
+                    .map_err(|e| crate::conn::Error::Any(Box::new(e)))?;
 
-                let stream = Box::pin(docker.stream_post(
-                    format!("/exec/{}/start", exec_id),
-                    Payload::Json("{}"),
-                    Headers::none(),
-                ));
+                let stream = Box::pin(
+                    docker
+                        .stream_post(
+                            format!("/exec/{}/start", exec_id),
+                            Payload::Json("{}"),
+                            Headers::none(),
+                        )
+                        .map_err(|e| crate::conn::Error::Any(Box::new(e))),
+                );
 
                 Ok(tty::decode(stream))
             }
@@ -129,7 +142,7 @@ impl<'docker> Exec<'docker> {
     api_doc! { Exec => Start
     /// Starts this exec instance returning a multiplexed tty stream.
     |
-    pub fn start(&self) -> impl Stream<Item = Result<tty::TtyChunk>> + 'docker {
+    pub fn start(&self) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + 'docker {
         // We must take ownership of the docker reference to not needlessly tie the stream to the
         // lifetime of `self`.
         let docker = self.docker;
@@ -138,8 +151,11 @@ impl<'docker> Exec<'docker> {
         let endpoint = format!("/exec/{}/start", &self.id);
         Box::pin(
             async move {
-                let stream =
-                    Box::pin(docker.stream_post(endpoint, Payload::Json("{}"), Headers::none()));
+                let stream = Box::pin(
+                    docker
+                        .stream_post(endpoint, Payload::Json("{}"), Headers::none())
+                        .map_err(|e| crate::conn::Error::Any(Box::new(e))),
+                );
 
                 Ok(tty::decode(stream))
             }

@@ -34,7 +34,10 @@ mod util;
 mod version;
 
 pub mod api;
-pub mod conn;
+pub mod conn {
+    pub(crate) use containers_api_conn::*;
+    pub use containers_api_conn::{Error, Transport, TtyChunk};
+}
 pub mod docker;
 pub mod errors;
 
