@@ -507,7 +507,7 @@ macro_rules! impl_api_ep {
         api_doc! { $base => Create
         #[doc = concat!("Create a new ", stringify!($base), ".")]
         |
-        pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]<'_>> {
+        pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]<'docker>> {
             self.docker.post_json(&$ep, Payload::Json(opts.serialize()?)).await
             .map(|$resp: [< $base CreateInfo >]| [< $base >]::new(self.docker, $($extra)*))
         }}
