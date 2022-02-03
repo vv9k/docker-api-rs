@@ -659,6 +659,6 @@ pub struct Exit {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContainersPruneInfo {
-    pub containers_deleted: Vec<String>,
+    pub containers_deleted: Option<Vec<String>>,
     pub space_reclaimed: u64,
 }
