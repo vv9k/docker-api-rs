@@ -1,5 +1,6 @@
 # 0.9.0
 - Fix `ContainersPruneInfo` deserialization
+- Logs endpoint now correctly returns `TtyChunk` instead of `Bytes`
 
 # 0.8.0
 - Make `ContainerInfo::state` and `ContainerSummary::state` strongly typed.

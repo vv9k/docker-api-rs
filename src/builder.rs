@@ -539,11 +539,14 @@ macro_rules! impl_api_ep {
         pub fn logs(
             &self,
             opts: &crate::api::LogsOpts
-        ) -> impl futures_util::Stream<Item = crate::Result<bytes::Bytes>> + Unpin + 'docker {
+        ) -> impl futures_util::Stream<Item = crate::Result<TtyChunk>> + Unpin + 'docker {
+            use containers_api_conn::tty;
             let $it = self;
             let ep = crate::util::url::construct_ep($ep, opts.serialize());
 
-            Box::pin(self.docker.stream_get(ep))
+            let stream = Box::pin(self.docker.stream_get(ep).map_err(|e| containers_api_conn::Error::Any(Box::new(e))));
+
+            Box::pin(tty::decode(stream).map_err(crate::Error::Error))
         }
         }}
     };
