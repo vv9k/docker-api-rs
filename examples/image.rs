@@ -78,7 +78,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             use docker_api::api::BuildOpts;
             let options = BuildOpts::builder(path).tag(tag).build();
 
-            let mut stream = docker.images().build(&options);
+            let images = docker.images();
+            let mut stream = images.build(&options);
             while let Some(build_result) = stream.next().await {
                 match build_result {
                     Ok(output) => println!("{:?}", output),
@@ -130,7 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let reader = Box::from(f);
 
-            let mut stream = docker.images().import(reader);
+            let images = docker.images();
+            let mut stream = images.import(reader);
 
             while let Some(import_result) = stream.next().await {
                 match import_result {
@@ -183,8 +185,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 PullOpts::builder().image(image).build()
             };
-
-            let mut stream = docker.images().pull(&opts);
+            let images = docker.images();
+            let mut stream = images.pull(&opts);
 
             while let Some(pull_result) = stream.next().await {
                 match pull_result {
@@ -212,7 +214,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let tag_opts = TagOpts::builder().repo(repo).tag(tag).build();
 
-            let image = Image::new(&docker, name);
+            let image = Image::new(docker, name);
 
             if let Err(e) = image.tag(&tag_opts).await {
                 eprintln!("Error: {}", e)

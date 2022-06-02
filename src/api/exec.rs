@@ -18,13 +18,13 @@ pub type ExecIdRef<'a> = &'a str;
 api_doc! { Exec
 /// Interface for docker exec instance
 |
-pub struct Exec<'docker> {
-    docker: &'docker Docker,
+pub struct Exec {
+    docker: Docker,
     id: ExecId,
 }}
 
-impl<'docker> Exec<'docker> {
-    fn new<ID>(docker: &'docker Docker, id: ID) -> Self
+impl Exec {
+    fn new<ID>(docker: Docker, id: ID) -> Self
     where
         ID: Into<ExecId>,
     {
@@ -42,10 +42,10 @@ impl<'docker> Exec<'docker> {
     /// Creates a new exec instance that will be executed in a container with id == container_id.
     |
     pub async fn create<C>(
-        docker: &'docker Docker,
+        docker: Docker,
         container_id: C,
         opts: &ExecContainerOpts,
-    ) -> Result<Exec<'docker>>
+    ) -> Result<Exec>
     where
         C: AsRef<str>,
     {
@@ -75,7 +75,7 @@ impl<'docker> Exec<'docker> {
     // into the stream and have the lifetimes work out as you would expect.
     //
     // Yes, it is sad that we can't do the easy method and thus have some duplicated code.
-    pub(crate) fn create_and_start<C>(
+    pub(crate) fn create_and_start<'docker, C>(
         docker: &'docker Docker,
         container_id: C,
         opts: &ExecContainerOpts,
@@ -132,7 +132,7 @@ impl<'docker> Exec<'docker> {
     /// It's in callers responsibility to ensure that exec instance with specified id actually
     /// exists. Use [Exec::create](Exec::create) to ensure that the exec instance is created
     /// beforehand.
-    pub fn get<ID>(docker: &'docker Docker, id: ID) -> Exec<'docker>
+    pub fn get<ID>(docker: Docker, id: ID) -> Exec
     where
         ID: Into<ExecId>,
     {
@@ -142,10 +142,10 @@ impl<'docker> Exec<'docker> {
     api_doc! { Exec => Start
     /// Starts this exec instance returning a multiplexed tty stream.
     |
-    pub fn start(&self) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + 'docker {
+    pub fn start(&self) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + '_ {
         // We must take ownership of the docker reference to not needlessly tie the stream to the
         // lifetime of `self`.
-        let docker = self.docker;
+        let docker = &self.docker;
         // We convert `self.id` into the (owned) endpoint outside of the stream to not needlessly
         // tie the stream to the lifetime of `self`.
         let endpoint = format!("/exec/{}/start", &self.id);

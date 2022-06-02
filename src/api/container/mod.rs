@@ -23,7 +23,7 @@ use crate::{
 
 impl_api_ty!(Container => id);
 
-impl<'docker> Container<'docker> {
+impl Container {
     impl_api_ep! {container: Container, resp
         Inspect -> &format!("/containers/{}/json", container.id), Details
         Logs -> &format!("/containers/{}/logs", container.id)
@@ -43,7 +43,7 @@ impl<'docker> Container<'docker> {
     }}
 
     /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
-    async fn attach_raw(&self) -> Result<impl AsyncRead + AsyncWrite + Send + 'docker> {
+    async fn attach_raw(&self) -> Result<impl AsyncRead + AsyncWrite + Send + '_> {
         self.docker
             .stream_post_upgrade(
                 format!(
@@ -62,7 +62,7 @@ impl<'docker> Container<'docker> {
     ///
     /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
     |
-    pub async fn attach(&self) -> Result<TtyMultiplexer<'docker>> {
+    pub async fn attach(&self) -> Result<TtyMultiplexer<'_>> {
         self.attach_raw().await.map(TtyMultiplexer::new)
     }}
 
@@ -78,7 +78,7 @@ impl<'docker> Container<'docker> {
     api_doc! { Container => Export
     /// Exports the current docker container into a tarball.
     |
-    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
+    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + '_{
         self.docker
             .stream_get(format!("/containers/{}/export", self.id))
             .map_ok(|c| c.to_vec())
@@ -87,7 +87,7 @@ impl<'docker> Container<'docker> {
     api_doc! { Container => Stats
     /// Returns a stream of stats specific to this container instance.
     |
-    pub fn stats(&self) -> impl Stream<Item = Result<Stats>> + Unpin + 'docker {
+    pub fn stats(&self) -> impl Stream<Item = Result<Stats>> + Unpin + '_{
         let codec = futures_codec::LinesCodec {};
 
         let reader = Box::pin(
@@ -203,10 +203,10 @@ impl<'docker> Container<'docker> {
     /// Execute a command in this container.
     |
     pub fn exec(
-        &'docker self,
+        &self,
         opts: &ExecContainerOpts,
-    ) -> impl Stream<Item = crate::conn::Result<TtyChunk>> + Unpin + 'docker {
-        Exec::create_and_start(self.docker, &self.id, opts)
+    ) -> impl Stream<Item = crate::conn::Result<TtyChunk>> + Unpin + '_ {
+        Exec::create_and_start(&self.docker, &self.id, opts)
     }}
 
     api_doc! { Container => Archive
@@ -219,7 +219,7 @@ impl<'docker> Container<'docker> {
     /// ends in `/.`  then this indicates that only the contents of the path directory should be
     /// copied.  A symlink is always resolved to its target.
     |
-    pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
+    pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
         self.docker
             .stream_get(format!(
                 "/containers/{}/archive?{}",
@@ -318,7 +318,7 @@ impl<'docker> Container<'docker> {
     }}
 }
 
-impl<'docker> Containers<'docker> {
+impl Containers {
     impl_api_ep! {__: Container, resp
         List -> "/containers/json"
         Prune ->  "/containers/prune"
@@ -327,7 +327,7 @@ impl<'docker> Containers<'docker> {
     api_doc! { Containers => Create
     /// Create a container
     |
-    pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container<'docker>>
+    pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container>
     {
         let ep = if let Some(name) = opts.name().as_ref() {
             construct_ep("/containers/create", Some(encoded_pair("name", name)))
@@ -335,6 +335,6 @@ impl<'docker> Containers<'docker> {
             "/containers/create".to_owned()
         };
         self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
-        .map(|resp: ContainerCreateInfo| Container::new(self.docker, resp.id))
+        .map(|resp: ContainerCreateInfo| Container::new(self.docker.clone(), resp.id))
     }}
 }

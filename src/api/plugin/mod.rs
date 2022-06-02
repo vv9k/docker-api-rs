@@ -16,7 +16,7 @@ use std::path::Path;
 
 impl_api_ty!(Plugin => name);
 
-impl<'docker> Plugin<'docker> {
+impl Plugin {
     impl_api_ep! {plug: Plugin, resp
         Inspect -> &format!("/plugins/{}/json", plug.name)
         ForceDelete -> &format!("/plugins/{}", plug.name), PluginInfo
@@ -74,7 +74,7 @@ impl<'docker> Plugin<'docker> {
     }}
 }
 
-impl<'docker> Plugins<'docker> {
+impl Plugins {
     impl_api_ep! {plug: Plugin, resp
         List -> "/plugins"
     }

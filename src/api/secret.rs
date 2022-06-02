@@ -5,7 +5,7 @@ use crate::{conn::Payload, Result};
 
 impl_api_ty!(Secret => name);
 
-impl<'docker> Secret<'docker> {
+impl Secret {
     impl_api_ep! { secret: Secret, resp
         Inspect -> &format!("/secrets/{}", secret.name)
         Delete -> &format!("/secrets/{}", secret.name)
@@ -13,7 +13,7 @@ impl<'docker> Secret<'docker> {
     // TODO: add Secret::update
 }
 
-impl<'docker> Secrets<'docker> {
+impl Secrets {
     impl_api_ep! { __: Secret, resp
         List -> "/secrets"
         Create -> "/secrets/create", resp.id

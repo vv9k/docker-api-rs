@@ -10,13 +10,13 @@ use crate::{conn::Payload, Docker, Result};
 
 api_doc! { Swarm
 |
-pub struct Swarm<'docker> {
-    docker: &'docker Docker,
+pub struct Swarm {
+    docker: Docker,
 }
 }
 
-impl<'docker> Swarm<'docker> {
-    pub fn new(docker: &'docker Docker) -> Self {
+impl Swarm {
+    pub fn new(docker: Docker) -> Self {
         Self { docker }
     }
 

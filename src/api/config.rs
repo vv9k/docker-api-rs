@@ -6,7 +6,7 @@ use crate::{conn::Payload, Result};
 
 impl_api_ty!(Config => name);
 
-impl<'docker> Config<'docker> {
+impl Config {
     impl_api_ep! { cfg: Config, resp
         Inspect -> &format!("/configs/{}", cfg.name)
         Delete -> &format!("/configs/{}", cfg.name)
@@ -15,7 +15,7 @@ impl<'docker> Config<'docker> {
     // TODO: add Config::update
 }
 
-impl<'docker> Configs<'docker> {
+impl Configs {
     impl_api_ep! { __: Config, resp
         List -> "/configs"
         Create -> "/configs/create", resp.id

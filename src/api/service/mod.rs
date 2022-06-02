@@ -10,10 +10,11 @@ use crate::{
     conn::{Headers, Payload, AUTH_HEADER},
     Result,
 };
+use containers_api_conn::tty::TtyChunk;
 
 impl_api_ty!(Service => name);
 
-impl<'docker> Service<'docker> {
+impl Service {
     api_doc! { Service => Create
     /// Creates a new service from ServiceOpts.
     |
@@ -37,7 +38,7 @@ impl<'docker> Service<'docker> {
     }
 }
 
-impl<'docker> Services<'docker> {
+impl Services {
     impl_api_ep! { svc: Service, resp
         List -> "/services"
     }

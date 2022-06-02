@@ -10,7 +10,7 @@ use crate::{conn::Payload, Result};
 
 impl_api_ty!(Network => id);
 
-impl<'docker> Network<'docker> {
+impl Network {
     impl_api_ep! { net: Network, resp
         Inspect -> &format!("/networks/{}", net.id)
         Delete -> &format!("/networks/{}", net.id)
@@ -42,7 +42,7 @@ impl<'docker> Network<'docker> {
     }}
 }
 
-impl<'docker> Networks<'docker> {
+impl Networks {
     impl_api_ep! { __: Network, resp
         List -> "/networks"
         Create -> "/networks/create", resp.id
