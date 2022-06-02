@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .attach_stderr(true)
                 .build();
 
-            let exec = Exec::create(&docker, &container, &opts).await?;
+            let exec = Exec::create(docker, &container, &opts).await?;
 
             println!("{:#?}", exec.inspect().await?);
 
@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             height,
         } => {
             use docker_api::api::ExecResizeOpts;
-            let exec = Exec::get(&docker, &exec);
+            let exec = Exec::get(docker, &exec);
 
             // Resize its window with given parameters
             let resize_opts = ExecResizeOpts::builder()

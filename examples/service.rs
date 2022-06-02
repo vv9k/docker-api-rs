@@ -78,10 +78,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             use docker_api::api::LogsOpts;
             use futures::StreamExt;
 
-            let logs_stream = docker
-                .services()
-                .get(&service)
-                .logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
+            let service = docker.services().get(&service);
+            let logs_stream =
+                service.logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
 
             let logs: Vec<_> = logs_stream
                 .map(|chunk| match chunk {

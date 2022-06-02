@@ -85,7 +85,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Attach { id } => {
-            let tty_multiplexer = docker.containers().get(&id).attach().await?;
+            let container = docker.containers().get(&id);
+            let tty_multiplexer = container.attach().await?;
 
             let (mut reader, _writer) = tty_multiplexer.split();
 

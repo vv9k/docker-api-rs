@@ -15,7 +15,7 @@ impl_api_ty!(Node => name);
 
 type Void = ();
 
-impl<'docker> Node<'docker> {
+impl Node {
     impl_api_ep! {node: Node, resp
         Inspect -> &format!("/nodes/{}", node.name)
         ForceDelete -> &format!("/nodes/{}", node.name), Void
@@ -39,7 +39,7 @@ impl<'docker> Node<'docker> {
     }}
 }
 
-impl<'docker> Nodes<'docker> {
+impl Nodes {
     impl_api_ep! {node: Node, resp
         List -> "/nodes"
     }

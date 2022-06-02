@@ -1,6 +1,8 @@
 # 0.9.0
 - Fix `ContainersPruneInfo` deserialization
 - Logs endpoint now correctly returns `TtyChunk` instead of `Bytes`
+- *BREAKING* All API structs no longer have a `'docker` lifetime. This change makes it easier to create self working objects without the lifetime hell and according to
+  hyper client documentation it is cheap to clone and cloning is the recommended way to share a client.
 
 # 0.8.0
 - Make `ContainerInfo::state` and `ContainerSummary::state` strongly typed.

@@ -3,17 +3,18 @@
 //! Swarm mode must be enabled for these endpoints to work.
 
 use crate::Result;
+use containers_api_conn::tty::TtyChunk;
 
 impl_api_ty!(Task => id);
 
-impl<'docker> Task<'docker> {
+impl Task {
     impl_api_ep! { task: Task, resp
         Inspect -> &format!("/tasks/{}", task.id)
         Logs -> &format!("/tasks/{}/logs", task.id)
     }
 }
 
-impl<'docker> Tasks<'docker> {
+impl Tasks {
     impl_api_ep! { task: Task, resp
         List -> "/tasks"
     }

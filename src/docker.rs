@@ -199,23 +199,23 @@ impl Docker {
     }
 
     /// Exports an interface for interacting with Docker images
-    pub fn images(&'_ self) -> Images<'_> {
-        Images::new(self)
+    pub fn images(&'_ self) -> Images {
+        Images::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker containers
-    pub fn containers(&'_ self) -> Containers<'_> {
-        Containers::new(self)
+    pub fn containers(&'_ self) -> Containers {
+        Containers::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker networks
-    pub fn networks(&'_ self) -> Networks<'_> {
-        Networks::new(self)
+    pub fn networks(&'_ self) -> Networks {
+        Networks::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker volumes
-    pub fn volumes(&'_ self) -> Volumes<'_> {
-        Volumes::new(self)
+    pub fn volumes(&'_ self) -> Volumes {
+        Volumes::new(self.clone())
     }
 
     /// Verifies the API version returned by the server and adjusts the version used by this client
@@ -503,38 +503,38 @@ impl Docker {
 #[cfg(feature = "swarm")]
 impl Docker {
     /// Exports an interface for interacting with Docker services.
-    pub fn services(&'_ self) -> Services<'_> {
-        Services::new(self)
+    pub fn services(&'_ self) -> Services {
+        Services::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker configs.
-    pub fn configs(&'_ self) -> Configs<'_> {
-        Configs::new(self)
+    pub fn configs(&'_ self) -> Configs {
+        Configs::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker tasks.
-    pub fn tasks(&'_ self) -> Tasks<'_> {
-        Tasks::new(self)
+    pub fn tasks(&'_ self) -> Tasks {
+        Tasks::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker secrets.
-    pub fn secrets(&'_ self) -> Secrets<'_> {
-        Secrets::new(self)
+    pub fn secrets(&'_ self) -> Secrets {
+        Secrets::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker swarm.
-    pub fn swarm(&'_ self) -> Swarm<'_> {
-        Swarm::new(self)
+    pub fn swarm(&'_ self) -> Swarm {
+        Swarm::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker nodes.
-    pub fn nodes(&'_ self) -> Nodes<'_> {
-        Nodes::new(self)
+    pub fn nodes(&'_ self) -> Nodes {
+        Nodes::new(self.clone())
     }
 
     /// Exports an interface for interacting with Docker plugins.
-    pub fn plugins(&'_ self) -> Plugins<'_> {
-        Plugins::new(self)
+    pub fn plugins(&'_ self) -> Plugins {
+        Plugins::new(self.clone())
     }
 }
 

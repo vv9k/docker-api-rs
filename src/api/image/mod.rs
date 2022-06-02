@@ -22,7 +22,7 @@ impl_api_ty!(Image => name);
 
 pub type DeleteStatus = Vec<Status>;
 
-impl<'docker> Image<'docker> {
+impl Image {
     impl_api_ep! {img: Image, resp
         Inspect -> &format!("/images/{}/json", img.name), Details
         DeleteWithOpts -> &format!("/images/{}", img.name), DeleteStatus, delete_json
@@ -40,7 +40,7 @@ impl<'docker> Image<'docker> {
     api_doc! { Image => Get
     /// Export this image to a tarball.
     |
-    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + Unpin + 'docker {
+    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + Unpin + '_ {
         Box::pin(
             self.docker
                 .stream_get(format!("/images/{}/get", self.name))
@@ -86,7 +86,7 @@ impl<'docker> Image<'docker> {
     }}
 }
 
-impl<'docker> Images<'docker> {
+impl Images {
     impl_api_ep! {img: Image, resp
         List -> "/images/json"
         Prune ->  "/images/prune"
@@ -95,8 +95,8 @@ impl<'docker> Images<'docker> {
     api_doc! { Image => Build
     /// Builds a new image build by reading a Dockerfile in a target directory.
     |
-    pub fn build(
-        &self,
+    pub fn build<'docker>(
+        &'docker self,
         opts: &BuildOpts,
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
         let ep = construct_ep("/build", opts.serialize());
@@ -107,9 +107,7 @@ impl<'docker> Images<'docker> {
         let mut bytes = Vec::default();
         let tar_result = tarball::dir(&mut bytes, &opts.path);
 
-        // We must take ownership of the Docker reference. If we don't then the lifetime of 'stream
-        // is incorrectly tied to `self`.
-        let docker = self.docker;
+        let docker = &self.docker;
         Box::pin(
             async move {
                 // Bubble up error inside the stream for backwards compatability
@@ -139,8 +137,8 @@ impl<'docker> Images<'docker> {
     api_doc! { Image => Pull
     /// Pull and create a new docker images from an existing image.
     |
-    pub fn pull(
-        &self,
+    pub fn pull<'docker>(
+        &'docker self,
         opts: &PullOpts,
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
         let headers = opts
@@ -158,7 +156,7 @@ impl<'docker> Images<'docker> {
     /// Exports a collection of named images,
     /// either by name, name:tag, or image id, into a tarball.
     |
-    pub fn export(&self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
+    pub fn export<'docker>(&'docker self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         self.docker
             .stream_get(format!(
                 "/images/get?{}",
@@ -171,8 +169,8 @@ impl<'docker> Images<'docker> {
     /// Imports an image or set of images from a given tarball source.
     /// Source can be uncompressed on compressed via gzip, bzip2 or xz.
     |
-    pub fn import<R>(
-        self,
+    pub fn import<'docker, R>(
+        &'docker self,
         mut tarball: R,
     ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker
     where
@@ -199,7 +197,7 @@ impl<'docker> Images<'docker> {
     /// Push an image to registry.
     |
     pub async fn push(&self, name: impl Into<String>, opts: &ImagePushOpts) -> Result<()> {
-        let image = Image::new(self.docker, name);
+        let image = Image::new(self.docker.clone(), name);
         image.push(opts).await
     }}
 

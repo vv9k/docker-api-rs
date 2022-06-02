@@ -230,16 +230,16 @@ macro_rules! impl_api_ty {
             calculated_doc!{
             #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n", api_url!($name))]
             #[derive(Debug)]
-            pub struct [< $name >]<'docker> {
-                docker: &'docker crate::Docker,
+            pub struct [< $name >] {
+                docker: crate::Docker,
                 $name_field: [< $name Id >],
             }
             }
-            impl<'docker> [< $name >]<'docker> {
+            impl [< $name >] {
                 // TODO: this is possible on nightly, figure out what to do
                 calculated_doc!{
                 #[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), " instance.")]
-                pub fn new<ID>(docker: &'docker crate::Docker, $name_field: ID) -> Self
+                pub fn new<ID>(docker: crate::Docker, $name_field: ID) -> Self
                 where
                     ID: Into<[< $name Id>]>,
                 {
@@ -264,26 +264,26 @@ macro_rules! impl_api_ty {
             calculated_doc!{
             #[doc = concat!("Interface for Docker ", stringify!($name), "s.", stringify!($name), ">")]
             #[derive(Debug)]
-            pub struct [< $name s >]<'docker> {
-                docker: &'docker crate::Docker,
+            pub struct [< $name s >] {
+                docker: crate::Docker,
             }
             }
 
-            impl<'docker> [< $name s >]<'docker> {
+            impl [< $name s >] {
                 calculated_doc!{
                 #[doc = concat!("Exports an interface for interacting with Docker ", stringify!($name), "s.")]
-                pub fn new(docker: &'docker crate::Docker) -> Self {
+                pub fn new(docker: crate::Docker) -> Self {
                     [< $name s >] { docker }
                 }
                 }
 
                 calculated_doc!{
                 #[doc = concat!("Returns a reference to a set of operations available to a specific ", stringify!($name), ".")]
-                pub fn get<ID>(&self, $name_field: ID) -> [< $name >]<'docker>
+                pub fn get<ID>(&self, $name_field: ID) -> [< $name >]
                 where
                     ID: Into<[< $name Id >]>,
                 {
-                    [< $name >]::new(self.docker, $name_field)
+                    [< $name >]::new(self.docker.clone(), $name_field)
                 }
                 }
             }
@@ -507,9 +507,9 @@ macro_rules! impl_api_ep {
         api_doc! { $base => Create
         #[doc = concat!("Create a new ", stringify!($base), ".")]
         |
-        pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]<'docker>> {
+        pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]> {
             self.docker.post_json(&$ep, Payload::Json(opts.serialize()?)).await
-            .map(|$resp: [< $base CreateInfo >]| [< $base >]::new(self.docker, $($extra)*))
+            .map(|$resp: [< $base CreateInfo >]| [< $base >]::new(self.docker.clone(), $($extra)*))
         }}
         }
     };
@@ -536,11 +536,12 @@ macro_rules! impl_api_ep {
         api_doc! { $base => Logs
         #[doc = concat!("Returns a stream of logs from a ", stringify!($base), ".")]
         |
-        pub fn logs(
-            &self,
+        pub fn logs<'docker>(
+            &'docker self,
             opts: &crate::api::LogsOpts
         ) -> impl futures_util::Stream<Item = crate::Result<TtyChunk>> + Unpin + 'docker {
             use containers_api_conn::tty;
+            use futures_util::TryStreamExt;
             let $it = self;
             let ep = crate::util::url::construct_ep($ep, opts.serialize());
 
