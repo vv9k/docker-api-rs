@@ -608,7 +608,6 @@ impl ContainerCommitOptsBuilder {
     );
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

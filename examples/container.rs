@@ -158,7 +158,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("Error: {}", e)
             }
         }
-        Cmd::Commit { id, repo, tag, comment, author, pause, changes } => {
+        Cmd::Commit {
+            id,
+            repo,
+            tag,
+            comment,
+            author,
+            pause,
+            changes,
+        } => {
             use docker_api::api::ContainerCommitOpts;
 
             let mut opts = ContainerCommitOpts::builder();
@@ -185,7 +193,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(id) => println!("{:?}", id),
                 Err(e) => eprintln!("Error: {}", e),
             }
-
         }
         Cmd::Create { image, nam } => {
             use docker_api::api::ContainerCreateOpts;
