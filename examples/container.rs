@@ -27,6 +27,29 @@ enum Cmd {
         id: String,
         remote_path: PathBuf,
     },
+    /// Create a new image from a container
+    Commit {
+        /// Container ID
+        id: String,
+        #[clap(short, long)]
+        /// Repository name for the created image
+        repo: Option<String>,
+        #[clap(short, long)]
+        /// Tag name for the create image
+        tag: Option<String>,
+        #[clap(short, long)]
+        /// Commit message
+        comment: Option<String>,
+        #[clap(short, long)]
+        /// Author of the image (e.g., John Hannibal Smith <hannibal@a-team.com>)
+        author: Option<String>,
+        #[clap(short, long)]
+        ///  Whether to pause the container before committing
+        pause: Option<bool>,
+        #[clap(long)]
+        /// Dockerfile instructions to apply while committing
+        changes: Option<String>,
+    },
     /// Create a new container.
     Create {
         image: String,
@@ -134,6 +157,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             {
                 eprintln!("Error: {}", e)
             }
+        }
+        Cmd::Commit { id, repo, tag, comment, author, pause, changes } => {
+            use docker_api::api::ContainerCommitOpts;
+
+            let mut opts = ContainerCommitOpts::builder();
+
+            if let Some(repo) = repo {
+                opts = opts.repo(repo)
+            }
+            if let Some(tag) = tag {
+                opts = opts.tag(tag)
+            }
+            if let Some(comment) = comment {
+                opts = opts.comment(comment)
+            }
+            if let Some(author) = author {
+                opts = opts.author(author)
+            }
+            if let Some(pause) = pause {
+                opts = opts.pause(pause)
+            }
+            if let Some(changes) = changes {
+                opts = opts.changes(changes)
+            }
+            match docker.containers().get(id).commit(&opts.build()).await {
+                Ok(id) => println!("{:?}", id),
+                Err(e) => eprintln!("Error: {}", e),
+            }
+
         }
         Cmd::Create { image, nam } => {
             use docker_api::api::ContainerCreateOpts;

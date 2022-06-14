@@ -570,6 +570,45 @@ impl ContainerPruneOptsBuilder {
     impl_filter_func!(ContainerPruneFilter);
 }
 
+impl_opts_builder!(url => ContainerCommit);
+
+impl ContainerCommitOpts {
+    pub(crate) fn with_container(&self, id: &str) -> Self {
+        // not exactly a nice solution but temporary
+        let mut s = self.clone();
+        s.params.insert("container", id.to_owned());
+        s
+    }
+}
+
+impl ContainerCommitOptsBuilder {
+    impl_url_str_field!(
+        /// Repository name for the created image
+        repo: R => "repo"
+    );
+    impl_url_str_field!(
+        /// Tag name for the created image
+        tag: T => "tag"
+    );
+    impl_url_str_field!(
+        /// Commit message
+        comment: C => "comment"
+    );
+    impl_url_str_field!(
+        /// Author of the image (e.g., John Hannibal Smith <hannibal@a-team.com>)
+        author: A => "author"
+    );
+    impl_url_bool_field!(
+        /// Whether to pause the container before committing
+        pause => "pause"
+    );
+    impl_url_str_field!(
+        /// Dockerfile instructions to apply while committing
+        changes: C => "changes"
+    );
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

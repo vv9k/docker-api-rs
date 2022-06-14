@@ -140,7 +140,7 @@ macro_rules! impl_opts_builder {
             $(
                 #[doc= $docs]
             )*
-            #[derive(serde::Serialize, Debug, Default)]
+            #[derive(serde::Serialize, Clone, Debug, Default)]
             pub struct [< $name Opts >] {
                 params: std::collections::HashMap<&'static str, $ty>,
             }

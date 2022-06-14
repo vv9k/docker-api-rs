@@ -12,6 +12,7 @@ use futures_util::{
     Stream, TryStreamExt,
 };
 use hyper::Body;
+use serde::Deserialize;
 
 use crate::util::url::construct_ep;
 use crate::{
@@ -315,6 +316,27 @@ impl Container {
                 PATH_STAT_HEADER
             )))
         }
+    }}
+
+    api_doc! { Image => Commit
+    /// Create a new image from this container
+    |
+    pub async fn commit(
+        &self,
+        opts: &ContainerCommitOpts,
+    ) -> Result<String> {
+        #[derive(Deserialize)]
+        struct IdStruct {
+            #[serde(rename = "Id")]
+            id: String
+        }
+        self.docker.post_json(
+            format!(
+                "/commit?{}", opts.with_container(self.id()).serialize().unwrap_or_default()
+            ),
+            Payload::None::<Vec<_>>
+        ).await
+        .map(|id: IdStruct| id.id)
     }}
 }
 
