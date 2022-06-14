@@ -1,6 +1,6 @@
 [package]
 name = "docker-api"
-version = "0.8.0"
+version = "0.9.0-dev"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
 documentation = "https://docs.rs/docker-api"
