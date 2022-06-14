@@ -4,6 +4,7 @@
 - *BREAKING* All API structs no longer have a `'docker` lifetime. This change makes it easier to create self working objects without the lifetime hell and according to
   hyper client documentation it is cheap to clone and cloning is the recommended way to share a client.
 - Add `Container::commit` that creates a image based on an existing container
+- Use rust 2021 edition
 
 # 0.8.0
 - Make `ContainerInfo::state` and `ContainerSummary::state` strongly typed.

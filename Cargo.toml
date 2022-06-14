@@ -8,7 +8,7 @@ homepage = "https://github.com/vv9k/docker-api-rs"
 repository = "https://github.com/vv9k/docker-api-rs"
 keywords = ["docker", "api", "containers", "unix"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 
 [dependencies]
