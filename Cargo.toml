@@ -1,12 +1,12 @@
 [package]
 name = "docker-api"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
 documentation = "https://docs.rs/docker-api"
 homepage = "https://github.com/vv9k/docker-api-rs"
 repository = "https://github.com/vv9k/docker-api-rs"
-keywords = ["docker", "api", "containers", "unix"]
+keywords = ["docker"]
 license = "MIT"
 edition = "2021"
 readme = "README.md"
