@@ -3,9 +3,9 @@ use crate::api::{ContainerConfig, DriverData, Labels};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "chrono")]
-use crate::util::datetime::datetime_from_unix_timestamp;
-#[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
+#[cfg(feature = "chrono")]
+use containers_api::datetime::datetime_from_unix_timestamp;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchResult {

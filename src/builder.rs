@@ -197,7 +197,7 @@ macro_rules! impl_opts_builder {
                         None
                     } else {
                         Some(
-                            crate::util::url::encoded_pairs(&self.params)
+                            containers_api::url::encoded_pairs(&self.params)
                         )
                     }
                 }
@@ -459,7 +459,7 @@ macro_rules! impl_api_ep {
         |
         pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<[< $ret >]> {
             let $it = self;
-            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            let ep = containers_api::url::construct_ep($ep, opts.serialize());
             self.docker.$fn(ep.as_ref()).await
         }}
         }
@@ -482,7 +482,7 @@ macro_rules! impl_api_ep {
         #[doc = concat!("List available ", stringify!($base), "s.")]
         |
         pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<$ret> {
-            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            let ep = containers_api::url::construct_ep($ep, opts.serialize());
             self.docker.get_json(&ep).await
         }}
         }
@@ -495,7 +495,7 @@ macro_rules! impl_api_ep {
         #[doc = concat!("List available ", stringify!($base), "s.")]
         |
         pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<Vec<[< $base Info >]>> {
-            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            let ep = containers_api::url::construct_ep($ep, opts.serialize());
             self.docker.get_json(&ep).await
         }}
         }
@@ -523,7 +523,7 @@ macro_rules! impl_api_ep {
         pub async fn prune(&self, opts: &[< $base PruneOpts >]) -> Result<[< $base sPruneInfo >]> {
             self.docker
                 .post_json(
-                    &crate::util::url::construct_ep($ep, opts.serialize()),
+                    &containers_api::url::construct_ep($ep, opts.serialize()),
                     crate::conn::Payload::empty()
                 ).await
         }}
@@ -540,12 +540,12 @@ macro_rules! impl_api_ep {
             &'docker self,
             opts: &crate::api::LogsOpts
         ) -> impl futures_util::Stream<Item = crate::Result<TtyChunk>> + Unpin + 'docker {
-            use containers_api_conn::tty;
+            use containers_api::conn::tty;
             use futures_util::TryStreamExt;
             let $it = self;
-            let ep = crate::util::url::construct_ep($ep, opts.serialize());
+            let ep = containers_api::url::construct_ep($ep, opts.serialize());
 
-            let stream = Box::pin(self.docker.stream_get(ep).map_err(|e| containers_api_conn::Error::Any(Box::new(e))));
+            let stream = Box::pin(self.docker.stream_get(ep).map_err(|e| containers_api::conn::Error::Any(Box::new(e))));
 
             Box::pin(tty::decode(stream).map_err(crate::Error::Error))
         }

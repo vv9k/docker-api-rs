@@ -41,7 +41,7 @@ pub enum Error {
     #[error("Invalid version - {0}")]
     MalformedVersion(String),
     #[error(transparent)]
-    Error(#[from] containers_api_conn::Error),
+    Error(#[from] containers_api::conn::Error),
     #[error(transparent)]
     Any(Box<dyn std::error::Error + 'static + Send + Sync>),
 }

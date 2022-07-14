@@ -1,4 +1,5 @@
-use crate::{api::Filter, util::url::encoded_pairs};
+use crate::api::Filter;
+use containers_api::url::encoded_pairs;
 
 use std::{
     collections::HashMap,

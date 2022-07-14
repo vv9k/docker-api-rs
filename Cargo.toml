@@ -12,7 +12,8 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-containers-api-conn = "0.1"
+#containers-api = "0.2"
+containers-api = { git = "https://github.com/vv9k/containers-api" }
 
 log = "0.4"
 paste = "1"
@@ -56,9 +57,9 @@ clap = { version = "3.0.0-beta.5", features = ["derive"] }
 pretty_assertions = "0.7"
 
 [features]
-default = ["chrono"]
-tls = ["containers-api-conn/tls"]
-vendored-ssl = ["tls", "containers-api-conn/vendored-ssl"]
+default = ["containers-api/chrono", "chrono"]
+tls = ["containers-api/tls"]
+vendored-ssl = ["tls", "containers-api/vendored-ssl"]
 swarm = []
 
 

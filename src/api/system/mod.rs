@@ -4,8 +4,8 @@ pub mod opts;
 pub use models::*;
 pub use opts::*;
 
-use crate::{util::url::construct_ep, Docker, Error, Result};
-
+use crate::{Docker, Error, Result};
+use containers_api::url::construct_ep;
 use futures_util::{Stream, TryStreamExt};
 
 use std::{convert::TryFrom, io};

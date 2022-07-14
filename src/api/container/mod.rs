@@ -14,13 +14,12 @@ use futures_util::{
 use hyper::Body;
 use serde::Deserialize;
 
-use crate::util::url::construct_ep;
 use crate::{
     api::{Exec, ExecContainerOpts},
     conn::{Multiplexer as TtyMultiplexer, Payload, TtyChunk},
-    util::url::{append_query, encoded_pair},
     Error, Result,
 };
+use containers_api::url::{append_query, construct_ep, encoded_pair};
 
 impl_api_ty!(Container => id);
 

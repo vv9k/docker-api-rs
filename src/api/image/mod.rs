@@ -9,14 +9,13 @@ use std::io::Read;
 
 use futures_util::{stream::Stream, TryFutureExt, TryStreamExt};
 
-use crate::{
+use containers_api::{
     conn::{Headers, Payload, AUTH_HEADER},
-    util::{
-        tarball,
-        url::{construct_ep, encoded_pair, encoded_pairs},
-    },
-    Result,
+    tarball,
+    url::{construct_ep, encoded_pair, encoded_pairs},
 };
+
+use crate::Result;
 
 impl_api_ty!(Image => name);
 

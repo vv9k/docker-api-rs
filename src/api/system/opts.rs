@@ -16,7 +16,7 @@ impl EventsOpts {
         if self.params.is_empty() {
             None
         } else {
-            Some(crate::util::url::encoded_pairs(&self.params))
+            Some(containers_api::url::encoded_pairs(&self.params))
         }
     }
 }

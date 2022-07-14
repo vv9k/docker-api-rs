@@ -12,8 +12,8 @@ use std::{collections::HashMap, convert::TryFrom};
 
 #[cfg(feature = "chrono")]
 use {
-    crate::util::datetime::{datetime_from_nano_timestamp, datetime_from_unix_timestamp},
     chrono::{DateTime, Utc},
+    containers_api::datetime::{datetime_from_nano_timestamp, datetime_from_unix_timestamp},
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

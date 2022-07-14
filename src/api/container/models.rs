@@ -7,9 +7,9 @@ use std::{
 };
 
 #[cfg(feature = "chrono")]
-use crate::util::datetime::datetime_from_unix_timestamp;
-#[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
+#[cfg(feature = "chrono")]
+use containers_api::datetime::datetime_from_unix_timestamp;
 use serde::ser::SerializeMap;
 use serde_json::Value;
 

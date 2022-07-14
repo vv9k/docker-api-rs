@@ -30,13 +30,12 @@ macro_rules! version {
 
 #[macro_use]
 mod builder;
-mod util;
 mod version;
 
 pub mod api;
 pub mod conn {
-    pub(crate) use containers_api_conn::*;
-    pub use containers_api_conn::{Error, Transport, TtyChunk};
+    pub(crate) use containers_api::conn::*;
+    pub use containers_api::conn::{Error, Transport, TtyChunk};
 }
 pub mod docker;
 pub mod errors;
