@@ -1,3 +1,5 @@
+use containers_api::{impl_opts_builder, impl_url_bool_field, impl_url_field};
+
 impl_opts_builder!(url => Logs);
 
 impl LogsOptsBuilder {
@@ -27,14 +29,14 @@ impl LogsOptsBuilder {
     );
 
     /// Return all log lines.
-    pub fn all(&mut self) -> &mut Self {
+    pub fn all(mut self) -> Self {
         self.params.insert("tail", "all".into());
         self
     }
 
     #[cfg(feature = "chrono")]
     /// Only return logs since this time.
-    pub fn since<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    pub fn since<Tz>(mut self, timestamp: &chrono::DateTime<Tz>) -> Self
     where
         Tz: chrono::TimeZone,
     {
@@ -45,14 +47,14 @@ impl LogsOptsBuilder {
 
     #[cfg(not(feature = "chrono"))]
     /// Only return logs since this time, as a UNIX timestamp.
-    pub fn since(&mut self, timestamp: i64) -> &mut Self {
+    pub fn since(mut self, timestamp: i64) -> Self {
         self.params.insert("since", timestamp.to_string());
         self
     }
 
     #[cfg(feature = "chrono")]
     /// Only return logs before this time.
-    pub fn until<Tz>(&mut self, timestamp: &chrono::DateTime<Tz>) -> &mut Self
+    pub fn until<Tz>(mut self, timestamp: &chrono::DateTime<Tz>) -> Self
     where
         Tz: chrono::TimeZone,
     {
@@ -63,7 +65,7 @@ impl LogsOptsBuilder {
 
     #[cfg(not(feature = "chrono"))]
     /// Only return logs before this time, as a UNIX timestamp.
-    pub fn until(&mut self, timestamp: i64) -> &mut Self {
+    pub fn until(mut self, timestamp: i64) -> Self {
         self.params.insert("until", timestamp.to_string());
         self
     }

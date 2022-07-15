@@ -1,26 +1,27 @@
 use containers_api::opts::Filter;
+use containers_api::{impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field};
 
 impl_opts_builder!(json => VolumeCreate);
 
 impl VolumeCreateOptsBuilder {
     impl_str_field!(
         /// The new volume's name. If not specified, Docker generates a name.
-        name: N => "Name"
+        name => "Name"
     );
 
     impl_str_field!(
         /// Name of the volume driver to use.
-        driver: D => "Driver"
+        driver => "Driver"
     );
 
     impl_map_field!(json
         /// A mapping of driver options and values.
         /// These options are passed directly to the driver and are driver specific.
-        driver_opts: O => "DriverOpts");
+        driver_opts => "DriverOpts");
 
     impl_map_field!(json
         /// User-defined key/value metadata.
-        labels: L => "Labels"
+        labels => "Labels"
     );
 }
 

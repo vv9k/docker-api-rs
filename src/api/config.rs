@@ -136,7 +136,8 @@ pub mod models {
 pub use models::*;
 
 pub mod opts {
-    use crate::api::Filter;
+    use containers_api::opts::Filter;
+    use containers_api::{impl_filter_func, impl_opts_builder};
 
     impl_opts_builder!(url => ConfigList);
 

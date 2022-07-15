@@ -1,5 +1,9 @@
 use crate::api::{ContainerStatus, ImageName, Labels};
 use containers_api::opts::Filter;
+use containers_api::{
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
+    impl_url_bool_field, impl_url_str_field, impl_vec_field,
+};
 
 use std::{
     collections::HashMap,
@@ -123,9 +127,9 @@ impl ContainerListOptsBuilder {
         all => "all"
     );
 
-    impl_url_str_field!(since: S => "since");
+    impl_url_str_field!(since => "since");
 
-    impl_url_str_field!(before: B => "before");
+    impl_url_str_field!(before => "before");
 
     impl_url_bool_field!(
         /// If set to true the sizes of the containers will be returned
@@ -395,20 +399,20 @@ impl ContainerOptsBuilder {
 
     impl_str_field!(
         /// Specify the working dir (corresponds to the `-w` docker cli argument)
-        working_dir: W => "WorkingDir"
+        working_dir => "WorkingDir"
     );
 
     impl_vec_field!(
         /// Specify a Vec of string values to customize labels for MLS systems, such as SELinux.
-        security_options: O => "HostConfig.SecurityOpt"
+        security_options => "HostConfig.SecurityOpt"
     );
 
     impl_vec_field!(
         /// Specify any bind mounts, taking the form of `/some/host/path:/some/container/path`
-        volumes: V => "HostConfig.Binds"
+        volumes => "HostConfig.Binds"
     );
 
-    impl_vec_field!(links: L => "HostConfig.Links");
+    impl_vec_field!(links => "HostConfig.Links");
 
     impl_field!(memory: u64 => "HostConfig.Memory");
 
@@ -436,7 +440,7 @@ impl ContainerOptsBuilder {
     /// Sets an integer value representing the container's relative CPU weight versus other containers.
     cpu_shares: u32 => "HostConfig.CpuShares");
 
-    impl_map_field!(json labels: L => "Labels");
+    impl_map_field!(json labels => "Labels");
 
     /// Whether to attach to `stdin`.
     pub fn attach_stdin(mut self, attach: bool) -> Self {
@@ -457,26 +461,26 @@ impl ContainerOptsBuilder {
     /// Whether standard streams should be attached to a TTY.
     tty: bool => "Tty");
 
-    impl_vec_field!(extra_hosts: H => "HostConfig.ExtraHosts");
+    impl_vec_field!(extra_hosts => "HostConfig.ExtraHosts");
 
-    impl_vec_field!(volumes_from: V => "HostConfig.VolumesFrom");
+    impl_vec_field!(volumes_from => "HostConfig.VolumesFrom");
 
-    impl_str_field!(network_mode: M => "HostConfig.NetworkMode");
+    impl_str_field!(network_mode => "HostConfig.NetworkMode");
 
-    impl_vec_field!(env: E => "Env");
+    impl_vec_field!(env => "Env");
 
-    impl_vec_field!(cmd: C => "Cmd");
+    impl_vec_field!(cmd => "Cmd");
 
-    impl_vec_field!(entrypoint: E => "Entrypoint");
+    impl_vec_field!(entrypoint => "Entrypoint");
 
-    impl_vec_field!(capabilities: C => "HostConfig.CapAdd");
+    impl_vec_field!(capabilities => "HostConfig.CapAdd");
 
     pub fn devices(mut self, devices: Vec<Labels>) -> Self {
         self.params.insert("HostConfig.Devices", json!(devices));
         self
     }
 
-    impl_str_field!(log_driver: L => "HostConfig.LogConfig.Type");
+    impl_str_field!(log_driver => "HostConfig.LogConfig.Type");
 
     pub fn restart_policy(mut self, name: &str, maximum_retry_count: u64) -> Self {
         self.params
@@ -494,7 +498,7 @@ impl ContainerOptsBuilder {
 
     impl_str_field!(
     /// Signal to stop a container as a string. Default is \"SIGTERM\"
-    stop_signal: S => "StopSignal");
+    stop_signal => "StopSignal");
 
     impl_field!(
     /// Signal to stop a container as an integer. Default is 15 (SIGTERM).
@@ -504,11 +508,11 @@ impl ContainerOptsBuilder {
     /// Timeout to stop a container. Only seconds are counted. Default is 10s
     stop_timeout: Duration => "StopTimeout");
 
-    impl_str_field!(userns_mode: M => "HostConfig.UsernsMode");
+    impl_str_field!(userns_mode => "HostConfig.UsernsMode");
 
     impl_field!(privileged: bool => "HostConfig.Privileged");
 
-    impl_str_field!(user: U => "User");
+    impl_str_field!(user => "User");
 
     pub fn build(&self) -> ContainerCreateOpts {
         ContainerCreateOpts {
@@ -585,19 +589,19 @@ impl ContainerCommitOpts {
 impl ContainerCommitOptsBuilder {
     impl_url_str_field!(
         /// Repository name for the created image
-        repo: R => "repo"
+        repo => "repo"
     );
     impl_url_str_field!(
         /// Tag name for the created image
-        tag: T => "tag"
+        tag => "tag"
     );
     impl_url_str_field!(
         /// Commit message
-        comment: C => "comment"
+        comment => "comment"
     );
     impl_url_str_field!(
         /// Author of the image (e.g., John Hannibal Smith <hannibal@a-team.com>)
-        author: A => "author"
+        author => "author"
     );
     impl_url_bool_field!(
         /// Whether to pause the container before committing
@@ -605,7 +609,7 @@ impl ContainerCommitOptsBuilder {
     );
     impl_url_str_field!(
         /// Dockerfile instructions to apply while committing
-        changes: C => "changes"
+        changes => "changes"
     );
 }
 

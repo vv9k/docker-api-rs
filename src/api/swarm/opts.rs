@@ -1,4 +1,5 @@
 use crate::api::SwarmSpec;
+use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
 
 impl_opts_builder!(json => SwarmJoin);
 
@@ -6,7 +7,7 @@ impl SwarmJoinOptsBuilder {
     impl_str_field!(
         /// Listen address used for inter-manager communication if the node gets promoted to manager,
         /// as well as determining the networking interface used for the VXLAN Tunnel Endpoint (VTEP).
-        listen_addr: A => "ListenAddr"
+        listen_addr => "ListenAddr"
     );
 
     impl_str_field!(
@@ -14,22 +15,22 @@ impl SwarmJoinOptsBuilder {
         // combination in the form 192.168.1.1:4567, or an interface followed by a port number, like eth0:4567.
         // If the port number is omitted, the port number from the listen address is used. If AdvertiseAddr is
         // not specified, it will be automatically detected when possible.
-        advertise_addr: A => "AdvertiseAddr"
+        advertise_addr => "AdvertiseAddr"
     );
 
     impl_str_field!(
         /// Address or interface to use for data path traffic.
-        data_path_addr: A => "DataPathAddr"
+        data_path_addr => "DataPathAddr"
     );
 
     impl_vec_field!(
         /// Addresses of manager nodes already participating in the swarm.
-        remote_addrs: A => "RemoteAddrs"
+        remote_addrs => "RemoteAddrs"
     );
 
     impl_str_field!(
         /// Secret token for joining this swarm.
-        join_token: T => "JoinToken"
+        join_token => "JoinToken"
     );
 }
 
@@ -39,7 +40,7 @@ impl SwarmInitOptsBuilder {
     impl_str_field!(
         // Listen address used for inter-manager communication if the node gets promoted to manager,
         // as well as determining the networking interface used for the VXLAN Tunnel Endpoint (VTEP).
-        listen_addr: A => "ListenAddr"
+        listen_addr => "ListenAddr"
     );
 
     impl_str_field!(
@@ -47,12 +48,12 @@ impl SwarmInitOptsBuilder {
         // combination in the form 192.168.1.1:4567, or an interface followed by a port number, like eth0:4567.
         // If the port number is omitted, the port number from the listen address is used. If AdvertiseAddr is
         // not specified, it will be automatically detected when possible.
-        advertise_addr: A => "AdvertiseAddr"
+        advertise_addr => "AdvertiseAddr"
     );
 
     impl_str_field!(
         /// Address or interface to use for data path traffic.
-        data_path_addr: A => "DataPathAddr"
+        data_path_addr => "DataPathAddr"
     );
 
     impl_field!(
@@ -63,7 +64,7 @@ impl SwarmInitOptsBuilder {
 
     impl_vec_field!(
         // Default Address Pool specifies default subnet pools for global scope networks.
-        default_addr_pool: A => "DefaultAddrPool"
+        default_addr_pool => "DefaultAddrPool"
     );
 
     impl_field!(

@@ -3,7 +3,6 @@
 //! Swarm mode must be enabled for these endpoints to work.
 
 use crate::Result;
-use containers_api_conn::tty::TtyChunk;
 
 impl_api_ty!(Task => id);
 
@@ -264,7 +263,8 @@ pub mod models {
 pub use models::*;
 
 pub mod opts {
-    use crate::api::Filter;
+    use containers_api::opts::Filter;
+    use containers_api::{impl_filter_func, impl_opts_builder};
 
     impl_opts_builder!(url => TaskList);
 

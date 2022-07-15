@@ -1,6 +1,7 @@
 use crate::api::{Labels, ObjectVersion, TlsInfo};
 
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, Utc};
@@ -37,6 +38,12 @@ impl AsRef<str> for Availability {
     }
 }
 
+impl fmt::Display for Availability {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum NodeRole {
@@ -50,6 +57,12 @@ impl AsRef<str> for NodeRole {
             NodeRole::Manager => "manager",
             NodeRole::Worker => "worker",
         }
+    }
+}
+
+impl fmt::Display for NodeRole {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        write!(f, "{}", self.as_ref())
     }
 }
 

@@ -1,8 +1,8 @@
-use crate::{
-    api::{Ipam},
-    Error, Result,
-};
+use crate::{api::Ipam, Error, Result};
 use containers_api::opts::Filter;
+use containers_api::{
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_vec_field,
+};
 
 use std::{collections::HashMap, convert::AsRef};
 
@@ -132,7 +132,7 @@ impl NetworkCreateOptsBuilder {
 
     impl_str_field!(
         /// Name of the network driver plugin to use.
-        driver: D => "Driver"
+        driver => "Driver"
     );
 
     impl_field!(
@@ -158,12 +158,12 @@ impl NetworkCreateOptsBuilder {
 
     impl_map_field!(json
         /// Network specific options to be used by the drivers.
-        options: O => "Options"
+        options => "Options"
     );
 
     impl_map_field!(json
         /// User-defined key/value metadata.
-        labels: L => "Labels"
+        labels => "Labels"
     );
 
     impl_field!(
@@ -263,28 +263,28 @@ impl ContainerConnectionOptsBuilder {
         self
     }
 
-    impl_vec_field!(aliases: A => "Aliases");
+    impl_vec_field!(aliases => "Aliases");
 
-    impl_vec_field!(links: L => "Links");
+    impl_vec_field!(links => "Links");
 
     impl_str_field!(
         /// Unique ID of the network.
-        network_id: I => "NetworkID"
+        network_id => "NetworkID"
     );
 
     impl_str_field!(
         /// Unique ID for the service endpoint in a Sandbox.
-        endpoint_id: I => "EndpointID"
+        endpoint_id => "EndpointID"
     );
 
     impl_str_field!(
         /// Gateway address for this network.
-        gateway: G => "Gateway"
+        gateway => "Gateway"
     );
 
     impl_str_field!(
         /// IPv4 address.
-        ipv4: A => "IPAddress"
+        ipv4 => "IPAddress"
     );
 
     impl_field!(
@@ -294,12 +294,12 @@ impl ContainerConnectionOptsBuilder {
 
     impl_str_field!(
         /// IPv6 gateway address.
-        ipv6_gateway: G => "IPv6Gateway"
+        ipv6_gateway => "IPv6Gateway"
     );
 
     impl_str_field!(
         /// Global IPv6 address.
-        ipv6: A => "GlobalIPv6Address"
+        ipv6 => "GlobalIPv6Address"
     );
 
     impl_field!(
@@ -309,13 +309,13 @@ impl ContainerConnectionOptsBuilder {
 
     impl_str_field!(
         /// MAC address for the endpoint on this network.
-        mac: M => "MacAddress"
+        mac => "MacAddress"
     );
 
     impl_map_field!(json
         /// DriverOpts is a mapping of driver options and values. These options are passed directly
         /// to the driver and are driver specific.
-        driver_opts: O => "DriverOpts"
+        driver_opts => "DriverOpts"
     );
 
     pub fn build(self) -> ContainerConnectionOpts {

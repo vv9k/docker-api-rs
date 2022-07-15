@@ -10,7 +10,6 @@ use crate::{
     conn::{Headers, Payload, AUTH_HEADER},
     Result,
 };
-use containers_api_conn::tty::TtyChunk;
 
 impl_api_ty!(Service => name);
 

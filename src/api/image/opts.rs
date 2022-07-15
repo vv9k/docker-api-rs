@@ -1,5 +1,9 @@
 use containers_api::opts::Filter;
 use containers_api::url::encoded_pairs;
+use containers_api::{
+    impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_url_bool_field,
+    impl_url_field, impl_url_str_field,
+};
 
 use std::{
     collections::HashMap,
@@ -113,9 +117,9 @@ impl RegistryAuthBuilder {
 impl_opts_builder!(url => Tag);
 
 impl TagOptsBuilder {
-    impl_url_str_field!(repo: R => "repo");
+    impl_url_str_field!(repo => "repo");
 
-    impl_url_str_field!(tag: T => "tag");
+    impl_url_str_field!(tag => "tag");
 }
 
 #[derive(Default, Debug)]
@@ -169,9 +173,9 @@ impl PullOptsBuilder {
     /// If an untagged value is provided and no `tag` is provided, _all_
     /// tags will be pulled
     /// The pull is cancelled if the HTTP connection is closed.
-    image: I => "fromImage");
+    image => "fromImage");
 
-    impl_str_field!(src: S => "fromSrc");
+    impl_str_field!(src => "fromSrc");
 
     impl_str_field!(
     /// Repository name given to an image when it is imported. The repo may include a tag.
@@ -179,12 +183,12 @@ impl PullOptsBuilder {
     /// 
     /// By default a `latest` tag is added when calling
     /// [PullOptsBuilder::default](PullOptsBuilder::default).
-    repo: S => "repo");
+    repo => "repo");
 
     impl_str_field!(
     /// Tag or digest. If empty when pulling an image,
     /// this causes all tags for the given image to be pulled.
-    tag: T => "tag");
+    tag => "tag");
 
     pub fn auth(mut self, auth: RegistryAuth) -> Self {
         self.auth = Some(auth);
@@ -247,20 +251,20 @@ impl BuildOptsBuilder {
 
     impl_url_str_field!(
         /// Set the name of the docker file. defaults to `DockerFile`.
-        dockerfile: P => "dockerfile"
+        dockerfile => "dockerfile"
     );
 
     impl_url_str_field!(
         /// Tag this image with a name after building it.
-        tag: T => "t"
+        tag => "t"
     );
 
     impl_url_str_field!(
         /// Extra hosts to add to /etc/hosts.
-        extra_hosts: H => "extrahosts"
+        extra_hosts => "extrahosts"
     );
 
-    impl_url_str_field!(remote: R => "remote");
+    impl_url_str_field!(remote => "remote");
 
     impl_url_bool_field!(
         /// Suppress verbose build output.
@@ -274,7 +278,7 @@ impl BuildOptsBuilder {
 
     impl_url_str_field!(
         /// Attempt to pull the image even if an older image exists locally.
-        pull: I => "pull"
+        pull => "pull"
     );
 
     impl_url_bool_field!(rm => "rm");
@@ -298,7 +302,7 @@ impl BuildOptsBuilder {
 
     impl_url_str_field!(
         /// CPUs in which to allow execution (eg. `0-3`, `0,1`)
-        cpu_set_cpus: C => "cpusetcpus"
+        cpu_set_cpus => "cpusetcpus"
     );
 
     impl_url_field!(
@@ -326,27 +330,27 @@ impl BuildOptsBuilder {
     // TODO: use an enum?
     impl_url_str_field!(
         /// bridge`, `host`, `none`, `container:<name|id>`, or a custom network name.
-        network_mode: M => "networkmode"
+        network_mode => "networkmode"
     );
 
     impl_url_str_field!(
         /// Platform in the format os[/arch[/variant]].
-        platform: P => "platform"
+        platform => "platform"
     );
 
     impl_url_str_field!(
         /// Target build stage.
-        target: T => "target"
+        target => "target"
     );
 
     impl_url_str_field!(
         /// BuildKit output configuration.
-        outputs: C => "outputs"
+        outputs => "outputs"
     );
 
     impl_map_field!(url
         /// Add labels to this image.
-        labels: L => "labels"
+        labels => "labels"
     );
 
     pub fn build(&self) -> BuildOpts {
@@ -593,7 +597,7 @@ impl Default for ImagePushOptsBuilder {
 impl ImagePushOptsBuilder {
     impl_url_str_field!(
         /// The tag to associate with the image on the registry.
-        tag: T => "tag"
+        tag => "tag"
     );
 
     pub fn auth(mut self, auth: RegistryAuth) -> Self {

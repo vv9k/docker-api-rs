@@ -3,6 +3,9 @@ use crate::{
     Error, Result,
 };
 use containers_api::opts::Filter;
+use containers_api::{
+    impl_filter_func, impl_map_field, impl_opts_builder, impl_str_enum_field, impl_str_field,
+};
 
 use serde::Serialize;
 
@@ -22,12 +25,12 @@ impl NodeUpdateOpts {
 
     impl_map_field!(json
         /// User-defined key/value metadata
-        labels: L => "Labels"
+        labels => "Labels"
     );
 
     impl_str_field!(
         /// Name for the node.
-        name: N => "Name"
+        name => "Name"
     );
 
     impl_str_enum_field!(

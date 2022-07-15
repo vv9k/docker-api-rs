@@ -1,5 +1,6 @@
 //! Run new commands inside running containers.
 
+use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
 use futures_util::{
     stream::{Stream, TryStreamExt},
     TryFutureExt,
@@ -181,12 +182,12 @@ impl_opts_builder!(json => ExecContainer);
 impl ExecContainerOptsBuilder {
     impl_vec_field!(
         /// Command to run, as an array of strings.
-        cmd: C => "Cmd"
+        cmd => "Cmd"
     );
 
     impl_vec_field!(
         /// A list of environment variables in the form 'VAR=value'.
-        env: E => "Env"
+        env => "Env"
     );
 
     impl_field!(
@@ -202,7 +203,7 @@ impl ExecContainerOptsBuilder {
     impl_str_field!(
         /// Override the key sequence for detaching a container. Format is a single
         /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
-        detach_keys: K => "DetachKeys"
+        detach_keys => "DetachKeys"
     );
 
     impl_field!(
@@ -218,12 +219,12 @@ impl ExecContainerOptsBuilder {
     impl_str_field!(
         /// The user, and optionally, group to run the exec process inside the container.
         /// Format is one of: user, user:group, uid, or uid:gid.
-        user: U => "User"
+        user => "User"
     );
 
     impl_str_field!(
         /// The working directory for the exec process inside the container.
-        working_dir: D => "WorkingDir"
+        working_dir => "WorkingDir"
     );
 }
 

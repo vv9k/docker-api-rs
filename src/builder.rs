@@ -1,211 +1,3 @@
-macro_rules! impl_vec_field {
-    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name  >]<[< $ty >], S>(mut self, $name: $ty)-> Self
-            where
-                $ty: IntoIterator<Item = S>,
-                S: AsRef<str> + serde::Serialize
-            {
-                self.params.insert($docker_name, serde_json::json!($name.into_iter().collect::<Vec<_>>()));
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_field {
-    ($(#[doc = $docs:expr])* $name:ident: $ty:ty => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >](mut self, $name: $ty)-> Self
-            {
-                self.params.insert($docker_name, serde_json::json!($name));
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_str_field {
-    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >]<[< $ty >]>(mut self, $name: $ty)-> Self
-            where
-                $ty: AsRef<str> + serde::Serialize,
-            {
-                self.params.insert($docker_name, serde_json::json!($name.as_ref()));
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_url_str_field {
-    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >]<[< $ty >]>(mut self, $name: $ty)-> Self
-            where
-                $ty: Into<String>,
-            {
-                self.params.insert($docker_name, $name.into());
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_url_field {
-    ($(#[doc = $docs:expr])* $name:ident : $ty:tt => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >](mut self, $name: $ty)-> Self {
-                self.params.insert($docker_name, $name.to_string());
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_url_bool_field {
-    ($(#[doc = $docs:expr])* $name:ident => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >](mut self, $name: bool)-> Self {
-                self.params.insert($docker_name, $name.to_string());
-                self
-            }
-        }
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! impl_str_enum_field {
-    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name >](mut self, $name: $ty)-> Self
-            {
-                self.params.insert($docker_name, serde_json::json!($name.as_ref()));
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_map_field {
-    (url $(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        impl_map_field! { $(#[doc = $docs])* $name: $ty => $docker_name => serde_json::to_string(&$name.into_iter().collect::<std::collections::HashMap<_, _>>()).unwrap_or_default() }
-    };
-    (json $(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal) => {
-        impl_map_field! { $(#[doc = $docs])* $name: $ty => $docker_name => serde_json::json!($name.into_iter().collect::<std::collections::HashMap<_, _>>()) }
-    };
-    ($(#[doc = $docs:expr])* $name:ident: $ty:tt => $docker_name:literal => $ret:expr) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            pub fn [< $name  >]<[< $ty >], K, V>(mut self, $name: $ty)-> Self
-            where
-                $ty: IntoIterator<Item = (K, V)>,
-                K: AsRef<str> + serde::Serialize + Eq + std::hash::Hash,
-                V: AsRef<str> + serde::Serialize
-            {
-                self.params.insert($docker_name, $ret);
-                self
-            }
-        }
-    };
-}
-
-macro_rules! impl_opts_builder {
-    ($(#[doc = $docs:expr])* $name:ident $ty:expr) => {
-        paste::item! {
-            $(
-                #[doc= $docs]
-            )*
-            #[derive(serde::Serialize, Clone, Debug, Default)]
-            pub struct [< $name Opts >] {
-                params: std::collections::HashMap<&'static str, $ty>,
-            }
-            impl [< $name Opts >] {
-                calculated_doc!{
-                #[doc = concat!("Returns a new instance of a builder for ", stringify!($name), "Opts.")]
-                pub fn builder() -> [< $name OptsBuilder >] {
-                    [< $name OptsBuilder >]::default()
-                }
-                }
-            }
-
-            calculated_doc!{
-            #[doc = concat!("A builder struct for ", stringify!($name), "Opts.")]
-            #[derive(Default, Debug)]
-            pub struct [< $name OptsBuilder >] {
-                params: std::collections::HashMap<&'static str, $ty>,
-            }
-            }
-
-            impl [< $name OptsBuilder >] {
-                calculated_doc!{
-                #[doc = concat!("Finish building ", stringify!($name), "Opts.")]
-                pub fn build(&self) -> [< $name Opts >] {
-                    [< $name Opts >] {
-                        params: self.params.clone(),
-                    }
-                }
-                }
-            }
-       }
-    };
-    (json => $(#[doc = $docs:expr])* $name:ident) => {
-        paste::item! {
-            impl_opts_builder!($(#[doc = $docs])* $name serde_json::Value);
-
-            impl [< $name Opts >] {
-                /// Serialize options as a JSON String. Returns an error if the options will fail
-                /// to serialize.
-                pub fn serialize(&self) -> crate::Result<String> {
-                    serde_json::to_string(&self.params).map_err(crate::Error::from)
-                }
-            }
-        }
-    };
-    (url => $(#[doc = $docs:expr])* $name:ident) => {
-        paste::item! {
-            impl_opts_builder!($(#[doc = $docs])* $name String);
-
-            impl [< $name  Opts >] {
-                /// Serialize options as a URL query String. Returns None if no options are defined.
-                pub fn serialize(&self) -> Option<String> {
-                    if self.params.is_empty() {
-                        None
-                    } else {
-                        Some(
-                            containers_api::url::encoded_pairs(&self.params)
-                        )
-                    }
-                }
-            }
-        }
-    };
-}
-
 /// Necessary to work around https://github.com/rust-lang/rust/issues/52607.
 macro_rules! calculated_doc {
     (
@@ -290,28 +82,6 @@ macro_rules! impl_api_ty {
 
         }
     }
-}
-
-macro_rules! impl_filter_func {
-    ($(#[doc = $doc:expr])* $filter_ty:ident) => {
-        $(
-            #[doc = $doc]
-        )*
-        pub fn filter<F>(mut self, filters: F) -> Self
-        where
-            F: IntoIterator<Item = $filter_ty>,
-        {
-            let mut param = std::collections::HashMap::new();
-            for (key, val) in filters.into_iter().map(|f| f.query_key_val()) {
-                param.insert(key, vec![val]);
-            }
-            // structure is a a json encoded object mapping string keys to a list
-            // of string values
-            self.params
-                .insert("filters", serde_json::to_string(&param).unwrap_or_default());
-            self
-        }
-    };
 }
 
 macro_rules! api_url {
@@ -401,13 +171,13 @@ macro_rules! impl_api_ep {
         paste::item! {
         async fn _delete(&self, force: bool) -> Result<[< $ret >]> {
             let query = if force {
-                Some(crate::util::url::encoded_pair("force", force))
+                Some(containers_api::url::encoded_pair("force", force))
             } else {
                 None
             };
 
             let $it = self;
-            let ep = crate::util::url::construct_ep($ep, query);
+            let ep = containers_api::url::construct_ep($ep, query);
 
             self.docker
                 .delete_json(ep.as_ref())
@@ -539,7 +309,7 @@ macro_rules! impl_api_ep {
         pub fn logs<'docker>(
             &'docker self,
             opts: &crate::api::LogsOpts
-        ) -> impl futures_util::Stream<Item = crate::Result<TtyChunk>> + Unpin + 'docker {
+        ) -> impl futures_util::Stream<Item = crate::Result<containers_api::conn::TtyChunk>> + Unpin + 'docker {
             use containers_api::conn::tty;
             use futures_util::TryStreamExt;
             let $it = self;

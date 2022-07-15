@@ -9,7 +9,8 @@ pub mod opts;
 pub use models::*;
 pub use opts::*;
 
-use crate::{conn::Payload, util::url::encoded_pair, Result};
+use crate::{conn::Payload, Result};
+use containers_api::url::encoded_pair;
 
 impl_api_ty!(Node => name);
 

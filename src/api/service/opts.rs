@@ -1,11 +1,12 @@
-use containers_api::opts::Filter;
 use crate::{
     api::{
-        EndpointSpec, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig,
-        TaskSpec, UpdateConfig,
+        EndpointSpec, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig, TaskSpec,
+        UpdateConfig,
     },
     Error, Result,
 };
+use containers_api::opts::Filter;
+use containers_api::{impl_filter_func, impl_opts_builder, impl_url_bool_field};
 
 use std::collections::HashMap;
 use std::hash::Hash;

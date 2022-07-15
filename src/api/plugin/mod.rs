@@ -6,11 +6,8 @@ pub mod opts;
 pub use models::*;
 pub use opts::*;
 
-use crate::{
-    conn::Payload,
-    util::url::{construct_ep, encoded_pair},
-    Result,
-};
+use crate::{conn::Payload, Result};
+use containers_api::url::{construct_ep, encoded_pair};
 
 use std::path::Path;
 
