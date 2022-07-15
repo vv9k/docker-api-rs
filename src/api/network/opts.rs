@@ -1,7 +1,8 @@
 use crate::{
-    api::{Filter, Ipam},
+    api::{Ipam},
     Error, Result,
 };
+use containers_api::opts::Filter;
 
 use std::{collections::HashMap, convert::AsRef};
 

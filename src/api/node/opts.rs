@@ -1,7 +1,8 @@
 use crate::{
-    api::{Availability, Filter, Membership, NodeRole},
+    api::{Availability, Membership, NodeRole},
     Error, Result,
 };
+use containers_api::opts::Filter;
 
 use serde::Serialize;
 

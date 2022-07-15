@@ -1,4 +1,5 @@
-use crate::api::{ContainerStatus, Filter, ImageName, Labels};
+use crate::api::{ContainerStatus, ImageName, Labels};
+use containers_api::opts::Filter;
 
 use std::{
     collections::HashMap,

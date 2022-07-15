@@ -1,6 +1,7 @@
+use containers_api::opts::Filter;
 use crate::{
     api::{
-        EndpointSpec, Filter, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig,
+        EndpointSpec, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig,
         TaskSpec, UpdateConfig,
     },
     Error, Result,
