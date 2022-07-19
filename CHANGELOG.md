@@ -1,5 +1,6 @@
 # 0.10.0
 - *BREAKING* Use models generated from swagger schema
+- Remove `*Id` and `*IdRef` type aliases and use a common `Id` type for object IDs
 
 # 0.9.0
 - Fix `ContainersPruneInfo` deserialization

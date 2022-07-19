@@ -16,24 +16,20 @@ macro_rules! calculated_doc {
 macro_rules! impl_api_ty {
     ($(#[doc = $docs:expr])* $name:ident => $name_field:ident) => {
         paste::item! {
-            pub type [< $name Id >] = String;
-            pub type [< $name IdRef >]<'a> = &'a str;
 
             calculated_doc!{
             #[doc = concat!("Interface for accessing and manipulating Docker ", stringify!($name), ".\n", $($docs,)* "\n", api_url!($name))]
             #[derive(Debug)]
             pub struct [< $name >] {
                 docker: crate::Docker,
-                $name_field: [< $name Id >],
+                $name_field: crate::Id,
             }
             }
             impl [< $name >] {
                 // TODO: this is possible on nightly, figure out what to do
                 calculated_doc!{
                 #[doc = concat!("Exports an interface exposing operations against a ", stringify!($name), " instance.")]
-                pub fn new<ID>(docker: crate::Docker, $name_field: ID) -> Self
-                where
-                    ID: Into<[< $name Id>]>,
+                pub fn new(docker: crate::Docker, $name_field: impl Into<crate::Id>) -> Self
                 {
                     [< $name >] {
                         docker,
@@ -44,7 +40,7 @@ macro_rules! impl_api_ty {
 
                 calculated_doc!{
                 #[doc = concat!("A getter for ", stringify!($name), " ", stringify!($name_field))]
-                pub fn $name_field(&self) -> [< $name IdRef >] {
+                pub fn $name_field(&self) -> &crate::Id {
                     &self.$name_field
                 }
                 }
@@ -71,9 +67,7 @@ macro_rules! impl_api_ty {
 
                 calculated_doc!{
                 #[doc = concat!("Returns a reference to a set of operations available to a specific ", stringify!($name), ".")]
-                pub fn get<ID>(&self, $name_field: ID) -> [< $name >]
-                where
-                    ID: Into<[< $name Id >]>,
+                pub fn get(&self, $name_field: impl Into<crate::Id>) -> [< $name >]
                 {
                     [< $name >]::new(self.docker.clone(), $name_field)
                 }

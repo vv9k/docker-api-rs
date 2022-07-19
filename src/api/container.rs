@@ -332,7 +332,7 @@ impl Container {
         }
         self.docker.post_json(
             format!(
-                "/commit?{}", opts.with_container(self.id()).serialize().unwrap_or_default()
+                "/commit?{}", opts.with_container(self.id().as_ref()).serialize().unwrap_or_default()
             ),
             Payload::None::<Vec<_>>
         ).await

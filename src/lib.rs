@@ -43,6 +43,8 @@ pub mod docker;
 pub mod errors;
 pub mod opts;
 
+pub use containers_api::id::Id;
+
 pub use crate::{
     api::{
         container::{self, Container, Containers},

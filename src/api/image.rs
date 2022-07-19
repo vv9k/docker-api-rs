@@ -213,7 +213,7 @@ impl Images {
     api_doc! { Image => Push
     /// Push an image to registry.
     |
-    pub async fn push(&self, name: impl Into<String>, opts: &ImagePushOpts) -> Result<()> {
+    pub async fn push(&self, name: impl Into<crate::Id>, opts: &ImagePushOpts) -> Result<()> {
         let image = Image::new(self.docker.clone(), name);
         image.push(opts).await
     }}
