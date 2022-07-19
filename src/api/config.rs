@@ -1,15 +1,14 @@
-#![cfg(feature = "swarm")]
 //! Configs are application configurations that can be used by services.
 //! Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, Result};
+use crate::{conn::Payload, models, Result};
 
 impl_api_ty!(Config => name);
 
 impl Config {
     impl_api_ep! { cfg: Config, resp
-        Inspect -> &format!("/configs/{}", cfg.name)
-        Delete -> &format!("/configs/{}", cfg.name)
+        Inspect -> &format!("/configs/{}", cfg.name), models::Config
+        Delete -> &format!("/configs/{}", cfg.name), ()
     }
 
     // TODO: add Config::update
@@ -17,127 +16,34 @@ impl Config {
 
 impl Configs {
     impl_api_ep! { __: Config, resp
-        List -> "/configs"
-        Create -> "/configs/create", resp.id
+        List -> "/configs", models::Config
     }
+
+    api_doc! { Config => Create
+    /// Create a new config.
+    |
+    pub async fn create(&self, opts: &ConfigCreateOpts) -> Result<Config> {
+        use serde::Deserialize;
+        #[derive(Deserialize)]
+        struct ConfigCreateResponse {
+            #[serde(rename = "Id")]
+            pub id: String,
+        }
+        self.docker
+            .post_json("/ronfigs/create", Payload::Json(opts.serialize()?))
+            .await
+            .map(|resp: ConfigCreateResponse| {
+                Config::new(self.docker.clone(), resp.id)
+            })
+    }}
 }
-
-pub mod models {
-    use crate::{
-        api::{Driver, Labels, ObjectVersion},
-        Error, Result,
-    };
-    use serde::{Deserialize, Serialize};
-
-    #[cfg(feature = "chrono")]
-    use chrono::{DateTime, Utc};
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    pub struct ConfigInfo {
-        #[serde(rename = "ID")]
-        pub id: String,
-        pub version: ObjectVersion,
-        #[cfg(feature = "chrono")]
-        pub created_at: DateTime<Utc>,
-        #[cfg(not(feature = "chrono"))]
-        pub created_at: String,
-        #[cfg(feature = "chrono")]
-        pub updated_at: DateTime<Utc>,
-        #[cfg(not(feature = "chrono"))]
-        pub updated_at: String,
-        pub spec: ConfigSpec,
-    }
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    pub struct ConfigSpec {
-        pub name: String,
-        pub labels: Labels,
-        pub data: String,
-        pub templating: Driver,
-    }
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    /// Structure used to create a new config with [`Configs::create`](crate::Configs::create).
-    pub struct ConfigCreateOpts {
-        name: String,
-        labels: Labels,
-        data: String,
-        templating: Driver,
-    }
-
-    impl ConfigCreateOpts {
-        /// Create a new config with name and data. This function will take care of
-        /// encoding the config's data as base64.
-        pub fn new<N, D>(name: N, data: D) -> Self
-        where
-            N: Into<String>,
-            D: AsRef<str>,
-        {
-            Self {
-                name: name.into(),
-                labels: Labels::new(),
-                data: base64::encode(data.as_ref()),
-                templating: Driver::default(),
-            }
-        }
-
-        /// Set the templating driver of this config.
-        pub fn set_templating(mut self, driver: Driver) -> Self {
-            self.templating = driver;
-            self
-        }
-
-        /// Add a label to this config
-        pub fn add_label<K, V>(mut self, key: K, val: V) -> Self
-        where
-            K: Into<String>,
-            V: Into<String>,
-        {
-            self.labels.insert(key.into(), val.into());
-            self
-        }
-
-        pub fn serialize(&self) -> Result<String> {
-            serde_json::to_string(&self).map_err(Error::from)
-        }
-    }
-
-    #[derive(Deserialize)]
-    pub(crate) struct ConfigCreateInfo {
-        #[serde(rename = "Id")]
-        pub id: String,
-    }
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    pub struct ConfigReference {
-        pub file: Option<ConfigReferenceFileTarget>,
-        pub runtime: Option<ConfigReferenceRuntimeTarget>,
-        #[serde(rename = "ConfigID")]
-        pub config_id: String,
-        pub config_name: String,
-    }
-
-    pub type ConfigReferenceRuntimeTarget = serde_json::Value;
-
-    #[derive(Clone, Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    pub struct ConfigReferenceFileTarget {
-        pub name: String,
-        pub uid: String,
-        pub gid: String,
-        pub mode: u32,
-    }
-}
-
-pub use models::*;
 
 pub mod opts {
+    use crate::models::{Driver, Labels};
+    use crate::{Error, Result};
     use containers_api::opts::Filter;
     use containers_api::{impl_filter_func, impl_opts_builder};
+    use serde::{Deserialize, Serialize};
 
     impl_opts_builder!(url => ConfigList);
 
@@ -171,6 +77,56 @@ pub mod opts {
             /// Filter listed configs by variants of the enum.
             ConfigFilter
         );
+    }
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    /// Structure used to create a new config with [`Configs::create`](crate::Configs::create).
+    pub struct ConfigCreateOpts {
+        name: String,
+        labels: Labels,
+        data: String,
+        templating: Driver,
+    }
+
+    impl ConfigCreateOpts {
+        /// Create a new config with name and data. This function will take care of
+        /// encoding the config's data as base64.
+        pub fn new<N, D>(name: N, data: D) -> Self
+        where
+            N: Into<String>,
+            D: AsRef<str>,
+        {
+            Self {
+                name: name.into(),
+                labels: Labels::new(),
+                data: base64::encode(data.as_ref()),
+                templating: Driver {
+                    name: "".into(),
+                    options: None,
+                },
+            }
+        }
+
+        /// Set the templating driver of this config.
+        pub fn set_templating(mut self, driver: Driver) -> Self {
+            self.templating = driver;
+            self
+        }
+
+        /// Add a label to this config
+        pub fn add_label<K, V>(mut self, key: K, val: V) -> Self
+        where
+            K: Into<String>,
+            V: Into<String>,
+        {
+            self.labels.insert(key.into(), val.into());
+            self
+        }
+
+        pub fn serialize(&self) -> Result<String> {
+            serde_json::to_string(&self).map_err(Error::from)
+        }
     }
 }
 

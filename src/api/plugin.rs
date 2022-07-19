@@ -1,12 +1,6 @@
-#![cfg(feature = "swarm")]
 //! Install, create and manage plugins
-pub mod models;
-pub mod opts;
 
-pub use models::*;
-pub use opts::*;
-
-use crate::{conn::Payload, Result};
+use crate::{conn::Payload, models, opts::PluginListOpts, Result};
 use containers_api::url::{construct_ep, encoded_pair};
 
 use std::path::Path;
@@ -15,8 +9,8 @@ impl_api_ty!(Plugin => name);
 
 impl Plugin {
     impl_api_ep! {plug: Plugin, resp
-        Inspect -> &format!("/plugins/{}/json", plug.name)
-        ForceDelete -> &format!("/plugins/{}", plug.name), PluginInfo
+        Inspect -> &format!("/plugins/{}/json", plug.name), models::Plugin
+        ForceDelete -> &format!("/plugins/{}", plug.name), models::Plugin
     }
 
     api_doc! { Plugin => Enable
@@ -73,6 +67,6 @@ impl Plugin {
 
 impl Plugins {
     impl_api_ep! {plug: Plugin, resp
-        List -> "/plugins"
+        List -> "/plugins", models::Plugin
     }
 }

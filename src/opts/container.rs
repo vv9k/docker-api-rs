@@ -1,4 +1,5 @@
-use crate::api::{ContainerStatus, ImageName, Labels};
+use crate::models::Labels;
+use crate::opts::ImageName;
 use containers_api::opts::Filter;
 use containers_api::{
     impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
@@ -58,6 +59,35 @@ impl AsRef<str> for Isolation {
             Isolation::Default => "default",
             Isolation::Process => "process",
             Isolation::HyperV => "hyperv",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ContainerStatus {
+    Created,
+    Configured,
+    Restarting,
+    Running,
+    Removing,
+    Paused,
+    Exited,
+    Dead,
+}
+
+impl AsRef<str> for ContainerStatus {
+    fn as_ref(&self) -> &str {
+        use ContainerStatus::*;
+        match &self {
+            Created => "created",
+            Configured => "configured",
+            Restarting => "restarting",
+            Running => "running",
+            Removing => "removing",
+            Paused => "paused",
+            Exited => "exited",
+            Dead => "dead",
         }
     }
 }

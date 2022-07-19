@@ -1,3 +1,40 @@
+//! Options used for configuring the behavior of certain API endpoints
+mod container;
+mod exec;
+mod image;
+mod network;
+mod system;
+mod volume;
+
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod node;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod plugin;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod service;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod swarm;
+
+pub use container::*;
+pub use exec::*;
+pub use image::*;
+pub use network::*;
+pub use system::*;
+pub use volume::*;
+
+#[cfg(feature = "swarm")]
+pub use node::*;
+#[cfg(feature = "swarm")]
+pub use plugin::*;
+#[cfg(feature = "swarm")]
+pub use service::*;
+#[cfg(feature = "swarm")]
+pub use swarm::*;
+
 use containers_api::{impl_opts_builder, impl_url_bool_field, impl_url_field};
 
 impl_opts_builder!(url => Logs);

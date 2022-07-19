@@ -1,9 +1,9 @@
 //! Create and manage containers.
-pub mod models;
-pub mod opts;
-
-pub use models::*;
-pub use opts::*;
+use crate::models;
+use crate::opts::{
+    ContainerCommitOpts, ContainerCreateOpts, ContainerListOpts, ContainerPruneOpts,
+    RmContainerOpts,
+};
 
 use std::{io, path::Path, str, time::Duration};
 
@@ -15,8 +15,9 @@ use hyper::Body;
 use serde::Deserialize;
 
 use crate::{
-    api::{Exec, ExecContainerOpts},
+    api::Exec,
     conn::{Multiplexer as TtyMultiplexer, Payload, TtyChunk},
+    opts::ExecContainerOpts,
     Error, Result,
 };
 use containers_api::url::{append_query, construct_ep, encoded_pair};
@@ -25,8 +26,8 @@ impl_api_ty!(Container => id);
 
 impl Container {
     impl_api_ep! {container: Container, resp
-        Inspect -> &format!("/containers/{}/json", container.id), Details
-        Logs -> &format!("/containers/{}/logs", container.id)
+        Inspect -> &format!("/containers/{}/json", container.id), models::ContainerInspectResponse
+        Logs -> &format!("/containers/{}/logs", container.id), ()
         DeleteWithOpts -> &format!("/containers/{}", container.id), String, delete
     }
 
@@ -34,7 +35,7 @@ impl Container {
     /// Returns a `top` view of information about the container process.
     /// On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
     |
-    pub async fn top(&self, psargs: Option<&str>) -> Result<Top> {
+    pub async fn top(&self, psargs: Option<&str>) -> Result<models::ContainerTopResponse> {
         let mut ep = format!("/containers/{}/top", self.id);
         if let Some(ref args) = psargs {
             append_query(&mut ep, encoded_pair("ps_args", args));
@@ -69,7 +70,7 @@ impl Container {
     api_doc! { Container => Changes
     /// Returns a set of changes made to the container instance.
     |
-    pub async fn changes(&self) -> Result<Option<Vec<Change>>> {
+    pub async fn changes(&self) -> Result<Option<Vec<models::ContainerChangeResponseItem>>> {
         self.docker
             .get_json(&format!("/containers/{}/changes", self.id))
             .await
@@ -87,7 +88,7 @@ impl Container {
     api_doc! { Container => Stats
     /// Returns a stream of stats specific to this container instance.
     |
-    pub fn stats(&self) -> impl Stream<Item = Result<Stats>> + Unpin + '_{
+    pub fn stats(&self) -> impl Stream<Item = Result<serde_json::Value>> + Unpin + '_{
         let codec = futures_codec::LinesCodec {};
 
         let reader = Box::pin(
@@ -193,7 +194,7 @@ impl Container {
     api_doc! { Container => Wait
     /// Wait until the container stops.
     |
-    pub async fn wait(&self) -> Result<Exit> {
+    pub async fn wait(&self) -> Result<models::ContainerWaitResponse> {
         self.docker
             .post_json(format!("/containers/{}/wait", self.id), Payload::empty())
             .await
@@ -341,8 +342,8 @@ impl Container {
 
 impl Containers {
     impl_api_ep! {__: Container, resp
-        List -> "/containers/json"
-        Prune ->  "/containers/prune"
+        List -> "/containers/json", models::ContainerSummary
+        Prune -> "/containers/prune", models::ContainerPruneResponse
     }
 
     api_doc! { Containers => Create
@@ -356,6 +357,6 @@ impl Containers {
             "/containers/create".to_owned()
         };
         self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
-        .map(|resp: ContainerCreateInfo| Container::new(self.docker.clone(), resp.id))
+        .map(|resp: models::ContainerCreateResponse| Container::new(self.docker.clone(), resp.id))
     }}
 }

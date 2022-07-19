@@ -1,9 +1,12 @@
 //! Create and manage images.
-pub mod models;
-pub mod opts;
 
-pub use models::*;
-pub use opts::*;
+use crate::{
+    models,
+    opts::{
+        BuildOpts, ClearCacheOpts, ImageListOpts, ImagePruneOpts, ImagePushOpts, PullOpts,
+        RmImageOpts, TagOpts,
+    },
+};
 
 use std::io::Read;
 
@@ -19,18 +22,33 @@ use crate::Result;
 
 impl_api_ty!(Image => name);
 
-pub type DeleteStatus = Vec<Status>;
-
 impl Image {
     impl_api_ep! {img: Image, resp
-        Inspect -> &format!("/images/{}/json", img.name), Details
-        DeleteWithOpts -> &format!("/images/{}", img.name), DeleteStatus, delete_json
+        Inspect -> &format!("/images/{}/json", img.name), models::ImageInspect
     }
+
+    api_doc! { Image => Delete
+    |
+    /// Remove this image with options.
+    ///
+    /// Use [`delete`](Image::delete) to delete without options.
+    pub async fn remove(&self, opts: &RmImageOpts) -> Result<Vec<models::ImageDeleteResponseItem>> {
+        let ep = containers_api::url::construct_ep(&format!("/images/{}", self.name), opts.serialize());
+        self.docker.delete_json(ep.as_ref()).await
+    }}
+    api_doc! { Image => Delete
+    |
+    /// Delete this image with force.
+    ///
+    /// Use [`remove`](Image::remove) to delete with options.
+    pub async fn delete(&self) -> Result<Vec<models::ImageDeleteResponseItem>> {
+        self.docker.delete_json(&format!("/images/{}", self.name)).await
+    }}
 
     api_doc! { Image => History
     /// Lists the history of the images set of changes.
     |
-    pub async fn history(&self) -> Result<Vec<History>> {
+    pub async fn history(&self) -> Result<Vec<models::HistoryResponseItem>> {
         self.docker
             .get_json(&format!("/images/{}/history", self.name))
             .await
@@ -75,7 +93,7 @@ impl Image {
     api_doc! { Distribution => Inspect
     /// Return image digest and platform information by contacting the registry.
     |
-    pub async fn distribution_inspect(&self) -> Result<DistributionInspectInfo> {
+    pub async fn distribution_inspect(&self) -> Result<models::DistributionInspect> {
         self.docker
             .post_json(
                 &format!("/distribution/{}/json", self.name),
@@ -87,8 +105,8 @@ impl Image {
 
 impl Images {
     impl_api_ep! {img: Image, resp
-        List -> "/images/json"
-        Prune ->  "/images/prune"
+        List -> "/images/json", models::ImageSummary
+        Prune ->  "/images/prune", models::ImagePruneResponse
     }
 
     api_doc! { Image => Build
@@ -97,7 +115,7 @@ impl Images {
     pub fn build<'docker>(
         &'docker self,
         opts: &BuildOpts,
-    ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker {
         let ep = construct_ep("/build", opts.serialize());
 
         // To not tie the lifetime of `opts` to the 'stream, we do the tarring work outside of the
@@ -124,7 +142,7 @@ impl Images {
     api_doc! { Image => Search
     /// Search for docker images by term.
     |
-    pub async fn search<T>(&self, term: T) -> Result<Vec<SearchResult>>
+    pub async fn search<T>(&self, term: T) -> Result<Vec<models::ImageSearchResponseItem>>
     where
         T: AsRef<str>,
     {
@@ -139,7 +157,7 @@ impl Images {
     pub fn pull<'docker>(
         &'docker self,
         opts: &PullOpts,
-    ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker {
         let headers = opts
             .auth_header()
             .map(|a| Headers::single(AUTH_HEADER, a));
@@ -171,7 +189,7 @@ impl Images {
     pub fn import<'docker, R>(
         &'docker self,
         mut tarball: R,
-    ) -> impl Stream<Item = Result<ImageBuildChunk>> + Unpin + 'docker
+    ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker
     where
         R: Read + Send + 'docker,
     {
@@ -200,16 +218,15 @@ impl Images {
         image.push(opts).await
     }}
 
-    // api_doc! { Build => Prune
-    // /// Clear image build cache.
-    // |
-    pub async fn clear_cache(&self, opts: &ClearCacheOpts) -> Result<ClearCacheInfo> {
+    api_doc! { Build => Prune
+    /// Clear image build cache.
+    |
+    pub async fn clear_cache(&self, opts: &ClearCacheOpts) -> Result<models::BuildPruneResponse> {
         self.docker
             .post_json(
                 construct_ep("/build/prune", opts.serialize()),
                 Payload::empty(),
             )
             .await
-    }
-    // }
+    }}
 }

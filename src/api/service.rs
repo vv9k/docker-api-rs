@@ -1,13 +1,8 @@
-#![cfg(feature = "swarm")]
 //! Manage and inspect services within a swarm.
-pub mod models;
-pub mod opts;
-
-pub use models::*;
-pub use opts::*;
-
 use crate::{
     conn::{Headers, Payload, AUTH_HEADER},
+    models,
+    opts::{ServiceListOpts, ServiceOpts},
     Result,
 };
 
@@ -17,7 +12,7 @@ impl Service {
     api_doc! { Service => Create
     /// Creates a new service from ServiceOpts.
     |
-    pub async fn create(&self, opts: &ServiceOpts) -> Result<ServiceCreateInfo> {
+    pub async fn create(&self, opts: &ServiceOpts) -> Result<models::ServiceCreateResponse> {
         let headers = opts
             .auth_header()
             .map(|a| Headers::single(AUTH_HEADER, a));
@@ -31,14 +26,14 @@ impl Service {
     }}
 
     impl_api_ep! { svc: Service, resp
-        Inspect -> &format!("/services/{}", svc.name)
-        Delete -> &format!("/services/{}", svc.name)
-        Logs -> &format!("/services/{}/logs", svc.name)
+        Inspect -> &format!("/services/{}", svc.name), models::Service
+        Delete -> &format!("/services/{}", svc.name), models::ServiceUpdateResponse
+        Logs -> &format!("/services/{}/logs", svc.name), ()
     }
 }
 
 impl Services {
     impl_api_ep! { svc: Service, resp
-        List -> "/services"
+        List -> "/services", models::Service
     }
 }

@@ -33,17 +33,20 @@ mod builder;
 mod version;
 
 pub mod api;
+pub mod models;
 pub mod conn {
+    //! Connection related items
     pub(crate) use containers_api::conn::*;
     pub use containers_api::conn::{Error, Transport, TtyChunk};
 }
 pub mod docker;
 pub mod errors;
+pub mod opts;
 
 pub use crate::{
     api::{
         container::{self, Container, Containers},
-        exec::{self, Exec, ExecContainerOpts},
+        exec::{self, Exec},
         image::{self, Image, Images},
         network::{self, Network, Networks},
         volume::{self, Volume, Volumes},

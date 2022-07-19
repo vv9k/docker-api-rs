@@ -1,12 +1,11 @@
-#![cfg(feature = "swarm")]
 //! Control and manage clusters of engines also known as Swarm
-pub mod models;
-pub mod opts;
 
-pub use models::*;
-pub use opts::*;
-
-use crate::{conn::Payload, Docker, Result};
+use crate::{
+    conn::Payload,
+    models,
+    opts::{SwarmInitOpts, SwarmJoinOpts},
+    Docker, Result,
+};
 
 api_doc! { Swarm
 |
@@ -21,20 +20,20 @@ impl Swarm {
     }
 
     impl_api_ep! {_swarm: Swarm, resp
-        Inspect -> "/swarm"
+        Inspect -> "/swarm", models::Swarm
     }
 
     api_doc! { Swarm => Unlockkey
     /// Get the unlock key.
     |
-    pub async fn get_unlock_key(&self) -> Result<UnlockKey> {
+    pub async fn get_unlock_key(&self) -> Result<models::UnlockKeyResponse> {
         self.docker.get_json("/swarm/unlockkey").await
     }}
 
     api_doc! { Swarm => Unlock
     /// Unlock a locked manager.
     |
-    pub async fn unlock_manager(&self, key: &UnlockKey) -> Result<()> {
+    pub async fn unlock_manager(&self, key: &models::SwarmUnlockRequest) -> Result<()> {
         self.docker
             .post("/swarm/unlock", Payload::Json(serde_json::to_string(key)?))
             .await

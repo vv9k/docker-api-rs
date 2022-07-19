@@ -1,10 +1,4 @@
-use crate::{
-    api::{
-        EndpointSpec, Mode, NetworkAttachmentConfig, RegistryAuth, RollbackConfig, TaskSpec,
-        UpdateConfig,
-    },
-    Error, Result,
-};
+use crate::{models, opts::RegistryAuth, Error, Result};
 use containers_api::opts::Filter;
 use containers_api::{impl_filter_func, impl_opts_builder, impl_url_bool_field};
 
@@ -96,42 +90,42 @@ impl ServiceOptsBuilder {
         self
     }
 
-    pub fn task_template(mut self, spec: &TaskSpec) -> Self {
+    pub fn task_template(mut self, spec: &models::TaskSpec) -> Self {
         self.params.insert("TaskTemplate", to_value_result(spec));
         self
     }
 
-    pub fn mode(mut self, mode: &Mode) -> Self {
+    pub fn mode(mut self, mode: &models::ServiceSpecMode) -> Self {
         self.params.insert("Mode", to_value_result(mode));
         self
     }
 
-    pub fn update_config(mut self, conf: &UpdateConfig) -> Self {
+    pub fn update_config(mut self, conf: &models::ServiceSpecUpdateConfig) -> Self {
         self.params.insert("UpdateConfig", to_value_result(conf));
         self
     }
 
-    pub fn rollback_config(mut self, conf: &RollbackConfig) -> Self {
+    pub fn rollback_config(mut self, conf: &models::ServiceSpecRollbackConfig) -> Self {
         self.params.insert("RollbackConfig", to_value_result(conf));
         self
     }
 
     pub fn networks<N>(mut self, networks: N) -> Self
     where
-        N: IntoIterator<Item = NetworkAttachmentConfig>,
+        N: IntoIterator<Item = models::NetworkAttachmentConfig>,
     {
         self.params.insert(
             "Networks",
             to_value_result(
                 networks
                     .into_iter()
-                    .collect::<Vec<NetworkAttachmentConfig>>(),
+                    .collect::<Vec<models::NetworkAttachmentConfig>>(),
             ),
         );
         self
     }
 
-    pub fn endpoint_spec(mut self, spec: &EndpointSpec) -> Self {
+    pub fn endpoint_spec(mut self, spec: &models::EndpointSpec) -> Self {
         self.params.insert("EndpointSpec", to_value_result(spec));
         self
     }

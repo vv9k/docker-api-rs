@@ -1,4 +1,4 @@
-use crate::api::SwarmSpec;
+use crate::models::SwarmSpec;
 use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
 
 impl_opts_builder!(json => SwarmJoin);

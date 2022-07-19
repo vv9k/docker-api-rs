@@ -1,7 +1,5 @@
-use crate::{
-    api::{Availability, Membership, NodeRole},
-    Error, Result,
-};
+use crate::models::{NodeSpecAVAILABILITY, NodeSpecROLE};
+use crate::{Error, Result};
 use containers_api::opts::Filter;
 use containers_api::{
     impl_filter_func, impl_map_field, impl_opts_builder, impl_str_enum_field, impl_str_field,
@@ -10,6 +8,21 @@ use containers_api::{
 use serde::Serialize;
 
 use std::collections::HashMap;
+
+#[derive(Serialize, Debug)]
+pub enum Membership {
+    Accepted,
+    Pending,
+}
+
+impl AsRef<str> for Membership {
+    fn as_ref(&self) -> &str {
+        match &self {
+            Membership::Accepted => "accepted",
+            Membership::Pending => "pending",
+        }
+    }
+}
 
 #[derive(Serialize, Debug)]
 pub struct NodeUpdateOpts {
@@ -35,12 +48,12 @@ impl NodeUpdateOpts {
 
     impl_str_enum_field!(
         /// Role of the node.
-        role: NodeRole => "Role"
+        role: NodeSpecROLE => "Role"
     );
 
     impl_str_enum_field!(
         /// Availability of the node.
-        availability: Availability => "Availability"
+        availability: NodeSpecAVAILABILITY => "Availability"
     );
 
     pub fn serialize(&self) -> Result<String> {
@@ -75,7 +88,7 @@ pub enum NodeFilter {
     Membership(Membership),
     Name(String),
     NodeLabel(String),
-    Role(NodeRole),
+    Role(NodeSpecROLE),
 }
 
 impl Filter for NodeFilter {
