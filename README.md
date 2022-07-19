@@ -36,11 +36,19 @@ Swarm endpoints include:
  - Configs
  - Plugins
 
-## SSL Connection
+Currently supported API version: **v1.41**
+
+## Features
+
+### SSL Connection
 
 To enable HTTPS connection to docker add a `tls` flag to `Cargo.toml`.
 
-## Default features
+### Chrono
+
+To enable chrono DateTime timestamps add a `chrono` feature flag to `Cargo.toml`.
+
+### Default features
 
 By default only `chrono` feature is enabled. To disable it use:
 ```toml
