@@ -17,7 +17,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${swagger-spec-url}/${libpod-api-version}.yaml</inputSpec>
+                            <inputSpec>${swagger-spec-url}/${docker-api-version}.yaml</inputSpec>
                             <language>docker_api.codegen.DockerApiCodegen</language>
                             <output>${project.build.directory}/gen</output>
                             <templateDirectory>${project.basedir}/src/main/resources/docker-api</templateDirectory>
@@ -66,7 +66,7 @@
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <junit-version>4.13.1</junit-version>
         <docker-api-codegen-version>0.1.0</docker-api-codegen-version>
-        <libpod-api-version>v1.41</libpod-api-version>
+        <docker-api-version>v1.41</docker-api-version>
         <swagger-spec-url>https://docs.docker.com/engine/api</swagger-spec-url>
     </properties>
 </project>
