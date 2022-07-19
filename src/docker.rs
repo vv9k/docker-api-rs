@@ -221,8 +221,10 @@ impl Docker {
     /// Verifies the API version returned by the server and adjusts the version used by this client
     /// in future requests.
     pub async fn adjust_api_version(&mut self) -> Result<()> {
-        let server_version: ApiVersion =
-            self.version().await.and_then(|v| v.api_version.parse())?;
+        let server_version: ApiVersion = self
+            .version()
+            .await
+            .and_then(|v| v.api_version.unwrap_or_default().parse())?;
 
         if server_version <= self.version {
             self.version = server_version;

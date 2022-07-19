@@ -75,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Build { path, tag } => {
-            use docker_api::api::BuildOpts;
+            use docker_api::opts::BuildOpts;
             let options = BuildOpts::builder(path).tag(tag).build();
 
             let images = docker.images();
@@ -92,7 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             force,
             noprune,
         } => {
-            use docker_api::api::RmImageOpts;
+            use docker_api::opts::RmImageOpts;
             let opts = RmImageOpts::builder().force(force).noprune(noprune).build();
             match docker.images().get(&image).remove(&opts).await {
                 Ok(statuses) => {
@@ -142,7 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::List { all } => {
-            use docker_api::api::ImageListOpts;
+            use docker_api::opts::ImageListOpts;
 
             let opts = if all {
                 ImageListOpts::builder().all(true).build()
@@ -156,10 +156,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             "---------------------------------\nCreated: {}\nId: {}\nRepo tags: {}\nLabels:\n{}",
                             image.created,
                             image.id,
-                            image.repo_tags.unwrap_or_default().join(","),
+                            image.repo_tags.join(","),
                             image
                                 .labels
-                                .unwrap_or_default()
                                 .into_iter()
                                 .map(|(k, v)| format!(" - {}={}", k, v))
                                 .collect::<Vec<_>>()
@@ -175,7 +174,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             username,
             password,
         } => {
-            use docker_api::api::{PullOpts, RegistryAuth};
+            use docker_api::opts::{PullOpts, RegistryAuth};
             let opts = if let (Some(username), Some(pass)) = (username, password) {
                 let auth = RegistryAuth::builder()
                     .username(username)
@@ -199,7 +198,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             match docker.images().search(image).await {
                 Ok(results) => {
                     for result in results {
-                        println!("{} - {}", result.name, result.description);
+                        println!(
+                            "{} - {}",
+                            result.name.unwrap_or_default(),
+                            result.description.unwrap_or_default()
+                        );
                     }
                 }
                 Err(e) => eprintln!("Error: {}", e),
@@ -210,7 +213,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             image: name,
             tag,
         } => {
-            use docker_api::api::{Image, TagOpts};
+            use docker_api::api::Image;
+            use docker_api::opts::TagOpts;
 
             let tag_opts = TagOpts::builder().repo(repo).tag(tag).build();
 

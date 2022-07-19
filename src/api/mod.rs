@@ -1,5 +1,4 @@
 //! All api endpoints like containers, images, networks...
-pub mod common;
 pub mod container;
 pub mod exec;
 pub mod image;
@@ -29,7 +28,7 @@ pub mod swarm;
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 pub mod task;
 
-pub use {common::*, container::*, exec::*, image::*, network::*, system::*, volume::*};
+pub use {container::*, exec::*, image::*, network::*, system::*, volume::*};
 
 #[cfg(feature = "swarm")]
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]

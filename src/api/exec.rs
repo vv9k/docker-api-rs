@@ -1,15 +1,15 @@
 //! Run new commands inside running containers.
 
-use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
 use futures_util::{
     stream::{Stream, TryStreamExt},
     TryFutureExt,
 };
 use hyper::Body;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     conn::{tty, Headers, Payload},
+    models,
+    opts::{ExecContainerOpts, ExecResizeOpts},
     Docker, Result,
 };
 
@@ -36,7 +36,7 @@ impl Exec {
     }
 
     impl_api_ep! {exec: Exec, resp
-        Inspect -> &format!("/exec/{}/json", exec.id)
+        Inspect -> &format!("/exec/{}/json", exec.id), models::ExecInspectResponse
     }
 
     api_doc! { Exec => Create
@@ -175,89 +175,4 @@ impl Exec {
             .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body))
             .await
     }}
-}
-
-impl_opts_builder!(json => ExecContainer);
-
-impl ExecContainerOptsBuilder {
-    impl_vec_field!(
-        /// Command to run, as an array of strings.
-        cmd => "Cmd"
-    );
-
-    impl_vec_field!(
-        /// A list of environment variables in the form 'VAR=value'.
-        env => "Env"
-    );
-
-    impl_field!(
-        /// Attach to stdout of the exec command.
-        attach_stdout: bool => "AttachStdout"
-    );
-
-    impl_field!(
-        /// Attach to stderr of the exec command.
-        attach_stderr: bool => "AttachStderr"
-    );
-
-    impl_str_field!(
-        /// Override the key sequence for detaching a container. Format is a single
-        /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
-        detach_keys => "DetachKeys"
-    );
-
-    impl_field!(
-        /// Allocate a pseudo-TTY.
-        tty: bool => "Tty"
-    );
-
-    impl_field!(
-        /// Runs the exec process with extended privileges. (Default: `false`)
-        privileged: bool => "Privileged"
-    );
-
-    impl_str_field!(
-        /// The user, and optionally, group to run the exec process inside the container.
-        /// Format is one of: user, user:group, uid, or uid:gid.
-        user => "User"
-    );
-
-    impl_str_field!(
-        /// The working directory for the exec process inside the container.
-        working_dir => "WorkingDir"
-    );
-}
-
-impl_opts_builder!(json => ExecResize);
-
-impl ExecResizeOptsBuilder {
-    impl_field!(height: u64 => "Height");
-    impl_field!(width: u64 => "Width");
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct ExecInfo {
-    pub can_remove: bool,
-    #[serde(rename = "ContainerID")]
-    pub container_id: String,
-    pub detach_keys: String,
-    pub exit_code: Option<u64>,
-    #[serde(rename = "ID")]
-    pub id: String,
-    pub open_stderr: bool,
-    pub open_stdin: bool,
-    pub open_stdout: bool,
-    pub process_config: ProcessConfig,
-    pub running: bool,
-    pub pid: u64,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProcessConfig {
-    pub arguments: Vec<String>,
-    pub entrypoint: String,
-    pub privileged: bool,
-    pub tty: bool,
-    pub user: Option<String>,
 }

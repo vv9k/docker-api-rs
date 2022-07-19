@@ -1,3 +1,6 @@
+# 0.10.0
+- *BREAKING* Use models generated from swagger schema
+
 # 0.9.0
 - Fix `ContainersPruneInfo` deserialization
 - Logs endpoint now correctly returns `TtyChunk` instead of `Bytes`
