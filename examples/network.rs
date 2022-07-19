@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Connect { container, network } => {
-            use docker_api::api::ContainerConnectionOpts;
+            use docker_api::opts::ContainerConnectionOpts;
             if let Err(e) = docker
                 .networks()
                 .get(&network)
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Create { network, driver } => {
-            use docker_api::api::NetworkCreateOpts;
+            use docker_api::opts::NetworkCreateOpts;
             match docker
                 .networks()
                 .create(&NetworkCreateOpts::builder(network).driver(driver).build())
@@ -72,7 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Disconnect { container, network } => {
-            use docker_api::api::ContainerDisconnectionOpts;
+            use docker_api::opts::ContainerDisconnectionOpts;
             if let Err(e) = docker
                 .networks()
                 .get(network)
@@ -92,10 +92,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(networks) => networks.into_iter().for_each(|net| {
                 println!(
                     "----------------------\nId: {}\nName: {}\nDriver: {}\nLabels:\n{}",
-                    net.id,
+                    net.id.unwrap_or_default(),
                     net.name.unwrap_or_default(),
                     net.driver.unwrap_or_default(),
                     net.labels
+                        .unwrap_or_default()
                         .iter()
                         .map(|(k, v)| format!("{}={}", k, v))
                         .collect::<Vec<_>>()

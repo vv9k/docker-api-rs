@@ -167,7 +167,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             pause,
             changes,
         } => {
-            use docker_api::api::ContainerCommitOpts;
+            use docker_api::opts::ContainerCommitOpts;
 
             let mut opts = ContainerCommitOpts::builder();
 
@@ -195,7 +195,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Create { image, nam } => {
-            use docker_api::api::ContainerCreateOpts;
+            use docker_api::opts::ContainerCreateOpts;
             let opts = if let Some(name) = nam {
                 ContainerCreateOpts::builder(image).name(name).build()
             } else {
@@ -207,7 +207,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Delete { id, force } => {
-            use docker_api::api::RmContainerOpts;
+            use docker_api::opts::RmContainerOpts;
 
             let opts = if force {
                 RmContainerOpts::builder().force(true).build()
@@ -219,7 +219,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Exec { id, cmd } => {
-            use docker_api::api::ExecContainerOpts;
+            use docker_api::opts::ExecContainerOpts;
             let options = ExecContainerOpts::builder()
                 .cmd(cmd)
                 .attach_stdout(true)
@@ -240,7 +240,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
         }
         Cmd::List { all } => {
-            use docker_api::api::ContainerListOpts;
+            use docker_api::opts::ContainerListOpts;
 
             let opts = if all {
                 ContainerListOpts::builder().all(true).build()
@@ -252,11 +252,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     containers.into_iter().for_each(|container| {
                         println!(
                             "{}\t{}\t{:?}\t{}\t{}",
-                            &container.id[..12],
-                            container.image,
+                            &container.id.unwrap_or_default()[..12],
+                            container.image.unwrap_or_default(),
                             container.state,
-                            container.status,
-                            container.names[0]
+                            container.status.unwrap_or_default(),
+                            container.names.map(|n| n[0].to_owned()).unwrap_or_default()
                         );
                     });
                 }
@@ -264,7 +264,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Logs { id, stdout, stderr } => {
-            use docker_api::api::LogsOpts;
+            use docker_api::opts::LogsOpts;
             let container = docker.containers().get(&id);
             let logs_stream =
                 container.logs(&LogsOpts::builder().stdout(stdout).stderr(stderr).build());
@@ -285,7 +285,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             print!("{}", String::from_utf8_lossy(&logs));
         }
         Cmd::Prune { until } => {
-            use docker_api::api::{ContainerPruneFilter, ContainerPruneOpts};
+            use docker_api::opts::{ContainerPruneFilter, ContainerPruneOpts};
 
             let opts = if let Some(until) = until {
                 ContainerPruneOpts::builder()

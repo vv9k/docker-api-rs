@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Inspect { container, cmd } => {
-            use docker_api::ExecContainerOpts;
+            use docker_api::opts::ExecContainerOpts;
             use futures::StreamExt;
 
             // Create Opts with specified command
@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             width,
             height,
         } => {
-            use docker_api::api::ExecResizeOpts;
+            use docker_api::opts::ExecResizeOpts;
             let exec = Exec::get(docker, &exec);
 
             // Resize its window with given parameters
