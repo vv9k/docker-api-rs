@@ -48,7 +48,7 @@ impl Image {
     api_doc! { Image => History
     /// Lists the history of the images set of changes.
     |
-    pub async fn history(&self) -> Result<Vec<models::HistoryResponseItem>> {
+    pub async fn history(&self) -> Result<models::ImageHistory200Response> {
         self.docker
             .get_json(&format!("/images/{}/history", self.name))
             .await
@@ -93,7 +93,7 @@ impl Image {
     api_doc! { Distribution => Inspect
     /// Return image digest and platform information by contacting the registry.
     |
-    pub async fn distribution_inspect(&self) -> Result<models::DistributionInspect> {
+    pub async fn distribution_inspect(&self) -> Result<models::DistributionInspectResponse> {
         self.docker
             .post_json(
                 &format!("/distribution/{}/json", self.name),
@@ -142,7 +142,7 @@ impl Images {
     api_doc! { Image => Search
     /// Search for docker images by term.
     |
-    pub async fn search<T>(&self, term: T) -> Result<Vec<models::ImageSearchResponseItem>>
+    pub async fn search<T>(&self, term: T) -> Result<models::ImageSearch200Response>
     where
         T: AsRef<str>,
     {

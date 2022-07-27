@@ -34,7 +34,7 @@ impl Docker {
     pub fn events<'docker>(
         &'docker self,
         opts: &EventsOpts,
-    ) -> impl Stream<Item = Result<models::EventMessage>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<models::SystemEventsResponse>> + Unpin + 'docker {
         let ep = construct_ep("/events", opts.serialize());
         let reader = Box::pin(
             self.stream_get(ep)

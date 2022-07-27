@@ -70,7 +70,7 @@ impl Container {
     api_doc! { Container => Changes
     /// Returns a set of changes made to the container instance.
     |
-    pub async fn changes(&self) -> Result<Option<Vec<models::ContainerChangeResponseItem>>> {
+    pub async fn changes(&self) -> Result<Option<models::ContainerChanges200Response>> {
         self.docker
             .get_json(&format!("/containers/{}/changes", self.id))
             .await
