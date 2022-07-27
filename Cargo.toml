@@ -14,7 +14,9 @@ readme = "README.md"
 [dependencies]
 #containers-api = "0.2"
 containers-api = { git = "https://github.com/vv9k/containers-api" }
-docker-api-stubs = { path = "codegen/target/gen" }
+
+#docker-api-stubs = "0.1"
+docker-api-stubs = { path = "docker-api-stubs/lib" }
 
 log = "0.4"
 paste = "1"
