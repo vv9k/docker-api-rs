@@ -499,7 +499,7 @@ pub struct DeviceRequest {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Describes the result obtained from contacting the registry to retrieve
 /// image metadata.
-pub struct DistributionInspect {
+pub struct DistributionInspectResponse {
     #[serde(rename = "Descriptor")]
     pub descriptor: OciDescriptor,
     #[serde(rename = "Platforms")]
@@ -677,7 +677,7 @@ pub struct EventActor {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// EventMessage represents the information an event contains.
-pub struct EventMessage {
+pub struct SystemEventsResponse {
     #[serde(rename = "Action")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The type of event
@@ -804,6 +804,247 @@ pub struct HealthcheckResult {
     /// Date and time at which this check started in
     /// [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
     pub start: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Container configuration that depends on the host we are running on
+pub struct HostConfig {
+    #[serde(rename = "AutoRemove")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Automatically remove the container when the container's process
+    /// exits. This has no effect if `RestartPolicy` is set.
+    pub auto_remove: Option<bool>,
+    #[serde(rename = "Binds")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of volume bindings for this container. Each volume binding
+    /// is a string in one of these forms:
+    ///
+    /// - `host-src:container-dest[:options]` to bind-mount a host path
+    ///   into the container. Both `host-src`, and `container-dest` must
+    ///   be an _absolute_ path.
+    /// - `volume-name:container-dest[:options]` to bind-mount a volume
+    ///   managed by a volume driver into the container. `container-dest`
+    ///   must be an _absolute_ path.
+    ///
+    /// `options` is an optional, comma-delimited list of:
+    ///
+    /// - `nocopy` disables automatic copying of data from the container
+    ///   path to the volume. The `nocopy` flag only applies to named volumes.
+    /// - `[ro|rw]` mounts a volume read-only or read-write, respectively.
+    ///   If omitted or set to `rw`, volumes are mounted read-write.
+    /// - `[z|Z]` applies SELinux labels to allow or deny multiple containers
+    ///   to read and write to the same volume.
+    ///     - `z`: a _shared_ content label is applied to the content. This
+    ///       label indicates that multiple containers can share the volume
+    ///       content, for both reading and writing.
+    ///     - `Z`: a _private unshared_ label is applied to the content.
+    ///       This label indicates that only the current container can use
+    ///       a private volume. Labeling systems such as SELinux require
+    ///       proper labels to be placed on volume content that is mounted
+    ///       into a container. Without a label, the security system can
+    ///       prevent a container's processes from using the content. By
+    ///       default, the labels set by the host operating system are not
+    ///       modified.
+    /// - `[[r]shared|[r]slave|[r]private]` specifies mount
+    ///   [propagation behavior](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt).
+    ///   This only applies to bind-mounted volumes, not internal volumes
+    ///   or named volumes. Mount propagation requires the source mount
+    ///   point (the location where the source directory is mounted in the
+    ///   host operating system) to have the correct propagation properties.
+    ///   For shared volumes, the source mount point must be set to `shared`.
+    ///   For slave volumes, the mount must be set to either `shared` or
+    ///   `slave`.
+    pub binds: Option<Vec<String>>,
+    #[serde(rename = "CapAdd")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of kernel capabilities to add to the container. Conflicts
+    /// with option 'Capabilities'.
+    pub cap_add: Option<Vec<String>>,
+    #[serde(rename = "CapDrop")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of kernel capabilities to drop from the container. Conflicts
+    /// with option 'Capabilities'.
+    pub cap_drop: Option<Vec<String>>,
+    #[serde(rename = "Cgroup")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Cgroup to use for the container.
+    pub cgroup: Option<String>,
+    #[serde(rename = "CgroupnsMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// cgroup namespace mode for the container. Possible values are:
+    ///
+    /// - `"private"`: the container runs in its own private cgroup namespace
+    /// - `"host"`: use the host system's cgroup namespace
+    ///
+    /// If not specified, the daemon default is used, which can either be `"private"`
+    /// or `"host"`, depending on daemon version, kernel support and configuration.
+    pub cgroupns_mode: Option<String>,
+    #[serde(rename = "ConsoleSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Initial console size, as an `[height, width]` array. (Windows only)
+    pub console_size: Option<Vec<usize>>,
+    #[serde(rename = "ContainerIDFile")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Path to a file where the container ID is written
+    pub container_id_file: Option<String>,
+    #[serde(rename = "Dns")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of DNS servers for the container to use.
+    pub dns: Option<Vec<String>>,
+    #[serde(rename = "DnsOptions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of DNS options.
+    pub dns_options: Option<Vec<String>>,
+    #[serde(rename = "DnsSearch")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of DNS search domains.
+    pub dns_search: Option<Vec<String>>,
+    #[serde(rename = "ExtraHosts")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of hostnames/IP mappings to add to the container's `/etc/hosts`
+    /// file. Specified in the form `["hostname:IP"]`.
+    pub extra_hosts: Option<Vec<String>>,
+    #[serde(rename = "GroupAdd")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of additional groups that the container process will run as.
+    pub group_add: Option<Vec<String>>,
+    #[serde(rename = "IpcMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// IPC sharing mode for the container. Possible values are:
+    ///
+    /// - `"none"`: own private IPC namespace, with /dev/shm not mounted
+    /// - `"private"`: own private IPC namespace
+    /// - `"shareable"`: own private IPC namespace, with a possibility to share it with other containers
+    /// - `"container:<name|id>"`: join another (shareable) container's IPC namespace
+    /// - `"host"`: use the host system's IPC namespace
+    ///
+    /// If not specified, daemon default is used, which can either be `"private"`
+    /// or `"shareable"`, depending on daemon version and configuration.
+    pub ipc_mode: Option<String>,
+    #[serde(rename = "Isolation")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Isolation technology of the container. (Windows only)
+    pub isolation: Option<String>,
+    #[serde(rename = "Links")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of links for the container in the form `container_name:alias`.
+    pub links: Option<Vec<String>>,
+    #[serde(rename = "LogConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The logging configuration for this container
+    pub log_config: Option<HashMap<String, Value>>,
+    #[serde(rename = "MaskedPaths")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The list of paths to be masked inside the container (this overrides
+    /// the default set of paths).
+    pub masked_paths: Option<Vec<String>>,
+    #[serde(rename = "Mounts")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specification for mounts to be added to the container.
+    pub mounts: Option<Vec<Mount>>,
+    #[serde(rename = "NetworkMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Network mode to use for this container. Supported standard values
+    /// are: `bridge`, `host`, `none`, and `container:<name|id>`. Any
+    /// other value is taken as a custom network's name to which this
+    /// container should connect to.
+    pub network_mode: Option<String>,
+    #[serde(rename = "OomScoreAdj")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An integer value containing the score given to the container in
+    /// order to tune OOM killer preferences.
+    pub oom_score_adj: Option<usize>,
+    #[serde(rename = "PidMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Set the PID (Process) Namespace mode for the container. It can be
+    /// either:
+    ///
+    /// - `"container:<name|id>"`: joins another container's PID namespace
+    /// - `"host"`: use the host's PID namespace inside the container
+    pub pid_mode: Option<String>,
+    #[serde(rename = "PortBindings")]
+    pub port_bindings: PortMap,
+    #[serde(rename = "Privileged")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Gives the container full access to the host.
+    pub privileged: Option<bool>,
+    #[serde(rename = "PublishAllPorts")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Allocates an ephemeral host port for all of a container's
+    /// exposed ports.
+    ///
+    /// Ports are de-allocated when the container stops and allocated when
+    /// the container starts. The allocated port might be changed when
+    /// restarting the container.
+    ///
+    /// The port is selected from the ephemeral port range that depends on
+    /// the kernel. For example, on Linux the range is defined by
+    /// `/proc/sys/net/ipv4/ip_local_port_range`.
+    pub publish_all_ports: Option<bool>,
+    #[serde(rename = "ReadonlyPaths")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The list of paths to be set as read-only inside the container
+    /// (this overrides the default set of paths).
+    pub readonly_paths: Option<Vec<String>>,
+    #[serde(rename = "ReadonlyRootfs")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Mount the container's root filesystem as read only.
+    pub readonly_rootfs: Option<bool>,
+    #[serde(rename = "RestartPolicy")]
+    pub restart_policy: RestartPolicy,
+    #[serde(rename = "Runtime")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Runtime to use with this container.
+    pub runtime: Option<String>,
+    #[serde(rename = "SecurityOpt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of string values to customize labels for MLS systems, such
+    /// as SELinux.
+    pub security_opt: Option<Vec<String>>,
+    #[serde(rename = "ShmSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Size of `/dev/shm` in bytes. If omitted, the system uses 64MB.
+    pub shm_size: Option<usize>,
+    #[serde(rename = "StorageOpt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Storage driver options for this container, in the form `{"size": "120G"}`.
+    pub storage_opt: Option<HashMap<String, String>>,
+    #[serde(rename = "Sysctls")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of kernel parameters (sysctls) to set in the container.
+    /// For example:
+    ///
+    /// ```
+    /// {"net.ipv4.ip_forward": "1"}
+    /// ```
+    pub sysctls: Option<HashMap<String, String>>,
+    #[serde(rename = "Tmpfs")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A map of container directories which should be replaced by tmpfs
+    /// mounts, and their corresponding mount options. For example:
+    ///
+    /// ```
+    /// { "/run": "rw,noexec,nosuid,size=65536k" }
+    /// ```
+    pub tmpfs: Option<HashMap<String, String>>,
+    #[serde(rename = "UTSMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// UTS namespace to use for the container.
+    pub uts_mode: Option<String>,
+    #[serde(rename = "UsernsMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Sets the usernamespace mode for the container when usernamespace
+    /// remapping option is enabled.
+    pub userns_mode: Option<String>,
+    #[serde(rename = "VolumeDriver")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Driver that this container uses to mount volumes.
+    pub volume_driver: Option<String>,
+    #[serde(rename = "VolumesFrom")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of volumes to inherit from another container, specified in
+    /// the form `<container name>[:<ro|rw>]`.
+    pub volumes_from: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -2943,7 +3184,7 @@ pub struct Volume {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Volume configuration
-pub struct VolumeCreateOptions {
+pub struct VolumeConfig {
     #[serde(rename = "Driver")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of the volume driver to use.
@@ -2961,4 +3202,371 @@ pub struct VolumeCreateOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The new volume's name. If not specified, Docker generates a name.
     pub name: Option<String>,
+}
+
+/// no error
+pub type SystemPing200Response = String;
+
+/// no error
+pub type SystemPingHead200Response = String;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// An identity token was generated successfully.
+pub struct SystemAuthResponse {
+    #[serde(rename = "IdentityToken")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An opaque token used to authenticate a user after a successful login
+    pub identity_token: Option<String>,
+    #[serde(rename = "Status")]
+    /// The status of the authentication
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct BuildPruneResponse {
+    #[serde(rename = "CachesDeleted")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caches_deleted: Option<Vec<String>>,
+    #[serde(rename = "SpaceReclaimed")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disk space reclaimed in bytes
+    pub space_reclaimed: Option<i64>,
+}
+
+/// no error
+pub type ConfigList200Response = Vec<Config>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Container created successfully
+pub struct ContainerCreateResponse {
+    #[serde(rename = "Id")]
+    /// The ID of the created container
+    pub id: String,
+    #[serde(rename = "Warnings")]
+    #[serde(default)]
+    /// Warnings encountered when creating the container
+    pub warnings: Vec<String>,
+}
+
+/// no error
+pub type ContainerList200Response = Vec<ContainerSummary>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct ContainerPruneResponse {
+    #[serde(rename = "ContainersDeleted")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Container IDs that were deleted
+    pub containers_deleted: Option<Vec<String>>,
+    #[serde(rename = "SpaceReclaimed")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disk space reclaimed in bytes
+    pub space_reclaimed: Option<i64>,
+}
+
+/// The list of changes
+pub type ContainerChanges200Response = Vec<HashMap<String, Value>>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// no error
+pub struct ContainerInspectResponse {
+    #[serde(rename = "AppArmorProfile")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub app_armor_profile: Option<String>,
+    #[serde(rename = "Args")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The arguments to the command being run
+    pub args: Option<Vec<String>>,
+    #[serde(rename = "Config")]
+    pub config: ContainerConfig,
+    #[serde(rename = "Created")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The time the container was created
+    pub created: Option<String>,
+    #[serde(rename = "Driver")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub driver: Option<String>,
+    #[serde(rename = "ExecIDs")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// IDs of exec instances that are running in the container.
+    pub exec_i_ds: Option<Vec<String>>,
+    #[serde(rename = "GraphDriver")]
+    pub graph_driver: GraphDriverData,
+    #[serde(rename = "HostConfig")]
+    pub host_config: Option<Value>,
+    #[serde(rename = "HostnamePath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hostname_path: Option<String>,
+    #[serde(rename = "HostsPath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hosts_path: Option<String>,
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the container
+    pub id: Option<String>,
+    #[serde(rename = "Image")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The container's image ID
+    pub image: Option<String>,
+    #[serde(rename = "LogPath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub log_path: Option<String>,
+    #[serde(rename = "MountLabel")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mount_label: Option<String>,
+    #[serde(rename = "Mounts")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mounts: Option<Vec<MountPoint>>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(rename = "NetworkSettings")]
+    pub network_settings: NetworkSettings,
+    #[serde(rename = "Path")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The path to the command being run
+    pub path: Option<String>,
+    #[serde(rename = "Platform")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub platform: Option<String>,
+    #[serde(rename = "ProcessLabel")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub process_label: Option<String>,
+    #[serde(rename = "ResolvConfPath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolv_conf_path: Option<String>,
+    #[serde(rename = "RestartCount")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub restart_count: Option<usize>,
+    #[serde(rename = "SizeRootFs")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The total size of all the files in this container.
+    pub size_root_fs: Option<i64>,
+    #[serde(rename = "SizeRw")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The size of files that have been created or changed by this
+    /// container.
+    pub size_rw: Option<i64>,
+    #[serde(rename = "State")]
+    pub state: ContainerState,
+}
+
+/// logs returned as a stream in response body.
+/// For the stream format, [see the documentation for the attach endpoint](#operation/ContainerAttach).
+/// Note that unlike the attach endpoint, the logs endpoint does not
+/// upgrade the connection and does not set Content-Type.
+pub type ContainerLogs200Response = Vec<u8>;
+
+/// no error
+pub type ContainerStats200Response = Value;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// no error
+pub struct ContainerTopResponse {
+    #[serde(rename = "Processes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Each process running in the container, where each is process
+    /// is an array of values corresponding to the titles.
+    pub processes: Option<Vec<Vec<String>>>,
+    #[serde(rename = "Titles")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ps column titles
+    pub titles: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The container has been updated.
+pub struct ContainerUpdateResponse {
+    #[serde(rename = "Warnings")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub warnings: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct ExecInspectResponse {
+    #[serde(rename = "CanRemove")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_remove: Option<bool>,
+    #[serde(rename = "ContainerID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub container_id: Option<String>,
+    #[serde(rename = "DetachKeys")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detach_keys: Option<String>,
+    #[serde(rename = "ExitCode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exit_code: Option<usize>,
+    #[serde(rename = "ID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(rename = "OpenStderr")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub open_stderr: Option<bool>,
+    #[serde(rename = "OpenStdin")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub open_stdin: Option<bool>,
+    #[serde(rename = "OpenStdout")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub open_stdout: Option<bool>,
+    #[serde(rename = "Pid")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The system process ID for the exec process.
+    pub pid: Option<usize>,
+    #[serde(rename = "ProcessConfig")]
+    pub process_config: ProcessConfig,
+    #[serde(rename = "Running")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub running: Option<bool>,
+}
+
+/// no error
+pub type ImageGetAll200Response = Vec<u8>;
+
+/// Summary image data for the images matching the query
+pub type ImageList200Response = Vec<ImageSummary>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct ImagePruneResponse {
+    #[serde(rename = "ImagesDeleted")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Images that were deleted
+    pub images_deleted: Option<Vec<ImageDeleteResponseItem>>,
+    #[serde(rename = "SpaceReclaimed")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disk space reclaimed in bytes
+    pub space_reclaimed: Option<i64>,
+}
+
+/// No error
+pub type ImageSearch200Response = Vec<HashMap<String, Value>>;
+
+/// The image was deleted successfully
+pub type ImageDelete200Response = Vec<ImageDeleteResponseItem>;
+
+/// no error
+pub type ImageGet200Response = Vec<u8>;
+
+/// List of image layers
+pub type ImageHistory200Response = Vec<HashMap<String, Value>>;
+
+/// No error
+pub type NetworkList200Response = Vec<Network>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct NetworkCreateResponse {
+    #[serde(rename = "Id")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the created network.
+    pub id: Option<String>,
+    #[serde(rename = "Warning")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub warning: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct NetworkPruneResponse {
+    #[serde(rename = "NetworksDeleted")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Networks that were deleted
+    pub networks_deleted: Option<Vec<String>>,
+}
+
+/// no error
+pub type NodeList200Response = Vec<Node>;
+
+/// No error
+pub type PluginList200Response = Vec<Plugin>;
+
+/// no error
+pub type GetPluginPrivileges200Response = Vec<PluginPrivilege>;
+
+/// no error
+pub type SecretList200Response = Vec<Secret>;
+
+/// no error
+pub type ServiceList200Response = Vec<Service>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// no error
+pub struct ServiceCreateResponse {
+    #[serde(rename = "ID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the created service.
+    pub id: Option<String>,
+    #[serde(rename = "Warning")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Optional warning message
+    pub warning: Option<String>,
+}
+
+/// logs returned as a stream in response body
+pub type ServiceLogs200Response = Vec<u8>;
+
+/// no error
+pub type SwarmInit200Response = String;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// no error
+pub struct UnlockKeyResponse {
+    #[serde(rename = "UnlockKey")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The swarm's unlock key.
+    pub unlock_key: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// no error
+pub struct SystemDataUsageResponse {
+    #[serde(rename = "BuildCache")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build_cache: Option<Vec<BuildCache>>,
+    #[serde(rename = "Containers")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub containers: Option<Vec<ContainerSummary>>,
+    #[serde(rename = "Images")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub images: Option<Vec<ImageSummary>>,
+    #[serde(rename = "LayersSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layers_size: Option<i64>,
+    #[serde(rename = "Volumes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volumes: Option<Vec<Volume>>,
+}
+
+/// no error
+pub type TaskList200Response = Vec<Task>;
+
+/// logs returned as a stream in response body
+pub type TaskLogs200Response = Vec<u8>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Summary volume data that matches the query
+pub struct VolumeListResponse {
+    #[serde(rename = "Volumes")]
+    #[serde(default)]
+    /// List of volumes
+    pub volumes: Vec<Volume>,
+    #[serde(rename = "Warnings")]
+    #[serde(default)]
+    /// Warnings that occurred when fetching the list of volumes.
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// No error
+pub struct VolumePruneResponse {
+    #[serde(rename = "SpaceReclaimed")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disk space reclaimed in bytes
+    pub space_reclaimed: Option<i64>,
+    #[serde(rename = "VolumesDeleted")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Volumes that were deleted
+    pub volumes_deleted: Option<Vec<String>>,
 }
