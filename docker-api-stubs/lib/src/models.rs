@@ -247,7 +247,23 @@ pub struct Config {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ConfigCreateBodyParam {}
+pub struct ConfigCreateBodyParam {
+    #[serde(rename = "Data")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Base64-url-safe-encoded ([RFC 4648](https://tools.ietf.org/html/rfc4648#section-5))
+    /// config data.
+    pub data: Option<String>,
+    #[serde(rename = "Labels")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined key/value metadata.
+    pub labels: Option<HashMap<String, String>>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined name of the config.
+    pub name: Option<String>,
+    #[serde(rename = "Templating")]
+    pub templating: Option<Driver>,
+}
 
 /// no error
 pub type ConfigList200Response = Vec<Config>;
@@ -411,11 +427,120 @@ pub struct ContainerCreate201Response {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Configuration for a container that is portable between hosts.
 pub struct ContainerCreateBodyParam {
+    #[serde(rename = "ArgsEscaped")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Command is already escaped (Windows only)
+    pub args_escaped: Option<bool>,
+    #[serde(rename = "AttachStderr")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Whether to attach to `stderr`.
+    pub attach_stderr: Option<bool>,
+    #[serde(rename = "AttachStdin")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Whether to attach to `stdin`.
+    pub attach_stdin: Option<bool>,
+    #[serde(rename = "AttachStdout")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Whether to attach to `stdout`.
+    pub attach_stdout: Option<bool>,
+    #[serde(rename = "Cmd")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Command to run specified as a string or an array of strings.
+    pub cmd: Option<Vec<String>>,
+    #[serde(rename = "Domainname")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The domain name to use for the container.
+    pub domainname: Option<String>,
+    #[serde(rename = "Entrypoint")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The entry point for the container as a string or an array of strings.
+    ///
+    /// If the array consists of exactly one empty string (`[""]`) then the
+    /// entry point is reset to system default (i.e., the entry point used by
+    /// docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`).
+    pub entrypoint: Option<Vec<String>>,
+    #[serde(rename = "Env")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of environment variables to set inside the container in the
+    /// form `["VAR=value", ...]`. A variable without `=` is removed from the
+    /// environment, rather than to have an empty value.
+    pub env: Option<Vec<String>>,
+    #[serde(rename = "ExposedPorts")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An object mapping ports to an empty object in the form:
+    ///
+    /// `{"<port>/<tcp|udp|sctp>": {}}`
+    pub exposed_ports: Option<HashMap<String, Value>>,
+    #[serde(rename = "Healthcheck")]
+    pub healthcheck: Option<HealthConfig>,
     #[serde(rename = "HostConfig")]
     pub host_config: Option<Value>,
+    #[serde(rename = "Hostname")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The hostname to use for the container, as a valid RFC 1123 hostname.
+    pub hostname: Option<String>,
+    #[serde(rename = "Image")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The name (or reference) of the image to use when creating the container,
+    /// or which was used when the container was created.
+    pub image: Option<String>,
+    #[serde(rename = "Labels")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined key/value metadata.
+    pub labels: Option<HashMap<String, String>>,
+    #[serde(rename = "MacAddress")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// MAC address of the container.
+    pub mac_address: Option<String>,
+    #[serde(rename = "NetworkDisabled")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disable networking for the container.
+    pub network_disabled: Option<bool>,
     #[serde(rename = "NetworkingConfig")]
     pub networking_config: Option<NetworkingConfig>,
+    #[serde(rename = "OnBuild")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// `ONBUILD` metadata that were defined in the image's `Dockerfile`.
+    pub on_build: Option<Vec<String>>,
+    #[serde(rename = "OpenStdin")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Open `stdin`
+    pub open_stdin: Option<bool>,
+    #[serde(rename = "Shell")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell.
+    pub shell: Option<Vec<String>>,
+    #[serde(rename = "StdinOnce")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Close `stdin` after one attached client disconnects
+    pub stdin_once: Option<bool>,
+    #[serde(rename = "StopSignal")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Signal to stop a container as a string or unsigned integer.
+    pub stop_signal: Option<String>,
+    #[serde(rename = "StopTimeout")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Timeout to stop a container in seconds.
+    pub stop_timeout: Option<usize>,
+    #[serde(rename = "Tty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Attach standard streams to a TTY, including `stdin` if it is not closed.
+    pub tty: Option<bool>,
+    #[serde(rename = "User")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The user that commands are run as inside the container.
+    pub user: Option<String>,
+    #[serde(rename = "Volumes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An object mapping mount point paths inside the container to empty
+    /// objects.
+    pub volumes: Option<HashMap<String, Value>>,
+    #[serde(rename = "WorkingDir")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The working directory for commands to run in.
+    pub working_dir: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -775,9 +900,214 @@ pub struct ContainerUpdate200Response {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// A container's resources (cgroups config, ulimits, etc)
 pub struct ContainerUpdateUpdateParam {
+    #[serde(rename = "BlkioDeviceReadBps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit read rate (bytes per second) from a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_read_bps: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceReadIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit read rate (IO per second) from a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_read_i_ops: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceWriteBps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit write rate (bytes per second) to a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_write_bps: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceWriteIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit write rate (IO per second) to a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_write_i_ops: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioWeight")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Block IO weight (relative weight).
+    pub blkio_weight: Option<usize>,
+    #[serde(rename = "BlkioWeightDevice")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Block IO weight (relative device weight) in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Weight": weight}]
+    /// ```
+    pub blkio_weight_device: Option<Vec<ContainerUpdateUpdateParamBlkioWeightDeviceInlineItem>>,
+    #[serde(rename = "CgroupParent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Path to `cgroups` under which the container's `cgroup` is created. If
+    /// the path is not absolute, the path is considered to be relative to the
+    /// `cgroups` path of the init process. Cgroups are created if they do not
+    /// already exist.
+    pub cgroup_parent: Option<String>,
+    #[serde(rename = "CpuCount")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The number of usable CPUs (Windows only).
+    ///
+    /// On Windows Server containers, the processor resource controls are
+    /// mutually exclusive. The order of precedence is `CPUCount` first, then
+    /// `CPUShares`, and `CPUPercent` last.
+    pub cpu_count: Option<i64>,
+    #[serde(rename = "CpuPercent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The usable percentage of the available CPUs (Windows only).
+    ///
+    /// On Windows Server containers, the processor resource controls are
+    /// mutually exclusive. The order of precedence is `CPUCount` first, then
+    /// `CPUShares`, and `CPUPercent` last.
+    pub cpu_percent: Option<i64>,
+    #[serde(rename = "CpuPeriod")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU period in microseconds.
+    pub cpu_period: Option<i64>,
+    #[serde(rename = "CpuQuota")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Microseconds of CPU time that the container can get in a CPU period.
+    pub cpu_quota: Option<i64>,
+    #[serde(rename = "CpuRealtimePeriod")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU real-time period in microseconds. Set to 0 to
+    /// allocate no time allocated to real-time tasks.
+    pub cpu_realtime_period: Option<i64>,
+    #[serde(rename = "CpuRealtimeRuntime")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU real-time runtime in microseconds. Set to 0 to
+    /// allocate no time allocated to real-time tasks.
+    pub cpu_realtime_runtime: Option<i64>,
+    #[serde(rename = "CpuShares")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An integer value representing this container's relative CPU weight
+    /// versus other containers.
+    pub cpu_shares: Option<usize>,
+    #[serde(rename = "CpusetCpus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// CPUs in which to allow execution (e.g., `0-3`, `0,1`).
+    pub cpuset_cpus: Option<String>,
+    #[serde(rename = "CpusetMems")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
+    /// effective on NUMA systems.
+    pub cpuset_mems: Option<String>,
+    #[serde(rename = "DeviceCgroupRules")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// a list of cgroup rules to apply to the container
+    pub device_cgroup_rules: Option<Vec<String>>,
+    #[serde(rename = "DeviceRequests")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of requests for devices to be sent to device drivers.
+    pub device_requests: Option<Vec<DeviceRequest>>,
+    #[serde(rename = "Devices")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of devices to add to the container.
+    pub devices: Option<Vec<DeviceMapping>>,
+    #[serde(rename = "IOMaximumBandwidth")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum IO in bytes per second for the container system drive
+    /// (Windows only).
+    pub io_maximum_bandwidth: Option<i64>,
+    #[serde(rename = "IOMaximumIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum IOps for the container system drive (Windows only)
+    pub io_maximum_i_ops: Option<i64>,
+    #[serde(rename = "Init")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Run an init inside the container that forwards signals and reaps
+    /// processes. This field is omitted if empty, and the default (as
+    /// configured on the daemon) is used.
+    pub init: Option<bool>,
+    #[serde(rename = "KernelMemory")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Kernel memory limit in bytes.
+    ///
+    /// <p><br /></p>
+    ///
+    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
+    /// > `kmem.limit_in_bytes`.
+    pub kernel_memory: Option<i64>,
+    #[serde(rename = "KernelMemoryTCP")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Hard limit for kernel TCP buffer memory (in bytes).
+    pub kernel_memory_tcp: Option<i64>,
+    #[serde(rename = "Memory")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory limit in bytes.
+    pub memory: Option<i64>,
+    #[serde(rename = "MemoryReservation")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory soft limit in bytes.
+    pub memory_reservation: Option<i64>,
+    #[serde(rename = "MemorySwap")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Total memory limit (memory + swap). Set as `-1` to enable unlimited
+    /// swap.
+    pub memory_swap: Option<i64>,
+    #[serde(rename = "MemorySwappiness")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Tune a container's memory swappiness behavior. Accepts an integer
+    /// between 0 and 100.
+    pub memory_swappiness: Option<i64>,
+    #[serde(rename = "NanoCpus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// CPU quota in units of 10<sup>-9</sup> CPUs.
+    pub nano_cpus: Option<i64>,
+    #[serde(rename = "OomKillDisable")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disable OOM Killer for the container.
+    pub oom_kill_disable: Option<bool>,
+    #[serde(rename = "PidsLimit")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
+    /// to not change.
+    pub pids_limit: Option<i64>,
     #[serde(rename = "RestartPolicy")]
     pub restart_policy: Option<RestartPolicy>,
+    #[serde(rename = "Ulimits")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of resource limits to set in the container. For example:
+    ///
+    /// ```
+    /// {"Name": "nofile", "Soft": 1024, "Hard": 2048}
+    /// ```
+    pub ulimits: Option<Vec<ContainerUpdateUpdateParamUlimitsInlineItem>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ContainerUpdateUpdateParamBlkioWeightDeviceInlineItem {
+    #[serde(rename = "Path")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(rename = "Weight")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weight: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ContainerUpdateUpdateParamUlimitsInlineItem {
+    #[serde(rename = "Hard")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Hard limit
+    pub hard: Option<usize>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Name of ulimit
+    pub name: Option<String>,
+    #[serde(rename = "Soft")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Soft limit
+    pub soft: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1513,6 +1843,50 @@ pub struct HostConfig {
     ///   For slave volumes, the mount must be set to either `shared` or
     ///   `slave`.
     pub binds: Option<Vec<String>>,
+    #[serde(rename = "BlkioDeviceReadBps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit read rate (bytes per second) from a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_read_bps: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceReadIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit read rate (IO per second) from a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_read_i_ops: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceWriteBps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit write rate (bytes per second) to a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_write_bps: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioDeviceWriteIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Limit write rate (IO per second) to a device, in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Rate": rate}]
+    /// ```
+    pub blkio_device_write_i_ops: Option<Vec<ThrottleDevice>>,
+    #[serde(rename = "BlkioWeight")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Block IO weight (relative weight).
+    pub blkio_weight: Option<usize>,
+    #[serde(rename = "BlkioWeightDevice")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Block IO weight (relative device weight) in the form:
+    ///
+    /// ```
+    /// [{"Path": "device_path", "Weight": weight}]
+    /// ```
+    pub blkio_weight_device: Option<Vec<HostConfigBlkioWeightDeviceInlineItem>>,
     #[serde(rename = "CapAdd")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// A list of kernel capabilities to add to the container. Conflicts
@@ -1527,6 +1901,13 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Cgroup to use for the container.
     pub cgroup: Option<String>,
+    #[serde(rename = "CgroupParent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Path to `cgroups` under which the container's `cgroup` is created. If
+    /// the path is not absolute, the path is considered to be relative to the
+    /// `cgroups` path of the init process. Cgroups are created if they do not
+    /// already exist.
+    pub cgroup_parent: Option<String>,
     #[serde(rename = "CgroupnsMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// cgroup namespace mode for the container. Possible values are:
@@ -1545,6 +1926,66 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Path to a file where the container ID is written
     pub container_id_file: Option<String>,
+    #[serde(rename = "CpuCount")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The number of usable CPUs (Windows only).
+    ///
+    /// On Windows Server containers, the processor resource controls are
+    /// mutually exclusive. The order of precedence is `CPUCount` first, then
+    /// `CPUShares`, and `CPUPercent` last.
+    pub cpu_count: Option<i64>,
+    #[serde(rename = "CpuPercent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The usable percentage of the available CPUs (Windows only).
+    ///
+    /// On Windows Server containers, the processor resource controls are
+    /// mutually exclusive. The order of precedence is `CPUCount` first, then
+    /// `CPUShares`, and `CPUPercent` last.
+    pub cpu_percent: Option<i64>,
+    #[serde(rename = "CpuPeriod")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU period in microseconds.
+    pub cpu_period: Option<i64>,
+    #[serde(rename = "CpuQuota")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Microseconds of CPU time that the container can get in a CPU period.
+    pub cpu_quota: Option<i64>,
+    #[serde(rename = "CpuRealtimePeriod")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU real-time period in microseconds. Set to 0 to
+    /// allocate no time allocated to real-time tasks.
+    pub cpu_realtime_period: Option<i64>,
+    #[serde(rename = "CpuRealtimeRuntime")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The length of a CPU real-time runtime in microseconds. Set to 0 to
+    /// allocate no time allocated to real-time tasks.
+    pub cpu_realtime_runtime: Option<i64>,
+    #[serde(rename = "CpuShares")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// An integer value representing this container's relative CPU weight
+    /// versus other containers.
+    pub cpu_shares: Option<usize>,
+    #[serde(rename = "CpusetCpus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// CPUs in which to allow execution (e.g., `0-3`, `0,1`).
+    pub cpuset_cpus: Option<String>,
+    #[serde(rename = "CpusetMems")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
+    /// effective on NUMA systems.
+    pub cpuset_mems: Option<String>,
+    #[serde(rename = "DeviceCgroupRules")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// a list of cgroup rules to apply to the container
+    pub device_cgroup_rules: Option<Vec<String>>,
+    #[serde(rename = "DeviceRequests")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of requests for devices to be sent to device drivers.
+    pub device_requests: Option<Vec<DeviceRequest>>,
+    #[serde(rename = "Devices")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of devices to add to the container.
+    pub devices: Option<Vec<DeviceMapping>>,
     #[serde(rename = "Dns")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// A list of DNS servers for the container to use.
@@ -1566,6 +2007,21 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// A list of additional groups that the container process will run as.
     pub group_add: Option<Vec<String>>,
+    #[serde(rename = "IOMaximumBandwidth")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum IO in bytes per second for the container system drive
+    /// (Windows only).
+    pub io_maximum_bandwidth: Option<i64>,
+    #[serde(rename = "IOMaximumIOps")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum IOps for the container system drive (Windows only)
+    pub io_maximum_i_ops: Option<i64>,
+    #[serde(rename = "Init")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Run an init inside the container that forwards signals and reaps
+    /// processes. This field is omitted if empty, and the default (as
+    /// configured on the daemon) is used.
+    pub init: Option<bool>,
     #[serde(rename = "IpcMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// IPC sharing mode for the container. Possible values are:
@@ -1583,6 +2039,19 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Isolation technology of the container. (Windows only)
     pub isolation: Option<String>,
+    #[serde(rename = "KernelMemory")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Kernel memory limit in bytes.
+    ///
+    /// <p><br /></p>
+    ///
+    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
+    /// > `kmem.limit_in_bytes`.
+    pub kernel_memory: Option<i64>,
+    #[serde(rename = "KernelMemoryTCP")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Hard limit for kernel TCP buffer memory (in bytes).
+    pub kernel_memory_tcp: Option<i64>,
     #[serde(rename = "Links")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// A list of links for the container in the form `container_name:alias`.
@@ -1596,10 +2065,32 @@ pub struct HostConfig {
     /// The list of paths to be masked inside the container (this overrides
     /// the default set of paths).
     pub masked_paths: Option<Vec<String>>,
+    #[serde(rename = "Memory")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory limit in bytes.
+    pub memory: Option<i64>,
+    #[serde(rename = "MemoryReservation")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Memory soft limit in bytes.
+    pub memory_reservation: Option<i64>,
+    #[serde(rename = "MemorySwap")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Total memory limit (memory + swap). Set as `-1` to enable unlimited
+    /// swap.
+    pub memory_swap: Option<i64>,
+    #[serde(rename = "MemorySwappiness")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Tune a container's memory swappiness behavior. Accepts an integer
+    /// between 0 and 100.
+    pub memory_swappiness: Option<i64>,
     #[serde(rename = "Mounts")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Specification for mounts to be added to the container.
     pub mounts: Option<Vec<Mount>>,
+    #[serde(rename = "NanoCpus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// CPU quota in units of 10<sup>-9</sup> CPUs.
+    pub nano_cpus: Option<i64>,
     #[serde(rename = "NetworkMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Network mode to use for this container. Supported standard values
@@ -1607,6 +2098,10 @@ pub struct HostConfig {
     /// other value is taken as a custom network's name to which this
     /// container should connect to.
     pub network_mode: Option<String>,
+    #[serde(rename = "OomKillDisable")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Disable OOM Killer for the container.
+    pub oom_kill_disable: Option<bool>,
     #[serde(rename = "OomScoreAdj")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// An integer value containing the score given to the container in
@@ -1620,6 +2115,11 @@ pub struct HostConfig {
     /// - `"container:<name|id>"`: joins another container's PID namespace
     /// - `"host"`: use the host's PID namespace inside the container
     pub pid_mode: Option<String>,
+    #[serde(rename = "PidsLimit")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
+    /// to not change.
+    pub pids_limit: Option<i64>,
     #[serde(rename = "PortBindings")]
     pub port_bindings: Option<PortMap>,
     #[serde(rename = "Privileged")]
@@ -1689,6 +2189,14 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// UTS namespace to use for the container.
     pub uts_mode: Option<String>,
+    #[serde(rename = "Ulimits")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of resource limits to set in the container. For example:
+    ///
+    /// ```
+    /// {"Name": "nofile", "Soft": 1024, "Hard": 2048}
+    /// ```
+    pub ulimits: Option<Vec<HostConfigUlimitsInlineItem>>,
     #[serde(rename = "UsernsMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Sets the usernamespace mode for the container when usernamespace
@@ -1703,6 +2211,16 @@ pub struct HostConfig {
     /// A list of volumes to inherit from another container, specified in
     /// the form `<container name>[:<ro|rw>]`.
     pub volumes_from: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HostConfigBlkioWeightDeviceInlineItem {
+    #[serde(rename = "Path")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(rename = "Weight")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weight: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1815,6 +2333,22 @@ impl std::fmt::Display for HostConfigLogConfigInlineItemTypeInlineItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_ref())
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HostConfigUlimitsInlineItem {
+    #[serde(rename = "Hard")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Hard limit
+    pub hard: Option<usize>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Name of ulimit
+    pub name: Option<String>,
+    #[serde(rename = "Soft")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Soft limit
+    pub soft: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -3859,7 +4393,28 @@ pub struct Secret {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct SecretCreateBodyParam {}
+pub struct SecretCreateBodyParam {
+    #[serde(rename = "Data")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Base64-url-safe-encoded ([RFC 4648](https://tools.ietf.org/html/rfc4648#section-5))
+    /// data to store as secret.
+    ///
+    /// This field is only used to _create_ a secret, and is not returned by
+    /// other endpoints.
+    pub data: Option<String>,
+    #[serde(rename = "Driver")]
+    pub driver: Option<Driver>,
+    #[serde(rename = "Labels")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined key/value metadata.
+    pub labels: Option<HashMap<String, String>>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined name of the secret.
+    pub name: Option<String>,
+    #[serde(rename = "Templating")]
+    pub templating: Option<Driver>,
+}
 
 /// no error
 pub type SecretList200Response = Vec<Secret>;
@@ -3938,7 +4493,269 @@ pub struct ServiceCreate201Response {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ServiceCreateBodyParam {}
+/// User modifiable configuration for a service.
+pub struct ServiceCreateBodyParam {
+    #[serde(rename = "EndpointSpec")]
+    pub endpoint_spec: Option<EndpointSpec>,
+    #[serde(rename = "Labels")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined key/value metadata.
+    pub labels: Option<HashMap<String, String>>,
+    #[serde(rename = "Mode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Scheduling mode for the service.
+    pub mode: Option<ServiceCreateBodyParamModeInlineItem>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Name of the service.
+    pub name: Option<String>,
+    #[serde(rename = "Networks")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specifies which networks the service should attach to.
+    pub networks: Option<Vec<NetworkAttachmentConfig>>,
+    #[serde(rename = "RollbackConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specification for the rollback strategy of the service.
+    pub rollback_config: Option<ServiceCreateBodyParamRollbackConfigInlineItem>,
+    #[serde(rename = "TaskTemplate")]
+    pub task_template: Option<TaskSpec>,
+    #[serde(rename = "UpdateConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specification for the update strategy of the service.
+    pub update_config: Option<ServiceCreateBodyParamUpdateConfigInlineItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Scheduling mode for the service.
+pub struct ServiceCreateBodyParamModeInlineItem {
+    #[serde(rename = "Global")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub global: Option<Value>,
+    #[serde(rename = "GlobalJob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The mode used for services which run a task to the completed state
+    /// on each valid node.
+    pub global_job: Option<Value>,
+    #[serde(rename = "Replicated")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replicated: Option<ServiceCreateBodyParamModeInlineItemReplicatedInlineItem>,
+    #[serde(rename = "ReplicatedJob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The mode used for services with a finite number of tasks that run
+    /// to a completed state.
+    pub replicated_job: Option<ServiceCreateBodyParamModeInlineItemReplicatedJobInlineItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ServiceCreateBodyParamModeInlineItemReplicatedInlineItem {
+    #[serde(rename = "Replicas")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replicas: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The mode used for services with a finite number of tasks that run
+/// to a completed state.
+pub struct ServiceCreateBodyParamModeInlineItemReplicatedJobInlineItem {
+    #[serde(rename = "MaxConcurrent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The maximum number of replicas to run simultaneously.
+    pub max_concurrent: Option<i64>,
+    #[serde(rename = "TotalCompletions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The total number of replicas desired to reach the Completed
+    /// state. If unset, will default to the value of `MaxConcurrent`
+    pub total_completions: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Specification for the rollback strategy of the service.
+pub struct ServiceCreateBodyParamRollbackConfigInlineItem {
+    #[serde(rename = "Delay")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time between rollback iterations, in nanoseconds.
+    pub delay: Option<i64>,
+    #[serde(rename = "FailureAction")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Action to take if an rolled back task fails to run, or stops
+    /// running during the rollback.
+    pub failure_action: Option<String>,
+    #[serde(rename = "MaxFailureRatio")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The fraction of tasks that may fail during a rollback before the
+    /// failure action is invoked, specified as a floating point number
+    /// between 0 and 1.
+    pub max_failure_ratio: Option<Value>,
+    #[serde(rename = "Monitor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time to monitor each rolled back task for failures, in
+    /// nanoseconds.
+    pub monitor: Option<i64>,
+    #[serde(rename = "Order")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The order of operations when rolling back a task. Either the old
+    /// task is shut down before the new task is started, or the new task
+    /// is started before the old task is shut down.
+    pub order: Option<String>,
+    #[serde(rename = "Parallelism")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum number of tasks to be rolled back in one iteration (0 means
+    /// unlimited parallelism).
+    pub parallelism: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Action to take if an rolled back task fails to run, or stops
+/// running during the rollback.
+pub enum ServiceCreateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    #[serde(rename = "continue")]
+    Continue,
+    #[serde(rename = "pause")]
+    Pause,
+}
+
+impl AsRef<str> for ServiceCreateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceCreateBodyParamRollbackConfigInlineItemFailureActionInlineItem::Continue => {
+                "continue"
+            }
+            ServiceCreateBodyParamRollbackConfigInlineItemFailureActionInlineItem::Pause => "pause",
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceCreateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The order of operations when rolling back a task. Either the old
+/// task is shut down before the new task is started, or the new task
+/// is started before the old task is shut down.
+pub enum ServiceCreateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    #[serde(rename = "stop-first")]
+    StopFirst,
+    #[serde(rename = "start-first")]
+    StartFirst,
+}
+
+impl AsRef<str> for ServiceCreateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceCreateBodyParamRollbackConfigInlineItemOrderInlineItem::StopFirst => {
+                "stop-first"
+            }
+            ServiceCreateBodyParamRollbackConfigInlineItemOrderInlineItem::StartFirst => {
+                "start-first"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceCreateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Specification for the update strategy of the service.
+pub struct ServiceCreateBodyParamUpdateConfigInlineItem {
+    #[serde(rename = "Delay")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time between updates, in nanoseconds.
+    pub delay: Option<i64>,
+    #[serde(rename = "FailureAction")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Action to take if an updated task fails to run, or stops running
+    /// during the update.
+    pub failure_action: Option<String>,
+    #[serde(rename = "MaxFailureRatio")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The fraction of tasks that may fail during an update before the
+    /// failure action is invoked, specified as a floating point number
+    /// between 0 and 1.
+    pub max_failure_ratio: Option<Value>,
+    #[serde(rename = "Monitor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time to monitor each updated task for failures, in
+    /// nanoseconds.
+    pub monitor: Option<i64>,
+    #[serde(rename = "Order")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The order of operations when rolling out an updated task. Either
+    /// the old task is shut down before the new task is started, or the
+    /// new task is started before the old task is shut down.
+    pub order: Option<String>,
+    #[serde(rename = "Parallelism")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum number of tasks to be updated in one iteration (0 means
+    /// unlimited parallelism).
+    pub parallelism: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Action to take if an updated task fails to run, or stops running
+/// during the update.
+pub enum ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    #[serde(rename = "continue")]
+    Continue,
+    #[serde(rename = "pause")]
+    Pause,
+    #[serde(rename = "rollback")]
+    Rollback,
+}
+
+impl AsRef<str> for ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Continue => {
+                "continue"
+            }
+            ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Pause => "pause",
+            ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Rollback => {
+                "rollback"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceCreateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The order of operations when rolling out an updated task. Either
+/// the old task is shut down before the new task is started, or the
+/// new task is started before the old task is shut down.
+pub enum ServiceCreateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    #[serde(rename = "stop-first")]
+    StopFirst,
+    #[serde(rename = "start-first")]
+    StartFirst,
+}
+
+impl AsRef<str> for ServiceCreateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceCreateBodyParamUpdateConfigInlineItemOrderInlineItem::StopFirst => "stop-first",
+            ServiceCreateBodyParamUpdateConfigInlineItemOrderInlineItem::StartFirst => {
+                "start-first"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceCreateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ServiceEndpointInlineItem {
@@ -4262,7 +5079,269 @@ impl std::fmt::Display for ServiceSpecUpdateConfigInlineItemOrderInlineItem {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ServiceUpdateBodyParam {}
+/// User modifiable configuration for a service.
+pub struct ServiceUpdateBodyParam {
+    #[serde(rename = "EndpointSpec")]
+    pub endpoint_spec: Option<EndpointSpec>,
+    #[serde(rename = "Labels")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// User-defined key/value metadata.
+    pub labels: Option<HashMap<String, String>>,
+    #[serde(rename = "Mode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Scheduling mode for the service.
+    pub mode: Option<ServiceUpdateBodyParamModeInlineItem>,
+    #[serde(rename = "Name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Name of the service.
+    pub name: Option<String>,
+    #[serde(rename = "Networks")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specifies which networks the service should attach to.
+    pub networks: Option<Vec<NetworkAttachmentConfig>>,
+    #[serde(rename = "RollbackConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specification for the rollback strategy of the service.
+    pub rollback_config: Option<ServiceUpdateBodyParamRollbackConfigInlineItem>,
+    #[serde(rename = "TaskTemplate")]
+    pub task_template: Option<TaskSpec>,
+    #[serde(rename = "UpdateConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Specification for the update strategy of the service.
+    pub update_config: Option<ServiceUpdateBodyParamUpdateConfigInlineItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Scheduling mode for the service.
+pub struct ServiceUpdateBodyParamModeInlineItem {
+    #[serde(rename = "Global")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub global: Option<Value>,
+    #[serde(rename = "GlobalJob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The mode used for services which run a task to the completed state
+    /// on each valid node.
+    pub global_job: Option<Value>,
+    #[serde(rename = "Replicated")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replicated: Option<ServiceUpdateBodyParamModeInlineItemReplicatedInlineItem>,
+    #[serde(rename = "ReplicatedJob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The mode used for services with a finite number of tasks that run
+    /// to a completed state.
+    pub replicated_job: Option<ServiceUpdateBodyParamModeInlineItemReplicatedJobInlineItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ServiceUpdateBodyParamModeInlineItemReplicatedInlineItem {
+    #[serde(rename = "Replicas")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replicas: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The mode used for services with a finite number of tasks that run
+/// to a completed state.
+pub struct ServiceUpdateBodyParamModeInlineItemReplicatedJobInlineItem {
+    #[serde(rename = "MaxConcurrent")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The maximum number of replicas to run simultaneously.
+    pub max_concurrent: Option<i64>,
+    #[serde(rename = "TotalCompletions")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The total number of replicas desired to reach the Completed
+    /// state. If unset, will default to the value of `MaxConcurrent`
+    pub total_completions: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Specification for the rollback strategy of the service.
+pub struct ServiceUpdateBodyParamRollbackConfigInlineItem {
+    #[serde(rename = "Delay")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time between rollback iterations, in nanoseconds.
+    pub delay: Option<i64>,
+    #[serde(rename = "FailureAction")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Action to take if an rolled back task fails to run, or stops
+    /// running during the rollback.
+    pub failure_action: Option<String>,
+    #[serde(rename = "MaxFailureRatio")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The fraction of tasks that may fail during a rollback before the
+    /// failure action is invoked, specified as a floating point number
+    /// between 0 and 1.
+    pub max_failure_ratio: Option<Value>,
+    #[serde(rename = "Monitor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time to monitor each rolled back task for failures, in
+    /// nanoseconds.
+    pub monitor: Option<i64>,
+    #[serde(rename = "Order")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The order of operations when rolling back a task. Either the old
+    /// task is shut down before the new task is started, or the new task
+    /// is started before the old task is shut down.
+    pub order: Option<String>,
+    #[serde(rename = "Parallelism")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum number of tasks to be rolled back in one iteration (0 means
+    /// unlimited parallelism).
+    pub parallelism: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Action to take if an rolled back task fails to run, or stops
+/// running during the rollback.
+pub enum ServiceUpdateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    #[serde(rename = "continue")]
+    Continue,
+    #[serde(rename = "pause")]
+    Pause,
+}
+
+impl AsRef<str> for ServiceUpdateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceUpdateBodyParamRollbackConfigInlineItemFailureActionInlineItem::Continue => {
+                "continue"
+            }
+            ServiceUpdateBodyParamRollbackConfigInlineItemFailureActionInlineItem::Pause => "pause",
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceUpdateBodyParamRollbackConfigInlineItemFailureActionInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The order of operations when rolling back a task. Either the old
+/// task is shut down before the new task is started, or the new task
+/// is started before the old task is shut down.
+pub enum ServiceUpdateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    #[serde(rename = "stop-first")]
+    StopFirst,
+    #[serde(rename = "start-first")]
+    StartFirst,
+}
+
+impl AsRef<str> for ServiceUpdateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceUpdateBodyParamRollbackConfigInlineItemOrderInlineItem::StopFirst => {
+                "stop-first"
+            }
+            ServiceUpdateBodyParamRollbackConfigInlineItemOrderInlineItem::StartFirst => {
+                "start-first"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceUpdateBodyParamRollbackConfigInlineItemOrderInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Specification for the update strategy of the service.
+pub struct ServiceUpdateBodyParamUpdateConfigInlineItem {
+    #[serde(rename = "Delay")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time between updates, in nanoseconds.
+    pub delay: Option<i64>,
+    #[serde(rename = "FailureAction")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Action to take if an updated task fails to run, or stops running
+    /// during the update.
+    pub failure_action: Option<String>,
+    #[serde(rename = "MaxFailureRatio")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The fraction of tasks that may fail during an update before the
+    /// failure action is invoked, specified as a floating point number
+    /// between 0 and 1.
+    pub max_failure_ratio: Option<Value>,
+    #[serde(rename = "Monitor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Amount of time to monitor each updated task for failures, in
+    /// nanoseconds.
+    pub monitor: Option<i64>,
+    #[serde(rename = "Order")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The order of operations when rolling out an updated task. Either
+    /// the old task is shut down before the new task is started, or the
+    /// new task is started before the old task is shut down.
+    pub order: Option<String>,
+    #[serde(rename = "Parallelism")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Maximum number of tasks to be updated in one iteration (0 means
+    /// unlimited parallelism).
+    pub parallelism: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Action to take if an updated task fails to run, or stops running
+/// during the update.
+pub enum ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    #[serde(rename = "continue")]
+    Continue,
+    #[serde(rename = "pause")]
+    Pause,
+    #[serde(rename = "rollback")]
+    Rollback,
+}
+
+impl AsRef<str> for ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Continue => {
+                "continue"
+            }
+            ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Pause => "pause",
+            ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem::Rollback => {
+                "rollback"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceUpdateBodyParamUpdateConfigInlineItemFailureActionInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The order of operations when rolling out an updated task. Either
+/// the old task is shut down before the new task is started, or the
+/// new task is started before the old task is shut down.
+pub enum ServiceUpdateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    #[serde(rename = "stop-first")]
+    StopFirst,
+    #[serde(rename = "start-first")]
+    StartFirst,
+}
+
+impl AsRef<str> for ServiceUpdateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ServiceUpdateBodyParamUpdateConfigInlineItemOrderInlineItem::StopFirst => "stop-first",
+            ServiceUpdateBodyParamUpdateConfigInlineItemOrderInlineItem::StartFirst => {
+                "start-first"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ServiceUpdateBodyParamUpdateConfigInlineItemOrderInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ServiceUpdateResponse {
@@ -4316,9 +5395,51 @@ impl std::fmt::Display for ServiceUpdateStatusInlineItemStateInlineItem {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// ClusterInfo represents information about the swarm as is returned by the
+/// "/info" endpoint. Join-tokens are not included.
 pub struct Swarm {
+    #[serde(rename = "CreatedAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Date and time at which the swarm was initialised in
+    /// [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+    pub created_at: Option<DateTime<Utc>>,
+    #[serde(rename = "DataPathPort")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// DataPathPort specifies the data path port number for data traffic.
+    /// Acceptable port range is 1024 to 49151.
+    /// If no port is set or is set to 0, the default port (4789) is used.
+    pub data_path_port: Option<u32>,
+    #[serde(rename = "DefaultAddrPool")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Default Address Pool specifies default subnet pools for global scope
+    /// networks.
+    pub default_addr_pool: Option<Vec<String>>,
+    #[serde(rename = "ID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the swarm.
+    pub id: Option<String>,
     #[serde(rename = "JoinTokens")]
     pub join_tokens: Option<JoinTokens>,
+    #[serde(rename = "RootRotationInProgress")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Whether there is currently a root CA rotation in progress for the swarm
+    pub root_rotation_in_progress: Option<bool>,
+    #[serde(rename = "Spec")]
+    pub spec: Option<SwarmSpec>,
+    #[serde(rename = "SubnetSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// SubnetSize specifies the subnet size of the networks created from the
+    /// default subnet pool.
+    pub subnet_size: Option<u32>,
+    #[serde(rename = "TLSInfo")]
+    pub tls_info: Option<TlsInfo>,
+    #[serde(rename = "UpdatedAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Date and time at which the swarm was last updated in
+    /// [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+    pub updated_at: Option<DateTime<Utc>>,
+    #[serde(rename = "Version")]
+    pub version: Option<ObjectVersion>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
