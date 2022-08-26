@@ -1,4 +1,4 @@
-use crate::models::{NodeSpecAVAILABILITY, NodeSpecROLE};
+use crate::models::{NodeSpecAvailabilityInlineItem, NodeSpecRoleInlineItem};
 use crate::{Error, Result};
 use containers_api::opts::Filter;
 use containers_api::{
@@ -48,12 +48,12 @@ impl NodeUpdateOpts {
 
     impl_str_enum_field!(
         /// Role of the node.
-        role: NodeSpecROLE => "Role"
+        role: NodeSpecRoleInlineItem => "Role"
     );
 
     impl_str_enum_field!(
         /// Availability of the node.
-        availability: NodeSpecAVAILABILITY => "Availability"
+        availability: NodeSpecAvailabilityInlineItem => "Availability"
     );
 
     pub fn serialize(&self) -> Result<String> {
@@ -88,7 +88,7 @@ pub enum NodeFilter {
     Membership(Membership),
     Name(String),
     NodeLabel(String),
-    Role(NodeSpecROLE),
+    Role(NodeSpecRoleInlineItem),
 }
 
 impl Filter for NodeFilter {

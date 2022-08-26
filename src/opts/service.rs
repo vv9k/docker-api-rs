@@ -95,17 +95,17 @@ impl ServiceOptsBuilder {
         self
     }
 
-    pub fn mode(mut self, mode: &models::ServiceSpecMode) -> Self {
+    pub fn mode(mut self, mode: &models::ServiceSpecModeInlineItem) -> Self {
         self.params.insert("Mode", to_value_result(mode));
         self
     }
 
-    pub fn update_config(mut self, conf: &models::ServiceSpecUpdateConfig) -> Self {
+    pub fn update_config(mut self, conf: &models::ServiceSpecUpdateConfigInlineItem) -> Self {
         self.params.insert("UpdateConfig", to_value_result(conf));
         self
     }
 
-    pub fn rollback_config(mut self, conf: &models::ServiceSpecRollbackConfig) -> Self {
+    pub fn rollback_config(mut self, conf: &models::ServiceSpecRollbackConfigInlineItem) -> Self {
         self.params.insert("RollbackConfig", to_value_result(conf));
         self
     }

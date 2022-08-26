@@ -93,7 +93,7 @@ impl Image {
     api_doc! { Distribution => Inspect
     /// Return image digest and platform information by contacting the registry.
     |
-    pub async fn distribution_inspect(&self) -> Result<models::DistributionInspectResponse> {
+    pub async fn distribution_inspect(&self) -> Result<models::DistributionInspect> {
         self.docker
             .post_json(
                 &format!("/distribution/{}/json", self.name),
@@ -106,7 +106,7 @@ impl Image {
 impl Images {
     impl_api_ep! {img: Image, resp
         List -> "/images/json", models::ImageSummary
-        Prune ->  "/images/prune", models::ImagePruneResponse
+        Prune ->  "/images/prune", models::ImagePrune200Response
     }
 
     api_doc! { Image => Build
@@ -221,7 +221,7 @@ impl Images {
     api_doc! { Build => Prune
     /// Clear image build cache.
     |
-    pub async fn clear_cache(&self, opts: &ClearCacheOpts) -> Result<models::BuildPruneResponse> {
+    pub async fn clear_cache(&self, opts: &ClearCacheOpts) -> Result<models::BuildPrune200Response> {
         self.docker
             .post_json(
                 construct_ep("/build/prune", opts.serialize()),

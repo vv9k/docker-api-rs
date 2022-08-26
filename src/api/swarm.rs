@@ -26,14 +26,14 @@ impl Swarm {
     api_doc! { Swarm => Unlockkey
     /// Get the unlock key.
     |
-    pub async fn get_unlock_key(&self) -> Result<models::UnlockKeyResponse> {
+    pub async fn get_unlock_key(&self) -> Result<models::SwarmUnlockkey200Response> {
         self.docker.get_json("/swarm/unlockkey").await
     }}
 
     api_doc! { Swarm => Unlock
     /// Unlock a locked manager.
     |
-    pub async fn unlock_manager(&self, key: &models::SwarmUnlockRequest) -> Result<()> {
+    pub async fn unlock_manager(&self, key: &models::SwarmUnlockBodyParam) -> Result<()> {
         self.docker
             .post("/swarm/unlock", Payload::Json(serde_json::to_string(key)?))
             .await

@@ -34,7 +34,7 @@ impl Docker {
     pub fn events<'docker>(
         &'docker self,
         opts: &EventsOpts,
-    ) -> impl Stream<Item = Result<models::SystemEventsResponse>> + Unpin + 'docker {
+    ) -> impl Stream<Item = Result<models::EventMessage>> + Unpin + 'docker {
         let ep = construct_ep("/events", opts.serialize());
         let reader = Box::pin(
             self.stream_get(ep)
@@ -54,7 +54,7 @@ impl Docker {
     api_doc! { System => DataUsage
     /// Returns data usage of this Docker instance
     |
-    pub async fn data_usage(&self) -> Result<models::SystemDataUsageResponse> {
+    pub async fn data_usage(&self) -> Result<models::SystemDataUsage200Response> {
         self.get_json("/system/df").await
     }}
 }

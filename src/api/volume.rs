@@ -18,13 +18,13 @@ impl Volume {
 
 impl Volumes {
     impl_api_ep! {__: Volume, resp
-        Prune -> "/volumes/prune", models::VolumePruneResponse
+        Prune -> "/volumes/prune", models::VolumePrune200Response
     }
 
     api_doc! { Volume => List
     /// List available volumes
     |
-    pub async fn list(&self, opts: &VolumeListOpts) -> Result<models::VolumeListResponse> {
+    pub async fn list(&self, opts: &VolumeListOpts) -> Result<models::VolumeList200Response> {
         let ep = containers_api::url::construct_ep("/volumes", opts.serialize());
         self.docker.get_json(&ep).await
     }}

@@ -30,7 +30,7 @@ impl Exec {
     }
 
     impl_api_ep! {exec: Exec, resp
-        Inspect -> &format!("/exec/{}/json", exec.id), models::ExecInspectResponse
+        Inspect -> &format!("/exec/{}/json", exec.id), models::ExecInspect200Response
     }
 
     api_doc! { Exec => Create

@@ -26,7 +26,7 @@ impl_api_ty!(Container => id);
 
 impl Container {
     impl_api_ep! {container: Container, resp
-        Inspect -> &format!("/containers/{}/json", container.id), models::ContainerInspectResponse
+        Inspect -> &format!("/containers/{}/json", container.id), models::ContainerInspect200Response
         Logs -> &format!("/containers/{}/logs", container.id), ()
         DeleteWithOpts -> &format!("/containers/{}", container.id), String, delete
     }
@@ -35,7 +35,7 @@ impl Container {
     /// Returns a `top` view of information about the container process.
     /// On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
     |
-    pub async fn top(&self, psargs: Option<&str>) -> Result<models::ContainerTopResponse> {
+    pub async fn top(&self, psargs: Option<&str>) -> Result<models::ContainerTop200Response> {
         let mut ep = format!("/containers/{}/top", self.id);
         if let Some(ref args) = psargs {
             append_query(&mut ep, encoded_pair("ps_args", args));
@@ -343,7 +343,7 @@ impl Container {
 impl Containers {
     impl_api_ep! {__: Container, resp
         List -> "/containers/json", models::ContainerSummary
-        Prune -> "/containers/prune", models::ContainerPruneResponse
+        Prune -> "/containers/prune", models::ContainerPrune200Response
     }
 
     api_doc! { Containers => Create
@@ -357,6 +357,6 @@ impl Containers {
             "/containers/create".to_owned()
         };
         self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
-        .map(|resp: models::ContainerCreateResponse| Container::new(self.docker.clone(), resp.id))
+        .map(|resp: models::ContainerCreate201Response| Container::new(self.docker.clone(), resp.id))
     }}
 }

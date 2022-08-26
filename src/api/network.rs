@@ -47,7 +47,7 @@ impl Network {
 impl Networks {
     impl_api_ep! { __: Network, resp
         List -> "/networks", models::Network
-        Prune -> "/networks/prune", models::NetworkPruneResponse
+        Prune -> "/networks/prune", models::NetworkPrune200Response
     }
 
     api_doc! { Network => Create
@@ -58,7 +58,7 @@ impl Networks {
         self.docker
             .post_json("/networks/create", Payload::Json(opts.serialize()?))
             .await
-            .map(|resp: models::NetworkCreateResponse| {
+            .map(|resp: models::NetworkCreate201Response| {
                 Network::new(self.docker.clone(), resp.id.unwrap_or_default())
             })
     }}

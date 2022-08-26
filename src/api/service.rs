@@ -12,7 +12,7 @@ impl Service {
     api_doc! { Service => Create
     /// Creates a new service from ServiceOpts.
     |
-    pub async fn create(&self, opts: &ServiceOpts) -> Result<models::ServiceCreateResponse> {
+    pub async fn create(&self, opts: &ServiceOpts) -> Result<models::ServiceCreate201Response> {
         let headers = opts
             .auth_header()
             .map(|a| Headers::single(AUTH_HEADER, a));
