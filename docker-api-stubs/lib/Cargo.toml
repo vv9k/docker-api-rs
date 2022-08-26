@@ -1,6 +1,6 @@
 [package]
 name = "docker-api-stubs"
-version = "0.2.0"
+version = "0.3.0"
 authors = [ "Wojciech Kępka <wojciech@wkepka.dev>" ]
 description = "Generated Docker API swagger stubs for use in docker-api"
 license = "MIT"

@@ -1,6 +1,6 @@
 [package]
 name = "docker-api"
-version = "0.10.0"
+version = "0.10.1"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
 documentation = "https://docs.rs/docker-api"
@@ -14,7 +14,7 @@ readme = "README.md"
 [dependencies]
 containers-api = "0.3"
 
-docker-api-stubs = "0.2"
+docker-api-stubs = "0.3"
 
 log = "0.4"
 paste = "1"
