@@ -22,8 +22,8 @@ impl Node {
     }
 
     api_doc! { Node => Update
-    /// Update a node.
     |
+    /// Update a node.
     pub async fn update(&self, opts: &NodeUpdateOpts) -> Result<()> {
         self.docker
             .post(

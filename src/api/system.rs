@@ -6,22 +6,22 @@ use std::{convert::TryFrom, io};
 
 impl Docker {
     api_doc! { System => Version
-    /// Returns the version of Docker that is running and various information about the system that Docker is running on.
     |
+    /// Returns the version of Docker that is running and various information about the system that Docker is running on.
     pub async fn version(&self) -> Result<models::SystemVersion> {
         self.get_json("/version").await
     }}
 
     api_doc! { System => Info
-    /// Returns system information about Docker instance that is running
     |
+    /// Returns system information about Docker instance that is running
     pub async fn info(&self) -> Result<models::SystemInfo> {
         self.get_json("/info").await
     }}
 
     api_doc! { System => Ping
-    /// This is a dummy endpoint you can use to test if the server is accessible
     |
+    /// This is a dummy endpoint you can use to test if the server is accessible
     pub async fn ping(&self) -> Result<models::PingInfo> {
         self.get("/_ping")
             .await
@@ -29,8 +29,8 @@ impl Docker {
     }}
 
     api_doc! { System => Events
-    /// Returns a stream of Docker events
     |
+    /// Returns a stream of Docker events
     pub fn events<'docker>(
         &'docker self,
         opts: &EventsOpts,
@@ -52,8 +52,8 @@ impl Docker {
     }}
 
     api_doc! { System => DataUsage
-    /// Returns data usage of this Docker instance
     |
+    /// Returns data usage of this Docker instance
     pub async fn data_usage(&self) -> Result<models::SystemDataUsage200Response> {
         self.get_json("/system/df").await
     }}

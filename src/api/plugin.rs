@@ -19,8 +19,8 @@ impl Plugin {
     }
 
     api_doc! { Plugin => Enable
-    /// Enable a plugin.
     |
+    /// Enable a plugin.
     pub async fn enable(&self, timeout: Option<u64>) -> Result<()> {
         let query = timeout.map(|timeout| encoded_pair("timeout", timeout));
         self.docker
@@ -34,8 +34,8 @@ impl Plugin {
     }}
 
     api_doc! { Plugin => Disable
-    /// Disable a plugin.
     |
+    /// Disable a plugin.
     pub async fn disable(&self) -> Result<()> {
         self.docker
             .post(&format!("/plugins/{}/disable", self.name), Payload::empty(), Headers::none())
@@ -44,8 +44,8 @@ impl Plugin {
     }}
 
     api_doc! { Plugin => Push
-    /// Push a plugin to the registry.
     |
+    /// Push a plugin to the registry.
     pub async fn push(&self) -> Result<()> {
         self.docker
             .post(&format!("/plugins/{}/push", self.name), Payload::empty(), Headers::none())
@@ -54,9 +54,9 @@ impl Plugin {
     }}
 
     api_doc! { Plugin => Create
+    |
     /// Create a plugin from a tar archive on the file system. The `path` parameter is a path
     /// to the tar containing plugin rootfs and manifest.
-    |
     pub async fn create<P>(&self, path: P) -> Result<()>
     where
         P: AsRef<Path>,

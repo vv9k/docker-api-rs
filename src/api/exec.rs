@@ -34,8 +34,8 @@ impl Exec {
     }
 
     api_doc! { Exec => Create
-    /// Creates a new exec instance that will be executed in a container with id == container_id.
     |
+    /// Creates a new exec instance that will be executed in a container with id == container_id.
     pub async fn create<C>(
         docker: Docker,
         container_id: C,
@@ -54,7 +54,7 @@ impl Exec {
             .post_json(
                 &format!("/containers/{}/exec", container_id.as_ref()),
                 Payload::Json(opts.serialize()?),
-                Headers::none()
+                Headers::none(),
             )
             .await
             .map(|resp: Response| Exec::new(docker, resp.id))
@@ -134,8 +134,8 @@ impl Exec {
     }
 
     api_doc! { Exec => Start
-    /// Starts this exec instance returning a multiplexed tty stream.
     |
+    /// Starts this exec instance returning a multiplexed tty stream.
     pub fn start(&self) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + '_ {
         // We must take ownership of the docker reference to not needlessly tie the stream to the
         // lifetime of `self`.
@@ -158,14 +158,18 @@ impl Exec {
     }}
 
     api_doc! { Exec => Resize
+    |
     /// Resize the TTY session used by an exec instance. This only works if the exec was created
     /// with `tty` enabled.
-    |
     pub async fn resize(&self, opts: &ExecResizeOpts) -> Result<()> {
         let body: Body = opts.serialize()?.into();
 
         self.docker
-            .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body), Headers::none())
+            .post_json(
+                &format!("/exec/{}/resize", &self.id),
+                Payload::Json(body),
+                Headers::none(),
+            )
             .await
     }}
 }

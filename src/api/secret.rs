@@ -21,8 +21,8 @@ impl Secrets {
     }
 
     api_doc! { Secret => Create
-    /// Create a new secret.
     |
+    /// Create a new secret.
     pub async fn create(&self, opts: &SecretCreateOpts) -> Result<Secret> {
         use serde::Deserialize;
         #[derive(Deserialize)]

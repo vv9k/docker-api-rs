@@ -22,9 +22,10 @@ impl Configs {
         List -> "/configs", models::Config
     }
 
-    api_doc! { Config => Create
-    /// Create a new config.
+    api_doc! {
+    Config => Create
     |
+    /// Create a new config.
     pub async fn create(&self, opts: &ConfigCreateOpts) -> Result<Config> {
         use serde::Deserialize;
         #[derive(Deserialize)]

@@ -32,9 +32,9 @@ impl Container {
     }
 
     api_doc! { Container => Top
+    |
     /// Returns a `top` view of information about the container process.
     /// On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows.
-    |
     pub async fn top(&self, psargs: Option<&str>) -> Result<models::ContainerTop200Response> {
         let mut ep = format!("/containers/{}/top", self.id);
         if let Some(ref args) = psargs {
@@ -57,19 +57,19 @@ impl Container {
     }
 
     api_doc! { Container => Attach
+    |
     /// Attaches a [`TtyMultiplexer`](TtyMultiplexer) to the container.
     ///
     /// The [`TtyMultiplexer`](TtyMultiplexer) implements Stream for returning Stdout and Stderr chunks. It also implements [`AsyncWrite`](futures_util::io::AsyncWrite) for writing to Stdin.
     ///
     /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
-    |
     pub async fn attach(&self) -> Result<TtyMultiplexer<'_>> {
         self.attach_raw().await.map(TtyMultiplexer::new)
     }}
 
     api_doc! { Container => Changes
-    /// Returns a set of changes made to the container instance.
     |
+    /// Returns a set of changes made to the container instance.
     pub async fn changes(&self) -> Result<Option<models::ContainerChanges200Response>> {
         self.docker
             .get_json(&format!("/containers/{}/changes", self.id))
@@ -77,18 +77,18 @@ impl Container {
     }}
 
     api_doc! { Container => Export
-    /// Exports the current docker container into a tarball.
     |
-    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + '_{
+    /// Exports the current docker container into a tarball.
+    pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
         self.docker
             .get_stream(format!("/containers/{}/export", self.id))
             .map_ok(|c| c.to_vec())
     }}
 
     api_doc! { Container => Stats
-    /// Returns a stream of stats specific to this container instance.
     |
-    pub fn stats(&self) -> impl Stream<Item = Result<serde_json::Value>> + Unpin + '_{
+    /// Returns a stream of stats specific to this container instance.
+    pub fn stats(&self) -> impl Stream<Item = Result<serde_json::Value>> + Unpin + '_ {
         let codec = futures_codec::LinesCodec {};
 
         let reader = Box::pin(
@@ -109,51 +109,64 @@ impl Container {
     }}
 
     api_doc! { Container => Start
-    /// Start the container instance.
     |
+    /// Start the container instance.
     pub async fn start(&self) -> Result<()> {
         self.docker
-            .post_string(&format!("/containers/{}/start", self.id), Payload::empty(), Headers::none())
+            .post_string(
+                &format!("/containers/{}/start", self.id),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
             .map(|_| ())
     }}
 
     api_doc! { Container => Stop
-    /// Stop the container instance.
     |
+    /// Stop the container instance.
     pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
         let mut ep = format!("/containers/{}/stop", self.id);
         if let Some(w) = wait {
             append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
+        self.docker
+            .post_string(&ep, Payload::empty(), Headers::none())
+            .await
+            .map(|_| ())
     }}
 
     api_doc! { Container => Restart
-    /// Restart the container instance.
     |
+    /// Restart the container instance.
     pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
         let mut ep = format!("/containers/{}/restart", self.id);
         if let Some(w) = wait {
             append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
+        self.docker
+            .post_string(&ep, Payload::empty(), Headers::none())
+            .await
+            .map(|_| ())
     }}
 
     api_doc! { Container => Kill
-    /// Kill the container instance.
     |
+    /// Kill the container instance.
     pub async fn kill(&self, signal: Option<&str>) -> Result<()> {
         let mut ep = format!("/containers/{}/kill", self.id);
         if let Some(sig) = signal {
             append_query(&mut ep, encoded_pair("signal", sig));
         }
-        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
+        self.docker
+            .post_string(&ep, Payload::empty(), Headers::none())
+            .await
+            .map(|_| ())
     }}
 
     api_doc! { Container => Rename
-    /// Rename the container instance.
     |
+    /// Rename the container instance.
     pub async fn rename(&self, name: &str) -> Result<()> {
         self.docker
             .post_string(
@@ -162,47 +175,57 @@ impl Container {
                     self.id,
                     encoded_pair("name", name)
                 ),
-                Payload::empty(), Headers::none(),
+                Payload::empty(),
+                Headers::none(),
             )
             .await
             .map(|_| ())
     }}
 
     api_doc! { Container => Pause
-    /// Pause the container instance.
     |
+    /// Pause the container instance.
     pub async fn pause(&self) -> Result<()> {
         self.docker
-            .post_string(&format!("/containers/{}/pause", self.id), Payload::empty(), Headers::none())
+            .post_string(
+                &format!("/containers/{}/pause", self.id),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
             .map(|_| ())
     }}
 
     api_doc! { Container => Unpause
-    /// Unpause the container instance.
     |
+    /// Unpause the container instance.
     pub async fn unpause(&self) -> Result<()> {
         self.docker
             .post_string(
                 &format!("/containers/{}/unpause", self.id),
-                Payload::empty(), Headers::none(),
+                Payload::empty(),
+                Headers::none(),
             )
             .await
             .map(|_| ())
     }}
 
     api_doc! { Container => Wait
-    /// Wait until the container stops.
     |
+    /// Wait until the container stops.
     pub async fn wait(&self) -> Result<models::ContainerWaitResponse> {
         self.docker
-            .post_json(format!("/containers/{}/wait", self.id), Payload::empty(), Headers::none())
+            .post_json(
+                format!("/containers/{}/wait", self.id),
+                Payload::empty(),
+                Headers::none(),
+            )
             .await
     }}
 
     api_doc! { Exec
-    /// Execute a command in this container.
     |
+    /// Execute a command in this container.
     pub fn exec(
         &self,
         opts: &ExecContainerOpts,
@@ -211,6 +234,7 @@ impl Container {
     }}
 
     api_doc! { Container => Archive
+    |
     /// Copy a file/folder from the container.  The resulting stream is a tarball of the extracted
     /// files.
     ///
@@ -219,7 +243,6 @@ impl Container {
     /// directory, `path` should end in `/` or `/`. (assuming a path separator of `/`). If `path`
     /// ends in `/.`  then this indicates that only the contents of the path directory should be
     /// copied.  A symlink is always resolved to its target.
-    |
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
         self.docker
             .get_stream(format!(
@@ -231,11 +254,11 @@ impl Container {
     }}
 
     api_doc! { PutContainer => Archive
+    |
     /// Copy a byte slice as file into (see `bytes`) the container.
     ///
     /// The file will be copied at the given location (see `path`) and will be owned by root
     /// with access mask 644.
-    |
     pub async fn copy_file_into<P: AsRef<Path>>(&self, path: P, bytes: &[u8]) -> Result<()> {
         let path = path.as_ref();
 
@@ -257,10 +280,10 @@ impl Container {
     }}
 
     api_doc! { PutContainer => Archive
+    |
     /// Copy a tarball (see `body`) to the container.
     ///
     /// The tarball will be copied to the container and extracted at the given location (see `path`).
-    |
     pub async fn copy_to(&self, path: &Path, body: Body) -> Result<()> {
         self.docker
             .put(
@@ -276,8 +299,8 @@ impl Container {
     }}
 
     api_doc! { Container => ArchiveInfo
-    /// Get information about files in a container.
     |
+    /// Get information about files in a container.
     pub async fn stat_file<P>(&self, path: P) -> Result<String>
     where
         P: AsRef<Path>,
@@ -319,25 +342,27 @@ impl Container {
     }}
 
     api_doc! { Image => Commit
-    /// Create a new image from this container
     |
-    pub async fn commit(
-        &self,
-        opts: &ContainerCommitOpts,
-    ) -> Result<String> {
+    /// Create a new image from this container
+    pub async fn commit(&self, opts: &ContainerCommitOpts) -> Result<String> {
         #[derive(Deserialize)]
         struct IdStruct {
             #[serde(rename = "Id")]
-            id: String
+            id: String,
         }
-        self.docker.post_json(
-            format!(
-                "/commit?{}", opts.with_container(self.id().as_ref()).serialize().unwrap_or_default()
-            ),
-            Payload::None::<Vec<_>>,
-            Headers::none()
-        ).await
-        .map(|id: IdStruct| id.id)
+        self.docker
+            .post_json(
+                format!(
+                    "/commit?{}",
+                    opts.with_container(self.id().as_ref())
+                        .serialize()
+                        .unwrap_or_default()
+                ),
+                Payload::None::<Vec<_>>,
+                Headers::none(),
+            )
+            .await
+            .map(|id: IdStruct| id.id)
     }}
 }
 
@@ -348,16 +373,19 @@ impl Containers {
     }
 
     api_doc! { Containers => Create
-    /// Create a container
     |
-    pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container>
-    {
+    /// Create a container
+    pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container> {
         let ep = if let Some(name) = opts.name().as_ref() {
             construct_ep("/containers/create", Some(encoded_pair("name", name)))
         } else {
             "/containers/create".to_owned()
         };
-        self.docker.post_json(&ep, Payload::Json(opts.serialize()?), Headers::none()).await
-        .map(|resp: models::ContainerCreate201Response| Container::new(self.docker.clone(), resp.id))
+        self.docker
+            .post_json(&ep, Payload::Json(opts.serialize()?), Headers::none())
+            .await
+            .map(|resp: models::ContainerCreate201Response| {
+                Container::new(self.docker.clone(), resp.id)
+            })
     }}
 }

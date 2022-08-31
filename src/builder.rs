@@ -145,8 +145,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Inspect
-        #[doc = concat!("Inspect this ", stringify!($base), ".")]
         |
+        #[doc = concat!("Inspect this ", stringify!($base), ".")]
         pub async fn inspect(&self) -> Result<$ret> {
             let $it = self;
             self.docker.get_json($ep).await
@@ -175,16 +175,16 @@ macro_rules! impl_api_ep {
         }
         paste::item! {
         api_doc! { $base => Delete
-        #[doc = concat!("Delete this ", stringify!($base), ".")]
         |
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
         pub async fn force_delete(&self) -> Result<$ret> {
             self._delete(true).await
         }}
         }
         paste::item! {
         api_doc! { $base => Delete
-        #[doc = concat!("Delete this ", stringify!($base), ".")]
         |
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
         pub async fn delete(&self) -> Result<$ret> {
             self._delete(false).await
         }}
@@ -195,8 +195,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Delete
-        #[doc = concat!("Delete this ", stringify!($base), ".")]
         |
+        #[doc = concat!("Delete this ", stringify!($base), ".")]
         pub async fn delete(&self) -> Result<()> {
             let $it = self;
             self.docker.delete($ep).await.map(|_| ())
@@ -213,9 +213,9 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Delete
+        |
         #[doc = concat!("Delete this ", stringify!($base), ".")]
         #[doc = concat!("Use [`delete`](", stringify!($base), "::delete) to delete without options.")]
-        |
         pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<$ret> {
             let $it = self;
             let ep = containers_api::url::construct_ep($ep, opts.serialize());
@@ -224,9 +224,9 @@ macro_rules! impl_api_ep {
         }
         paste::item! {
         api_doc! { $base => Delete
+        |
         #[doc = concat!("Delete this ", stringify!($base), ".")]
         #[doc = concat!("Use [`remove`](", stringify!($base), "::remove) to customize options.")]
-        |
         pub async fn delete(&self) -> Result<[< $ret >]> {
             let $it = self;
             self.docker.$fn($ep).await
@@ -238,8 +238,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => List
-        #[doc = concat!("List available ", stringify!($base), "s.")]
         |
+        #[doc = concat!("List available ", stringify!($base), "s.")]
         pub async fn list(&self, opts: &[< $base ListOpts >]) -> Result<Vec<$ret>> {
             let ep = containers_api::url::construct_ep($ep, opts.serialize());
             self.docker.get_json(&ep).await
@@ -251,8 +251,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Create
-        #[doc = concat!("Create a new ", stringify!($base), ".")]
         |
+        #[doc = concat!("Create a new ", stringify!($base), ".")]
         pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]> {
             self.docker.post_json(&$ep, Payload::Json(opts.serialize()?), Headers::none()).await
             .map(|$resp: [< $ret >]| [< $base >]::new(self.docker.clone(), $($extra)*))
@@ -264,8 +264,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Prune
-        #[doc = concat!("Delete stopped/unused ", stringify!($base), "s.")]
         |
+        #[doc = concat!("Delete stopped/unused ", stringify!($base), "s.")]
         pub async fn prune(&self, opts: &[< $base PruneOpts >]) -> Result<$ret> {
             self.docker
                 .post_json(
@@ -281,8 +281,8 @@ macro_rules! impl_api_ep {
     ) => {
         paste::item! {
         api_doc! { $base => Logs
-        #[doc = concat!("Returns a stream of logs from a ", stringify!($base), ".")]
         |
+        #[doc = concat!("Returns a stream of logs from a ", stringify!($base), ".")]
         pub fn logs<'docker>(
             &'docker self,
             opts: &crate::opts::LogsOpts

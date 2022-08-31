@@ -10,8 +10,8 @@ impl_api_ty!(Service => name);
 
 impl Service {
     api_doc! { Service => Create
-    /// Creates a new service from ServiceOpts.
     |
+    /// Creates a new service from ServiceOpts.
     pub async fn create(&self, opts: &ServiceOpts) -> Result<models::ServiceCreate201Response> {
         let headers = opts
             .auth_header()
