@@ -1,4 +1,4 @@
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field};
 
 impl_opts_builder!(json => VolumeCreate);
@@ -45,14 +45,14 @@ pub enum VolumeFilter {
 }
 
 impl Filter for VolumeFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use VolumeFilter::*;
         match &self {
-            Dangling(dangling) => ("dangling", dangling.to_string()),
-            Driver(driver) => ("driver", driver.to_owned()),
-            LabelKey(label) => ("label", label.to_owned()),
-            Label { key, val } => ("label", format!("{}:{}", key, val)),
-            Name(name) => ("name", name.to_owned()),
+            Dangling(dangling) => FilterItem::new("dangling", dangling.to_string()),
+            Driver(driver) => FilterItem::new("driver", driver.to_owned()),
+            LabelKey(label) => FilterItem::new("label", label.to_owned()),
+            Label { key, val } => FilterItem::new("label", format!("{}:{}", key, val)),
+            Name(name) => FilterItem::new("name", name.to_owned()),
         }
     }
 }

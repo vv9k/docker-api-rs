@@ -37,7 +37,7 @@ impl Docker {
     ) -> impl Stream<Item = Result<models::EventMessage>> + Unpin + 'docker {
         let ep = construct_ep("/events", opts.serialize());
         let reader = Box::pin(
-            self.stream_get(ep)
+            self.get_stream(ep)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e)),
         )
         .into_async_read();

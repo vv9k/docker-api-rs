@@ -19,7 +19,7 @@ impl Tasks {
 }
 
 pub mod opts {
-    use containers_api::opts::Filter;
+    use containers_api::opts::{Filter, FilterItem};
     use containers_api::{impl_filter_func, impl_opts_builder};
 
     impl_opts_builder!(url => TaskList);
@@ -59,16 +59,16 @@ pub mod opts {
     }
 
     impl Filter for TaskFilter {
-        fn query_key_val(&self) -> (&'static str, String) {
+        fn query_item(&self) -> FilterItem {
             use TaskFilter::*;
             match &self {
-                DesiredState(state) => ("desired-state", state.as_ref().to_string()),
-                Id(id) => ("id", id.to_owned()),
-                LabelKey(key) => ("label", key.to_owned()),
-                Label(key, val) => ("label", format!("{}={}", key, val)),
-                Name(name) => ("name", name.to_owned()),
-                Node(node) => ("node", node.to_owned()),
-                Service(service) => ("service", service.to_owned()),
+                DesiredState(state) => FilterItem::new("desired-state", state.as_ref().to_string()),
+                Id(id) => FilterItem::new("id", id.to_owned()),
+                LabelKey(key) => FilterItem::new("label", key.to_owned()),
+                Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+                Name(name) => FilterItem::new("name", name.to_owned()),
+                Node(node) => FilterItem::new("node", node.to_owned()),
+                Service(service) => FilterItem::new("service", service.to_owned()),
             }
         }
     }

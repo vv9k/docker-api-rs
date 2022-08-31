@@ -1,6 +1,11 @@
 //! Install, create and manage plugins
 
-use crate::{conn::Payload, models, opts::PluginListOpts, Result};
+use crate::{
+    conn::{Headers, Payload},
+    models,
+    opts::PluginListOpts,
+    Result,
+};
 use containers_api::url::{construct_ep, encoded_pair};
 
 use std::path::Path;
@@ -22,6 +27,7 @@ impl Plugin {
             .post(
                 &construct_ep(format!("/plugins/{}/enable", self.name), query),
                 Payload::empty(),
+                Headers::none()
             )
             .await
             .map(|_| ())
@@ -32,7 +38,7 @@ impl Plugin {
     |
     pub async fn disable(&self) -> Result<()> {
         self.docker
-            .post(&format!("/plugins/{}/disable", self.name), Payload::empty())
+            .post(&format!("/plugins/{}/disable", self.name), Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -42,7 +48,7 @@ impl Plugin {
     |
     pub async fn push(&self) -> Result<()> {
         self.docker
-            .post(&format!("/plugins/{}/push", self.name), Payload::empty())
+            .post(&format!("/plugins/{}/push", self.name), Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -59,6 +65,7 @@ impl Plugin {
             .post(
                 &format!("/plugins/{}/create", self.name),
                 Payload::Text(path.as_ref().to_string_lossy().to_string()),
+                Headers::none()
             )
             .await
             .map(|_| ())

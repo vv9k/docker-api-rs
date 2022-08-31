@@ -1,6 +1,6 @@
 use crate::models::{NodeSpecAvailabilityInlineItem, NodeSpecRoleInlineItem};
 use crate::{Error, Result};
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
     impl_filter_func, impl_map_field, impl_opts_builder, impl_str_enum_field, impl_str_field,
 };
@@ -92,14 +92,16 @@ pub enum NodeFilter {
 }
 
 impl Filter for NodeFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         match &self {
-            NodeFilter::Id(id) => ("id", id.to_owned()),
-            NodeFilter::Label(label) => ("label", label.to_owned()),
-            NodeFilter::Membership(membership) => ("membership", membership.as_ref().to_string()),
-            NodeFilter::Name(name) => ("name", name.to_owned()),
-            NodeFilter::NodeLabel(node) => ("node.label", node.to_owned()),
-            NodeFilter::Role(role) => ("role", role.as_ref().to_string()),
+            NodeFilter::Id(id) => FilterItem::new("id", id.to_owned()),
+            NodeFilter::Label(label) => FilterItem::new("label", label.to_owned()),
+            NodeFilter::Membership(membership) => {
+                FilterItem::new("membership", membership.as_ref().to_string())
+            }
+            NodeFilter::Name(name) => FilterItem::new("name", name.to_owned()),
+            NodeFilter::NodeLabel(node) => FilterItem::new("node.label", node.to_owned()),
+            NodeFilter::Role(role) => FilterItem::new("role", role.as_ref().to_string()),
         }
     }
 }

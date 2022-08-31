@@ -1,4 +1,4 @@
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::url::encoded_pairs;
 use containers_api::{
     impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_url_bool_field,
@@ -430,14 +430,14 @@ pub enum ImageFilter {
 }
 
 impl Filter for ImageFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use ImageFilter::*;
         match &self {
-            Before(name) => ("before", name.to_string()),
-            Dangling => ("dangling", true.to_string()),
-            LabelKey(n) => ("label", n.to_owned()),
-            Label(n, v) => ("label", format!("{}={}", n, v)),
-            Since(name) => ("since", name.to_string()),
+            Before(name) => FilterItem::new("before", name.to_string()),
+            Dangling => FilterItem::new("dangling", true.to_string()),
+            LabelKey(n) => FilterItem::new("label", n.to_owned()),
+            Label(n, v) => FilterItem::new("label", format!("{}={}", n, v)),
+            Since(name) => FilterItem::new("since", name.to_string()),
         }
     }
 }
@@ -493,15 +493,15 @@ pub enum ImagesPruneFilter {
 }
 
 impl Filter for ImagesPruneFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use ImagesPruneFilter::*;
         match &self {
-            Dangling(dangling) => ("dangling", dangling.to_string()),
-            Until(until) => ("until", until.to_owned()),
+            Dangling(dangling) => FilterItem::new("dangling", dangling.to_string()),
+            Until(until) => FilterItem::new("until", until.to_owned()),
             #[cfg(feature = "chrono")]
-            UntilDate(until) => ("until", until.timestamp().to_string()),
-            LabelKey(label) => ("label", label.to_owned()),
-            Label(key, val) => ("label", format!("{}={}", key, val)),
+            UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
+            LabelKey(label) => FilterItem::new("label", label.to_owned()),
+            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
         }
     }
 }
@@ -527,17 +527,17 @@ pub enum CacheFilter {
 }
 
 impl Filter for CacheFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use CacheFilter::*;
         match &self {
-            Until(until) => ("until", until.to_owned()),
-            Id(id) => ("id", id.to_owned()),
-            Parent(parent) => ("parent", parent.to_owned()),
-            Type(type_) => ("type_", type_.to_owned()),
-            Description(description) => ("description", description.to_owned()),
-            InUse => ("inuse", "".to_owned()),
-            Shared => ("shared", "".to_owned()),
-            Private => ("private", "".to_owned()),
+            Until(until) => FilterItem::new("until", until.to_owned()),
+            Id(id) => FilterItem::new("id", id.to_owned()),
+            Parent(parent) => FilterItem::new("parent", parent.to_owned()),
+            Type(type_) => FilterItem::new("type_", type_.to_owned()),
+            Description(description) => FilterItem::new("description", description.to_owned()),
+            InUse => FilterItem::new("inuse", "".to_owned()),
+            Shared => FilterItem::new("shared", "".to_owned()),
+            Private => FilterItem::new("private", "".to_owned()),
         }
     }
 }

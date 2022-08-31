@@ -1,6 +1,9 @@
 //! Secrets are sensitive data that can be used by services. Swarm mode must be enabled for these endpoints to work.
 
-use crate::{conn::Payload, models, Result};
+use crate::{
+    conn::{Headers, Payload},
+    models, Result,
+};
 
 impl_api_ty!(Secret => name);
 
@@ -28,7 +31,7 @@ impl Secrets {
             pub id: String,
         }
         self.docker
-            .post_json("/secrets/create", Payload::Json(opts.serialize()?))
+            .post_json("/secrets/create", Payload::Json(opts.serialize()?), Headers::none())
             .await
             .map(|resp: SecretCreateResponse| {
                 Secret::new(self.docker.clone(), resp.id)
@@ -39,7 +42,7 @@ impl Secrets {
 pub mod opts {
     use crate::models::{Driver, Labels};
     use crate::{Error, Result};
-    use containers_api::opts::Filter;
+    use containers_api::opts::{Filter, FilterItem};
     use containers_api::{impl_filter_func, impl_opts_builder};
     use serde::{Deserialize, Serialize};
 
@@ -58,14 +61,14 @@ pub mod opts {
     }
 
     impl Filter for SecretFilter {
-        fn query_key_val(&self) -> (&'static str, String) {
+        fn query_item(&self) -> FilterItem {
             use SecretFilter::*;
             match &self {
-                Id(id) => ("id", id.to_owned()),
-                LabelKey(label) => ("label", label.to_owned()),
-                Label(key, val) => ("label", format!("{}={}", key, val)),
-                Name(name) => ("name", name.to_owned()),
-                Names(names) => ("names", names.to_owned()),
+                Id(id) => FilterItem::new("id", id.to_owned()),
+                LabelKey(label) => FilterItem::new("label", label.to_owned()),
+                Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+                Name(name) => FilterItem::new("name", name.to_owned()),
+                Names(names) => FilterItem::new("names", names.to_owned()),
             }
         }
     }

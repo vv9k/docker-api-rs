@@ -44,6 +44,7 @@ impl AsRef<str> for EventFilterType {
 
 /// An enumartion used to filter system events.
 pub enum EventFilter {
+    // TODO: use the Filter trait for this enum
     Container(String),
     Event(String),
     Image(String),

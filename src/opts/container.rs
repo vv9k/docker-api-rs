@@ -1,6 +1,6 @@
 use crate::models::Labels;
 use crate::opts::ImageName;
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
     impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
     impl_url_bool_field, impl_url_str_field, impl_vec_field,
@@ -122,24 +122,24 @@ pub enum ContainerFilter {
 }
 
 impl Filter for ContainerFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use ContainerFilter::*;
         match &self {
-            Ancestor(name) => ("ancestor", name.to_string()),
-            Before(before) => ("before", before.to_owned()),
-            ExitCode(c) => ("exit", c.to_string()),
-            Health(health) => ("health", health.as_ref().to_string()),
-            Id(id) => ("id", id.to_owned()),
-            Isolation(isolation) => ("isolation", isolation.as_ref().to_string()),
-            IsTask(is_task) => ("is-task", is_task.to_string()),
-            LabelKey(key) => ("label", key.to_owned()),
-            Label(key, val) => ("label", format!("{}={}", key, val)),
-            Name(name) => ("name", name.to_owned()),
-            Publish(port) => ("publsh", port.to_string()),
-            Network(net) => ("net", net.to_owned()),
-            Since(since) => ("since", since.to_owned()),
-            Status(s) => ("status", s.as_ref().to_string()),
-            Volume(vol) => ("volume", vol.to_owned()),
+            Ancestor(name) => FilterItem::new("ancestor", name.to_string()),
+            Before(before) => FilterItem::new("before", before.to_owned()),
+            ExitCode(c) => FilterItem::new("exit", c.to_string()),
+            Health(health) => FilterItem::new("health", health.as_ref().to_string()),
+            Id(id) => FilterItem::new("id", id.to_owned()),
+            Isolation(isolation) => FilterItem::new("isolation", isolation.as_ref().to_string()),
+            IsTask(is_task) => FilterItem::new("is-task", is_task.to_string()),
+            LabelKey(key) => FilterItem::new("label", key.to_owned()),
+            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Name(name) => FilterItem::new("name", name.to_owned()),
+            Publish(port) => FilterItem::new("publsh", port.to_string()),
+            Network(net) => FilterItem::new("net", net.to_owned()),
+            Since(since) => FilterItem::new("since", since.to_owned()),
+            Status(s) => FilterItem::new("status", s.as_ref().to_string()),
+            Volume(vol) => FilterItem::new("volume", vol.to_owned()),
         }
     }
 }
@@ -589,14 +589,14 @@ pub enum ContainerPruneFilter {
 }
 
 impl Filter for ContainerPruneFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use ContainerPruneFilter::*;
         match &self {
-            Until(until) => ("until", until.to_owned()),
+            Until(until) => FilterItem::new("until", until.to_owned()),
             #[cfg(feature = "chrono")]
-            UntilDate(until) => ("until", until.timestamp().to_string()),
-            LabelKey(label) => ("label", label.to_owned()),
-            Label(key, val) => ("label", format!("{}={}", key, val)),
+            UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
+            LabelKey(label) => FilterItem::new("label", label.to_owned()),
+            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
         }
     }
 }

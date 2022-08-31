@@ -54,6 +54,7 @@ impl Exec {
             .post_json(
                 &format!("/containers/{}/exec", container_id.as_ref()),
                 Payload::Json(opts.serialize()?),
+                Headers::none()
             )
             .await
             .map(|resp: Response| Exec::new(docker, resp.id))
@@ -101,6 +102,7 @@ impl Exec {
                         Payload::Json(
                             body_result.map_err(|e| crate::conn::Error::Any(Box::new(e)))?,
                         ),
+                        Headers::none(),
                     )
                     .await
                     .map(|resp: Response| resp.id)
@@ -108,7 +110,7 @@ impl Exec {
 
                 let stream = Box::pin(
                     docker
-                        .stream_post(
+                        .post_stream(
                             format!("/exec/{}/start", exec_id),
                             Payload::Json("{}"),
                             Headers::none(),
@@ -145,7 +147,7 @@ impl Exec {
             async move {
                 let stream = Box::pin(
                     docker
-                        .stream_post(endpoint, Payload::Json("{}"), Headers::none())
+                        .post_stream(endpoint, Payload::Json("{}"), Headers::none())
                         .map_err(|e| crate::conn::Error::Any(Box::new(e))),
                 );
 
@@ -163,7 +165,7 @@ impl Exec {
         let body: Body = opts.serialize()?.into();
 
         self.docker
-            .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body))
+            .post_json(&format!("/exec/{}/resize", &self.id), Payload::Json(body), Headers::none())
             .await
     }}
 }

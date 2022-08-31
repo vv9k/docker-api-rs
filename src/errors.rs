@@ -44,4 +44,17 @@ pub enum Error {
     Error(#[from] containers_api::conn::Error),
     #[error(transparent)]
     Any(Box<dyn std::error::Error + 'static + Send + Sync>),
+    #[error("{0}")]
+    StringError(String),
+}
+
+impl Clone for Error {
+    fn clone(&self) -> Self {
+        match self {
+            Error::SerdeJsonError(err) => Error::StringError(err.to_string()),
+            Error::IO(err) => Error::StringError(err.to_string()),
+            Error::Error(err) => Error::StringError(err.to_string()),
+            e => e.clone(),
+        }
+    }
 }

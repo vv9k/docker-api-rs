@@ -4,7 +4,7 @@
 //! Swarm mode must be enabled for these endpoints to work.
 
 use crate::{
-    conn::Payload,
+    conn::{Headers, Payload},
     models,
     opts::{NodeListOpts, NodeUpdateOpts},
     Result,
@@ -33,6 +33,7 @@ impl Node {
                     encoded_pair("version", opts.version().to_string())
                 ),
                 Payload::Json(opts.serialize()?),
+                Headers::none()
             )
             .await
             .map(|_| ())

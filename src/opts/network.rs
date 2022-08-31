@@ -1,5 +1,5 @@
 use crate::{models::Ipam, Error, Result};
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
     impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_vec_field,
 };
@@ -65,18 +65,18 @@ pub enum NetworkFilter {
 }
 
 impl Filter for NetworkFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use NetworkFilter::*;
 
         match &self {
-            Dangling(dangling) => ("dangling", dangling.to_string()),
-            Driver(driver) => ("driver", driver.to_owned()),
-            Id(id) => ("id", id.to_owned()),
-            LabelKey(key) => ("label", key.to_owned()),
-            LabelKeyVal(key, val) => ("label", format!("{}={}", key, val)),
-            Name(name) => ("name", name.to_owned()),
-            Scope(scope) => ("scope", scope.as_ref().to_owned()),
-            Type(type_) => ("type", type_.as_ref().to_owned()),
+            Dangling(dangling) => FilterItem::new("dangling", dangling.to_string()),
+            Driver(driver) => FilterItem::new("driver", driver.to_owned()),
+            Id(id) => FilterItem::new("id", id.to_owned()),
+            LabelKey(key) => FilterItem::new("label", key.to_owned()),
+            LabelKeyVal(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Name(name) => FilterItem::new("name", name.to_owned()),
+            Scope(scope) => FilterItem::new("scope", scope.as_ref().to_owned()),
+            Type(type_) => FilterItem::new("type", type_.as_ref().to_owned()),
         }
     }
 }
@@ -385,14 +385,14 @@ pub enum NetworkPruneFilter {
 }
 
 impl Filter for NetworkPruneFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         use NetworkPruneFilter::*;
         match &self {
-            Until(until) => ("until", until.to_owned()),
+            Until(until) => FilterItem::new("until", until.to_owned()),
             #[cfg(feature = "chrono")]
-            UntilDate(until) => ("until", until.timestamp().to_string()),
-            LabelKey(label) => ("label", label.to_owned()),
-            Label(key, val) => ("label", format!("{}={}", key, val)),
+            UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
+            LabelKey(label) => FilterItem::new("label", label.to_owned()),
+            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
         }
     }
 }

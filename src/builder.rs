@@ -254,7 +254,7 @@ macro_rules! impl_api_ep {
         #[doc = concat!("Create a new ", stringify!($base), ".")]
         |
         pub async fn create(&self, opts: &[< $base CreateOpts >]) -> Result<[< $base >]> {
-            self.docker.post_json(&$ep, Payload::Json(opts.serialize()?)).await
+            self.docker.post_json(&$ep, Payload::Json(opts.serialize()?), Headers::none()).await
             .map(|$resp: [< $ret >]| [< $base >]::new(self.docker.clone(), $($extra)*))
         }}
         }
@@ -270,7 +270,8 @@ macro_rules! impl_api_ep {
             self.docker
                 .post_json(
                     &containers_api::url::construct_ep($ep, opts.serialize()),
-                    crate::conn::Payload::empty()
+                    crate::conn::Payload::empty(),
+                    crate::conn::Headers::none(),
                 ).await
         }}
         }
@@ -291,7 +292,7 @@ macro_rules! impl_api_ep {
             let $it = self;
             let ep = containers_api::url::construct_ep($ep, opts.serialize());
 
-            let stream = Box::pin(self.docker.stream_get(ep).map_err(|e| containers_api::conn::Error::Any(Box::new(e))));
+            let stream = Box::pin(self.docker.get_stream(ep).map_err(|e| containers_api::conn::Error::Any(Box::new(e))));
 
             Box::pin(tty::decode(stream).map_err(crate::Error::Error))
         }

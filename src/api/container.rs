@@ -16,7 +16,7 @@ use serde::Deserialize;
 
 use crate::{
     api::Exec,
-    conn::{Multiplexer as TtyMultiplexer, Payload, TtyChunk},
+    conn::{Headers, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
     opts::ExecContainerOpts,
     Error, Result,
 };
@@ -46,7 +46,7 @@ impl Container {
     /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
     async fn attach_raw(&self) -> Result<impl AsyncRead + AsyncWrite + Send + '_> {
         self.docker
-            .stream_post_upgrade(
+            .post_upgrade_stream(
                 format!(
                     "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
                     self.id
@@ -81,7 +81,7 @@ impl Container {
     |
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + '_{
         self.docker
-            .stream_get(format!("/containers/{}/export", self.id))
+            .get_stream(format!("/containers/{}/export", self.id))
             .map_ok(|c| c.to_vec())
     }}
 
@@ -93,7 +93,7 @@ impl Container {
 
         let reader = Box::pin(
             self.docker
-                .stream_get(format!("/containers/{}/stats", self.id))
+                .get_stream(format!("/containers/{}/stats", self.id))
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e)),
         )
         .into_async_read();
@@ -113,7 +113,7 @@ impl Container {
     |
     pub async fn start(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/start", self.id), Payload::empty())
+            .post_string(&format!("/containers/{}/start", self.id), Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -126,7 +126,7 @@ impl Container {
         if let Some(w) = wait {
             append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
+        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
     }}
 
     api_doc! { Container => Restart
@@ -137,7 +137,7 @@ impl Container {
         if let Some(w) = wait {
             append_query(&mut ep, encoded_pair("t", w.as_secs()));
         }
-        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
+        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
     }}
 
     api_doc! { Container => Kill
@@ -148,7 +148,7 @@ impl Container {
         if let Some(sig) = signal {
             append_query(&mut ep, encoded_pair("signal", sig));
         }
-        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
+        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
     }}
 
     api_doc! { Container => Rename
@@ -156,13 +156,13 @@ impl Container {
     |
     pub async fn rename(&self, name: &str) -> Result<()> {
         self.docker
-            .post(
+            .post_string(
                 &format!(
                     "/containers/{}/rename?{}",
                     self.id,
                     encoded_pair("name", name)
                 ),
-                Payload::empty(),
+                Payload::empty(), Headers::none(),
             )
             .await
             .map(|_| ())
@@ -173,7 +173,7 @@ impl Container {
     |
     pub async fn pause(&self) -> Result<()> {
         self.docker
-            .post(&format!("/containers/{}/pause", self.id), Payload::empty())
+            .post_string(&format!("/containers/{}/pause", self.id), Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -183,9 +183,9 @@ impl Container {
     |
     pub async fn unpause(&self) -> Result<()> {
         self.docker
-            .post(
+            .post_string(
                 &format!("/containers/{}/unpause", self.id),
-                Payload::empty(),
+                Payload::empty(), Headers::none(),
             )
             .await
             .map(|_| ())
@@ -196,7 +196,7 @@ impl Container {
     |
     pub async fn wait(&self) -> Result<models::ContainerWaitResponse> {
         self.docker
-            .post_json(format!("/containers/{}/wait", self.id), Payload::empty())
+            .post_json(format!("/containers/{}/wait", self.id), Payload::empty(), Headers::none())
             .await
     }}
 
@@ -222,7 +222,7 @@ impl Container {
     |
     pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
         self.docker
-            .stream_get(format!(
+            .get_stream(format!(
                 "/containers/{}/archive?{}",
                 self.id,
                 encoded_pair("path", path.to_string_lossy())
@@ -285,7 +285,7 @@ impl Container {
         static PATH_STAT_HEADER: &str = "X-Docker-Container-Path-Stat";
         let resp = self
             .docker
-            .head_response(&format!(
+            .head(&format!(
                 "/containers/{}/archive?{}",
                 self.id,
                 encoded_pair("path", path.as_ref().to_string_lossy())
@@ -334,7 +334,8 @@ impl Container {
             format!(
                 "/commit?{}", opts.with_container(self.id().as_ref()).serialize().unwrap_or_default()
             ),
-            Payload::None::<Vec<_>>
+            Payload::None::<Vec<_>>,
+            Headers::none()
         ).await
         .map(|id: IdStruct| id.id)
     }}
@@ -356,7 +357,7 @@ impl Containers {
         } else {
             "/containers/create".to_owned()
         };
-        self.docker.post_json(&ep, Payload::Json(opts.serialize()?)).await
+        self.docker.post_json(&ep, Payload::Json(opts.serialize()?), Headers::none()).await
         .map(|resp: models::ContainerCreate201Response| Container::new(self.docker.clone(), resp.id))
     }}
 }

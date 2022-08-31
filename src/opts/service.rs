@@ -1,5 +1,5 @@
 use crate::{models, opts::RegistryAuth, Error, Result};
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{impl_filter_func, impl_opts_builder, impl_url_bool_field};
 
 use std::collections::HashMap;
@@ -18,13 +18,13 @@ pub enum ServiceFilter {
 }
 
 impl Filter for ServiceFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         match &self {
-            ServiceFilter::Id(i) => ("id", i.to_owned()),
-            ServiceFilter::Label(l) => ("label", l.to_owned()),
-            ServiceFilter::ReplicatedMode => ("mode", "replicated".to_string()),
-            ServiceFilter::GlobalMode => ("mode", "global".to_string()),
-            ServiceFilter::Name(n) => ("name", n.to_string()),
+            ServiceFilter::Id(i) => FilterItem::new("id", i.to_owned()),
+            ServiceFilter::Label(l) => FilterItem::new("label", l.to_owned()),
+            ServiceFilter::ReplicatedMode => FilterItem::new("mode", "replicated".to_string()),
+            ServiceFilter::GlobalMode => FilterItem::new("mode", "global".to_string()),
+            ServiceFilter::Name(n) => FilterItem::new("name", n.to_string()),
         }
     }
 }

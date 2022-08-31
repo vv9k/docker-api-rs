@@ -17,7 +17,7 @@ impl Service {
             .auth_header()
             .map(|a| Headers::single(AUTH_HEADER, a));
         self.docker
-            .post_json_headers(
+            .post_json(
                 "/services/create",
                 Payload::Json(opts.serialize()?),
                 headers,

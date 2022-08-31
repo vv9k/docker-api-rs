@@ -1,4 +1,4 @@
-use containers_api::opts::Filter;
+use containers_api::opts::{Filter, FilterItem};
 use containers_api::{impl_filter_func, impl_opts_builder};
 
 impl_opts_builder!(url => PluginList);
@@ -10,11 +10,11 @@ pub enum PluginFilter {
 }
 
 impl Filter for PluginFilter {
-    fn query_key_val(&self) -> (&'static str, String) {
+    fn query_item(&self) -> FilterItem {
         match &self {
-            PluginFilter::Capability(cap) => ("capability", cap.to_owned()),
-            PluginFilter::Enable => ("enable", true.to_string()),
-            PluginFilter::Disable => ("enable", false.to_string()),
+            PluginFilter::Capability(cap) => FilterItem::new("capability", cap.to_owned()),
+            PluginFilter::Enable => FilterItem::new("enable", true.to_string()),
+            PluginFilter::Disable => FilterItem::new("enable", false.to_string()),
         }
     }
 }

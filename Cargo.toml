@@ -12,7 +12,8 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-containers-api = "0.3"
+#containers-api = "0.3"
+containers-api = { git = "https://github.com/vv9k/containers-api" }
 
 docker-api-stubs = "0.3"
 

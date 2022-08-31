@@ -1,7 +1,7 @@
 //! Control and manage clusters of engines also known as Swarm
 
 use crate::{
-    conn::Payload,
+    conn::{Headers, Payload},
     models,
     opts::{SwarmInitOpts, SwarmJoinOpts},
     Docker, Result,
@@ -35,7 +35,7 @@ impl Swarm {
     |
     pub async fn unlock_manager(&self, key: &models::SwarmUnlockBodyParam) -> Result<()> {
         self.docker
-            .post("/swarm/unlock", Payload::Json(serde_json::to_string(key)?))
+            .post("/swarm/unlock", Payload::Json(serde_json::to_string(key)?), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -45,7 +45,7 @@ impl Swarm {
     |
     pub async fn initialize(&self, opts: &SwarmInitOpts) -> Result<()> {
         self.docker
-            .post("/swarm/init", Payload::Json(opts.serialize()?))
+            .post("/swarm/init", Payload::Json(opts.serialize()?), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -55,7 +55,7 @@ impl Swarm {
     |
     pub async fn join(&self, opts: &SwarmJoinOpts) -> Result<()> {
         self.docker
-            .post("/swarm/join", Payload::Json(opts.serialize()?))
+            .post("/swarm/join", Payload::Json(opts.serialize()?), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -65,7 +65,7 @@ impl Swarm {
     |
     pub async fn leave(&self) -> Result<()> {
         self.docker
-            .post("/swarm/leave?force=false", Payload::empty())
+            .post("/swarm/leave?force=false", Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -75,7 +75,7 @@ impl Swarm {
     |
     pub async fn force_leave(&self) -> Result<()> {
         self.docker
-            .post("/swarm/leave?force=true", Payload::empty())
+            .post("/swarm/leave?force=true", Payload::empty(), Headers::none())
             .await
             .map(|_| ())
     }}

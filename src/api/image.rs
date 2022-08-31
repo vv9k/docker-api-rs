@@ -60,7 +60,7 @@ impl Image {
     pub fn export(&self) -> impl Stream<Item = Result<Vec<u8>>> + Unpin + '_ {
         Box::pin(
             self.docker
-                .stream_get(format!("/images/{}/get", self.name))
+                .get_stream(format!("/images/{}/get", self.name))
                 .map_ok(|c| c.to_vec()),
         )
     }}
@@ -70,7 +70,7 @@ impl Image {
     |
     pub async fn tag(&self, opts: &TagOpts) -> Result<()> {
         let ep = construct_ep(format!("/images/{}/tag", self.name), opts.serialize());
-        self.docker.post(&ep, Payload::empty()).await.map(|_| ())
+        self.docker.post_string(&ep, Payload::empty(), Headers::none()).await.map(|_| ())
     }}
 
     api_doc! { Image => Push
@@ -85,7 +85,7 @@ impl Image {
             .unwrap_or_else(Headers::default);
 
         self.docker
-            .post_headers(&ep, Payload::empty(), headers)
+            .post_string(&ep, Payload::empty(), Some(headers))
             .await
             .map(|_| ())
     }}
@@ -98,6 +98,7 @@ impl Image {
             .post_json(
                 &format!("/distribution/{}/json", self.name),
                 Payload::empty(),
+                Headers::none()
             )
             .await
     }}
@@ -131,7 +132,7 @@ impl Images {
                 tar_result?;
 
                 let value_stream =
-                    docker.stream_post_into(ep, Payload::Tar(bytes), Headers::none());
+                    docker.post_into_stream(ep, Payload::Tar(bytes), Headers::none());
 
                 Ok(value_stream)
             }
@@ -162,7 +163,7 @@ impl Images {
             .auth_header()
             .map(|a| Headers::single(AUTH_HEADER, a));
 
-        Box::pin(self.docker.stream_post_into(
+        Box::pin(self.docker.post_into_stream(
             construct_ep("/images/create", opts.serialize()),
             Payload::empty(),
             headers,
@@ -175,7 +176,7 @@ impl Images {
     |
     pub fn export<'docker>(&'docker self, names: Vec<&str>) -> impl Stream<Item = Result<Vec<u8>>> + 'docker {
         self.docker
-            .stream_get(format!(
+            .get_stream(format!(
                 "/images/get?{}",
                 encoded_pairs(names.iter().map(|n| ("names", *n)))
             ))
@@ -199,7 +200,7 @@ impl Images {
 
                 tarball.read_to_end(&mut bytes)?;
 
-                let value_stream = self.docker.stream_post_into(
+                let value_stream = self.docker.post_into_stream(
                     "/images/load",
                     Payload::Tar(bytes),
                     Headers::none(),
@@ -226,6 +227,7 @@ impl Images {
             .post_json(
                 construct_ep("/build/prune", opts.serialize()),
                 Payload::empty(),
+                Headers::none()
             )
             .await
     }}

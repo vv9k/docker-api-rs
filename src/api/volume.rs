@@ -1,7 +1,7 @@
 //! Create and manage persistent storage that can be attached to containers.
 
 use crate::{
-    conn::Payload,
+    conn::{Headers, Payload},
     models,
     opts::{VolumeCreateOpts, VolumeListOpts, VolumePruneOpts},
     Result,
@@ -35,7 +35,7 @@ impl Volumes {
     pub async fn create(&self, opts: &VolumeCreateOpts) -> Result<models::Volume> {
         // #TODO: handle missing id and return warnings (?)
         self.docker
-            .post_json("/volumes/create", Payload::Json(opts.serialize()?))
+            .post_json("/volumes/create", Payload::Json(opts.serialize()?), Headers::none())
             .await
     }}
 }
