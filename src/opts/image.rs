@@ -204,20 +204,20 @@ impl PullOptsBuilder {
 }
 
 #[derive(Default, Debug)]
-pub struct BuildOpts {
+pub struct ImageBuildOpts {
     pub path: PathBuf,
     params: HashMap<&'static str, String>,
 }
 
-impl BuildOpts {
+impl ImageBuildOpts {
     /// return a new instance of a builder for Opts
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
-    pub fn builder<P>(path: P) -> BuildOptsBuilder
+    pub fn builder<P>(path: P) -> ImageBuildOptsBuilder
     where
         P: AsRef<Path>,
     {
-        BuildOptsBuilder::new(path)
+        ImageBuildOptsBuilder::new(path)
     }
 
     /// serialize Opts as a string. returns None if no Opts are defined
@@ -231,19 +231,19 @@ impl BuildOpts {
 }
 
 #[derive(Default)]
-pub struct BuildOptsBuilder {
+pub struct ImageBuildOptsBuilder {
     path: PathBuf,
     params: HashMap<&'static str, String>,
 }
 
-impl BuildOptsBuilder {
+impl ImageBuildOptsBuilder {
     /// path is expected to be a file path to a directory containing a Dockerfile
     /// describing how to build a Docker image
     pub(crate) fn new<P>(path: P) -> Self
     where
         P: AsRef<Path>,
     {
-        BuildOptsBuilder {
+        ImageBuildOptsBuilder {
             path: path.as_ref().to_path_buf(),
             ..Default::default()
         }
@@ -353,8 +353,8 @@ impl BuildOptsBuilder {
         labels => "labels"
     );
 
-    pub fn build(&self) -> BuildOpts {
-        BuildOpts {
+    pub fn build(&self) -> ImageBuildOpts {
+        ImageBuildOpts {
             path: self.path.clone(),
             params: self.params.clone(),
         }

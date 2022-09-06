@@ -75,8 +75,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Build { path, tag } => {
-            use docker_api::opts::BuildOpts;
-            let options = BuildOpts::builder(path).tag(tag).build();
+            use docker_api::opts::ImageBuildOpts;
+            let options = ImageBuildOpts::builder(path).tag(tag).build();
 
             let images = docker.images();
             let mut stream = images.build(&options);

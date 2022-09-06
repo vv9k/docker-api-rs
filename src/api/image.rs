@@ -3,7 +3,7 @@
 use crate::{
     models,
     opts::{
-        BuildOpts, ClearCacheOpts, ImageListOpts, ImagePruneOpts, ImagePushOpts, PullOpts,
+        ClearCacheOpts, ImageBuildOpts, ImageListOpts, ImagePruneOpts, ImagePushOpts, PullOpts,
         RmImageOpts, TagOpts,
     },
 };
@@ -122,7 +122,7 @@ impl Images {
     /// Builds a new image build by reading a Dockerfile in a target directory.
     pub fn build<'docker>(
         &'docker self,
-        opts: &BuildOpts,
+        opts: &ImageBuildOpts,
     ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker {
         let ep = construct_ep("/build", opts.serialize());
 
