@@ -34,7 +34,7 @@ impl Configs {
             pub id: String,
         }
         self.docker
-            .post_json("/ronfigs/create", Payload::Json(opts.serialize()?), Headers::none())
+            .post_json("/configs/create", Payload::Json(opts.serialize()?), Headers::none())
             .await
             .map(|resp: ConfigCreateResponse| {
                 Config::new(self.docker.clone(), resp.id)

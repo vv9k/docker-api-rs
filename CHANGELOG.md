@@ -1,5 +1,6 @@
 #
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`
+- Fix `Configs::create` endpoint
 
 # 0.10.0
 - *BREAKING* Use models generated from swagger schema
