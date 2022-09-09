@@ -260,6 +260,21 @@ impl Docker {
             .await
     }
 
+    #[allow(dead_code)]
+    pub(crate) async fn post<B>(
+        &self,
+        endpoint: &str,
+        body: Payload<B>,
+        headers: Option<Headers>,
+    ) -> Result<Response<Body>>
+    where
+        B: Into<Body>,
+    {
+        self.client
+            .post(self.version.make_endpoint(endpoint), body, headers)
+            .await
+    }
+
     pub(crate) async fn post_string<B>(
         &self,
         endpoint: &str,
