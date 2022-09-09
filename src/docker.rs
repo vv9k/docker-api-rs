@@ -370,7 +370,7 @@ impl Docker {
 
 fn validate_response(
     response: Response<Body>,
-) -> Pin<Box<dyn Future<Output = Result<Response<Body>>>>> {
+) -> Pin<Box<dyn Future<Output = Result<Response<Body>>> + Send + Sync>> {
     use serde::{Deserialize, Serialize};
     #[derive(Serialize, Deserialize)]
     struct ErrorResponse {
