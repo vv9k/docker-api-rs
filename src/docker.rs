@@ -22,8 +22,9 @@ use futures_util::{
 };
 use hyper::{body::Bytes, Body, Client, Response};
 use serde::de::DeserializeOwned;
-
+use std::future::Future;
 use std::path::Path;
+use std::pin::Pin;
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
@@ -111,12 +112,15 @@ impl Docker {
     {
         Docker {
             version: version.into(),
-            client: RequestClient::new(Transport::Unix {
-                client: Client::builder()
-                    .pool_max_idle_per_host(0)
-                    .build(get_unix_connector()),
-                path: socket_path.as_ref().to_path_buf(),
-            }),
+            client: RequestClient::new(
+                Transport::Unix {
+                    client: Client::builder()
+                        .pool_max_idle_per_host(0)
+                        .build(get_unix_connector()),
+                    path: socket_path.as_ref().to_path_buf(),
+                },
+                Box::new(validate_response),
+            ),
         }
     }
 
@@ -158,11 +162,15 @@ impl Docker {
     {
         Ok(Docker {
             version: version.into(),
-            client: RequestClient::new(Transport::EncryptedTcp {
-                client: Client::builder().build(get_https_connector(cert_path.as_ref(), verify)?),
-                host: url::Url::parse(&format!("https://{}", host.as_ref()))
-                    .map_err(Error::InvalidUrl)?,
-            }),
+            client: RequestClient::new(
+                Transport::EncryptedTcp {
+                    client: Client::builder()
+                        .build(get_https_connector(cert_path.as_ref(), verify)?),
+                    host: url::Url::parse(&format!("https://{}", host.as_ref()))
+                        .map_err(Error::InvalidUrl)?,
+                },
+                Box::new(validate_response),
+            ),
         })
     }
 
@@ -190,11 +198,14 @@ impl Docker {
     {
         Ok(Docker {
             version: version.into(),
-            client: RequestClient::new(Transport::Tcp {
-                client: Client::builder().build(get_http_connector()),
-                host: url::Url::parse(&format!("tcp://{}", host.as_ref()))
-                    .map_err(Error::InvalidUrl)?,
-            }),
+            client: RequestClient::new(
+                Transport::Tcp {
+                    client: Client::builder().build(get_http_connector()),
+                    host: url::Url::parse(&format!("tcp://{}", host.as_ref()))
+                        .map_err(Error::InvalidUrl)?,
+                },
+                Box::new(validate_response),
+            ),
         })
     }
 
@@ -355,6 +366,55 @@ impl Docker {
             .post_upgrade_stream(self.version.make_endpoint(endpoint), body)
             .await
     }
+}
+
+fn validate_response(
+    response: Response<Body>,
+) -> Pin<Box<dyn Future<Output = Result<Response<Body>>>>> {
+    use serde::{Deserialize, Serialize};
+    #[derive(Serialize, Deserialize)]
+    struct ErrorResponse {
+        message: String,
+    }
+
+    Box::pin(async move {
+        log::trace!(
+            "got response {} {:?}",
+            response.status(),
+            response.headers()
+        );
+        let status = response.status();
+
+        use crate::conn::{self, hyper::StatusCode};
+        match status {
+            // Success case: pass on the response
+            StatusCode::OK
+            | StatusCode::CREATED
+            | StatusCode::SWITCHING_PROTOCOLS
+            | StatusCode::NO_CONTENT => Ok(response),
+            // Error case: try to deserialize error message
+            _ => {
+                let body = response.into_body();
+                let bytes = hyper::body::to_bytes(body)
+                    .await
+                    .map_err(conn::Error::from)?;
+                let message_body = String::from_utf8(bytes.to_vec()).map_err(conn::Error::from)?;
+                log::trace!("{message_body:#?}");
+                let message = serde_json::from_str::<ErrorResponse>(&message_body)
+                    .map(|e| e.message)
+                    .unwrap_or_else(|_| {
+                        status
+                            .canonical_reason()
+                            .unwrap_or("unknown error code")
+                            .to_owned()
+                    });
+                Err(Error::Fault {
+                    code: status,
+                    message,
+                })
+            }
+        }
+    })
 }
 
 #[cfg(feature = "swarm")]
