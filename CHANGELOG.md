@@ -1,4 +1,4 @@
-#
+# 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`
 - Fix `Configs::create` endpoint
 
