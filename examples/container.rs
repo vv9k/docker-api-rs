@@ -197,9 +197,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Cmd::Create { image, nam } => {
             use docker_api::opts::ContainerCreateOpts;
             let opts = if let Some(name) = nam {
-                ContainerCreateOpts::builder(image).name(name).build()
+                ContainerCreateOpts::builder()
+                    .image(image)
+                    .name(name)
+                    .build()
             } else {
-                ContainerCreateOpts::builder(image).build()
+                ContainerCreateOpts::builder().image(image).build()
             };
             match docker.containers().create(&opts).await {
                 Ok(info) => println!("{:?}", info),
