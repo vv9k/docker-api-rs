@@ -5,6 +5,7 @@
 - Rename `ExecCreateOpts::cmd` -> `ExecCreateOpts::command`
 - Rename `ContainerCreateOpts::cmd` -> `ContainerCreateOpts::command`
 - Change `Container::copy_from` argument type from `&Path` to a more generic `impl AsRef<Path>`
+- Change `ContainerCreateOpts::builder` to not require a name
 
 # 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`

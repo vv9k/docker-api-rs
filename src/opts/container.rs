@@ -201,11 +201,8 @@ where
 
 impl ContainerCreateOpts {
     /// Returns a builder for creating a new container.
-    pub fn builder<N>(name: N) -> ContainerOptsBuilder
-    where
-        N: AsRef<str>,
-    {
-        ContainerOptsBuilder::new(name.as_ref())
+    pub fn builder() -> ContainerOptsBuilder {
+        ContainerOptsBuilder::default()
     }
 
     /// Serialize options as a JSON string.
@@ -235,8 +232,8 @@ impl ContainerCreateOpts {
         }
     }
 
-    pub(crate) fn name(&self) -> &Option<String> {
-        &self.name
+    pub(crate) fn name(&self) -> Option<&str> {
+        self.name.as_deref()
     }
 }
 
@@ -340,11 +337,11 @@ impl ToString for PublishPort {
 }
 
 impl ContainerOptsBuilder {
-    pub(crate) fn new(image: &str) -> Self {
-        let mut params = HashMap::new();
-
-        params.insert("Image", Value::String(image.to_owned()));
-        ContainerOptsBuilder { name: None, params }
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            params: Default::default(),
+            name: Some(name.into()),
+        }
     }
 
     /// Set the name of the container.

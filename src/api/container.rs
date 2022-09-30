@@ -376,7 +376,7 @@ impl Containers {
     |
     /// Create a container
     pub async fn create(&self, opts: &ContainerCreateOpts) -> Result<Container> {
-        let ep = if let Some(name) = opts.name().as_ref() {
+        let ep = if let Some(name) = opts.name() {
             construct_ep("/containers/create", Some(encoded_pair("name", name)))
         } else {
             "/containers/create".to_owned()
