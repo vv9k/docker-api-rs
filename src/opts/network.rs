@@ -89,7 +89,7 @@ impl NetworkListOptsBuilder {
 }
 
 /// Interface for creating new docker network
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct NetworkCreateOpts {
     params: HashMap<&'static str, Value>,
 }
