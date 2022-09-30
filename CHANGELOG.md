@@ -1,3 +1,7 @@
+#
+- Fix some integer fields that could be negative but previously were a usize like `ImageSummary::containers`
+- Fix deserialization of nullable map types like `ImageSummary::labels`
+
 # 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`
 - Fix `Configs::create` endpoint
