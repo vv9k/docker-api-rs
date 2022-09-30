@@ -1,8 +1,8 @@
 use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
 
-impl_opts_builder!(json => ExecContainer);
+impl_opts_builder!(json => ExecCreate);
 
-impl ExecContainerOptsBuilder {
+impl ExecCreateOptsBuilder {
     impl_vec_field!(
         /// Command to run, as an array of strings.
         cmd => "Cmd"

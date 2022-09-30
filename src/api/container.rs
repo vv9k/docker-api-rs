@@ -17,7 +17,7 @@ use serde::Deserialize;
 use crate::{
     api::Exec,
     conn::{Headers, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
-    opts::ExecContainerOpts,
+    opts::ExecCreateOpts,
     Error, Result,
 };
 use containers_api::url::{append_query, construct_ep, encoded_pair};
@@ -228,7 +228,7 @@ impl Container {
     /// Execute a command in this container.
     pub fn exec(
         &self,
-        opts: &ExecContainerOpts,
+        opts: &ExecCreateOpts,
     ) -> impl Stream<Item = crate::conn::Result<TtyChunk>> + Unpin + '_ {
         Exec::create_and_start(&self.docker, &self.id, opts)
     }}

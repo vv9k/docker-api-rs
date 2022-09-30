@@ -34,11 +34,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match opts.subcmd {
         Cmd::Inspect { container, cmd } => {
-            use docker_api::opts::ExecContainerOpts;
+            use docker_api::opts::ExecCreateOpts;
             use futures::StreamExt;
 
             // Create Opts with specified command
-            let opts = ExecContainerOpts::builder()
+            let opts = ExecCreateOpts::builder()
                 .cmd(cmd)
                 .attach_stdout(true)
                 .attach_stderr(true)

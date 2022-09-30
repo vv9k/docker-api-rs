@@ -9,7 +9,7 @@ use hyper::Body;
 use crate::{
     conn::{tty, Headers, Payload},
     models,
-    opts::{ExecContainerOpts, ExecResizeOpts},
+    opts::{ExecCreateOpts, ExecResizeOpts},
     Docker, Result,
 };
 
@@ -39,7 +39,7 @@ impl Exec {
     pub async fn create<C>(
         docker: Docker,
         container_id: C,
-        opts: &ExecContainerOpts,
+        opts: &ExecCreateOpts,
     ) -> Result<Exec>
     where
         C: AsRef<str>,
@@ -74,7 +74,7 @@ impl Exec {
     pub(crate) fn create_and_start<'docker, C>(
         docker: &'docker Docker,
         container_id: C,
-        opts: &ExecContainerOpts,
+        opts: &ExecCreateOpts,
     ) -> impl Stream<Item = crate::conn::Result<tty::TtyChunk>> + Unpin + 'docker
     where
         C: AsRef<str>,
