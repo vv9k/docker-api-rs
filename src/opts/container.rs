@@ -429,6 +429,11 @@ impl ContainerOptsBuilder {
         working_dir => "WorkingDir"
     );
 
+    impl_str_field!(
+        /// The name (or reference) of the image to use when creating the container
+        image => "Image"
+    );
+
     impl_vec_field!(
         /// Specify a Vec of string values to customize labels for MLS systems, such as SELinux.
         security_options => "HostConfig.SecurityOpt"
