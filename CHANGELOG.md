@@ -10,6 +10,7 @@
 - Rename `ContainerOptsBuilder` -> `ContainerCreateOptsBuilder`
 - Rename `RmContainerOpts` -> `ContainerRemoveOpts`
 - Rename `RmImageOpts` -> `ImageRemoveOpts`
+- Add `Clone` implementation to `ContainerCreateOpts`
 
 # 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`
