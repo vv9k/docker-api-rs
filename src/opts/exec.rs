@@ -5,7 +5,7 @@ impl_opts_builder!(json => ExecCreate);
 impl ExecCreateOptsBuilder {
     impl_vec_field!(
         /// Command to run, as an array of strings.
-        cmd => "Cmd"
+        command => "Cmd"
     );
 
     impl_vec_field!(

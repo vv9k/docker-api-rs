@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             // Create Opts with specified command
             let opts = ExecCreateOpts::builder()
-                .cmd(cmd)
+                .command(cmd)
                 .attach_stdout(true)
                 .attach_stderr(true)
                 .build();

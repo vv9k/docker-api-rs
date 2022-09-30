@@ -221,7 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Cmd::Exec { id, cmd } => {
             use docker_api::opts::ExecCreateOpts;
             let options = ExecCreateOpts::builder()
-                .cmd(cmd)
+                .command(cmd)
                 .attach_stdout(true)
                 .attach_stderr(true)
                 .build();
