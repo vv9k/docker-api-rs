@@ -499,7 +499,7 @@ impl ContainerOptsBuilder {
 
     impl_vec_field!(env => "Env");
 
-    impl_vec_field!(cmd => "Cmd");
+    impl_vec_field!(command => "Cmd");
 
     impl_vec_field!(entrypoint => "Entrypoint");
 

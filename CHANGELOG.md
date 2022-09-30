@@ -3,6 +3,7 @@
 - Fix deserialization of nullable map types like `ImageSummary::labels`
 - Rename `ExecContainerOpts` -> `ExecCreateOpts`
 - Rename `ExecCreateOpts::cmd` -> `ExecCreateOpts::command`
+- Rename `ContainerCreateOpts::cmd` -> `ContainerCreateOpts::command`
 
 # 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`
