@@ -52,7 +52,7 @@ clap = { version = "3.0.0-beta.5", features = ["derive"] }
 pretty_assertions = "0.7"
 
 futures-util = "0.3"
-tempdir = "0.3"
+tempfile = "3"
 gethostname = "0.2"
 
 [target.'cfg(unix)'.dev-dependencies]

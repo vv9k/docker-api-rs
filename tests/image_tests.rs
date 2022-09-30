@@ -150,7 +150,7 @@ async fn image_list() {
     let name_a = "test-list-image";
     let name_b = "test-list-image2";
 
-    let tmp = tempdir_with_dockerfile(name_a, None);
+    let tmp = tempdir_with_dockerfile(None);
 
     let label_key = "test-list";
     let value_a = "value_a";

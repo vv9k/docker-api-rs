@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 pub use docker_api::{api, conn, models, models::ImageBuildChunk, opts, Docker};
 pub use futures_util::{StreamExt, TryStreamExt};
-pub use tempdir::TempDir;
+pub use tempfile::TempDir;
 
 pub const DEFAULT_IMAGE: &str = "ubuntu:latest";
 pub const DEFAULT_CMD: &str = "sleep inf";
@@ -84,8 +84,8 @@ pub async fn get_container_full_id(docker: &Docker, name: &str) -> String {
         .expect("container full id")
 }
 
-pub fn tempdir_with_dockerfile(name: &str, content: Option<&str>) -> TempDir {
-    let tmp = TempDir::new(name).expect("temp dir for image");
+pub fn tempdir_with_dockerfile(content: Option<&str>) -> TempDir {
+    let tmp = TempDir::new().expect("temp dir for image");
     let default_dockerfile = format!(
         "FROM {DEFAULT_IMAGE}\nRUN echo 1234 > {TEST_IMAGE_PATH}\nRUN echo 321\nCMD sleep inf",
     );
@@ -114,7 +114,7 @@ pub async fn create_base_image(
         )
         .await;
 
-    let tmp = tempdir_with_dockerfile(tag, None);
+    let tmp = tempdir_with_dockerfile(None);
 
     println!("Tmp: {}", tmp.path().display());
     println!("Exists: {}", tmp.path().exists());

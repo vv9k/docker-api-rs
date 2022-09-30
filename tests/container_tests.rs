@@ -323,7 +323,7 @@ async fn container_copy_from() {
     let tar_stream = container.copy_from("/tmp/test123");
     let bytes = tar_stream.try_concat().await.expect("joined tarball bytes");
     let mut archive = tar::Archive::new(&bytes[..]);
-    let tmp = tempdir::TempDir::new("test-copy-from").expect("temporary dir");
+    let tmp = tempfile::TempDir::new().expect("temporary dir");
     archive.unpack(tmp.path()).unwrap();
 
     let local_path = tmp.path().join("test123").join("test-copy-from");
