@@ -203,7 +203,7 @@ impl PullOptsBuilder {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct ImageBuildOpts {
     pub path: PathBuf,
     params: HashMap<&'static str, String>,
