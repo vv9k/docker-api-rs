@@ -11,6 +11,26 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
+
+fn deserialize_nonoptional_vec<
+    'de,
+    D: serde::de::Deserializer<'de>,
+    T: serde::de::DeserializeOwned,
+>(
+    d: D,
+) -> Result<Vec<T>, D::Error> {
+    serde::de::Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
+}
+
+fn deserialize_nonoptional_map<
+    'de,
+    D: serde::de::Deserializer<'de>,
+    T: serde::de::DeserializeOwned,
+>(
+    d: D,
+) -> Result<HashMap<String, T>, D::Error> {
+    serde::de::Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
+}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Address represents an IPv4 or IPv6 IP address.
 pub struct Address {
@@ -21,7 +41,7 @@ pub struct Address {
     #[serde(rename = "PrefixLen")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Mask length of the IP address.
-    pub prefix_len: Option<usize>,
+    pub prefix_len: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -72,14 +92,14 @@ pub struct BuildCache {
     #[serde(rename = "Size")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Amount of disk space used by the build cache (in bytes).
-    pub size: Option<usize>,
+    pub size: Option<isize>,
     #[serde(rename = "Type")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Cache record type.
     pub type_: Option<String>,
     #[serde(rename = "UsageCount")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub usage_count: Option<usize>,
+    pub usage_count: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -303,6 +323,13 @@ pub type ContainerChanges200Response = Vec<ContainerChangeResponseItem>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Configuration for a container that is portable between hosts.
+///
+/// When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+/// optional field containing the configuration of the container that was last
+/// committed when creating the image.
+///
+/// Previous versions of Docker builder used this field to store build cache,
+/// and it is not in active use anymore.
 pub struct ContainerConfig {
     #[serde(rename = "ArgsEscaped")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -394,7 +421,7 @@ pub struct ContainerConfig {
     #[serde(rename = "StopTimeout")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Timeout to stop a container in seconds.
-    pub stop_timeout: Option<usize>,
+    pub stop_timeout: Option<isize>,
     #[serde(rename = "Tty")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Attach standard streams to a TTY, including `stdin` if it is not closed.
@@ -422,12 +449,20 @@ pub struct ContainerCreate201Response {
     pub id: String,
     #[serde(rename = "Warnings")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     /// Warnings encountered when creating the container
     pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Configuration for a container that is portable between hosts.
+///
+/// When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+/// optional field containing the configuration of the container that was last
+/// committed when creating the image.
+///
+/// Previous versions of Docker builder used this field to store build cache,
+/// and it is not in active use anymore.
 pub struct ContainerCreateBodyParam {
     #[serde(rename = "ArgsEscaped")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -523,7 +558,7 @@ pub struct ContainerCreateBodyParam {
     #[serde(rename = "StopTimeout")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Timeout to stop a container in seconds.
-    pub stop_timeout: Option<usize>,
+    pub stop_timeout: Option<isize>,
     #[serde(rename = "Tty")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Attach standard streams to a TTY, including `stdin` if it is not closed.
@@ -661,7 +696,7 @@ pub struct ContainerInspect200Response {
     pub resolv_conf_path: Option<String>,
     #[serde(rename = "RestartCount")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub restart_count: Option<usize>,
+    pub restart_count: Option<isize>,
     #[serde(rename = "SizeRootFs")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The total size of all the files in this container.
@@ -710,7 +745,7 @@ pub struct ContainerState {
     #[serde(rename = "ExitCode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The last exit code of this container
-    pub exit_code: Option<usize>,
+    pub exit_code: Option<isize>,
     #[serde(rename = "FinishedAt")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The time when this container last exited.
@@ -728,7 +763,7 @@ pub struct ContainerState {
     #[serde(rename = "Pid")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The process ID of this container
-    pub pid: Option<usize>,
+    pub pid: Option<isize>,
     #[serde(rename = "Restarting")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Whether this container is restarting.
@@ -937,7 +972,7 @@ pub struct ContainerUpdateUpdateParam {
     #[serde(rename = "BlkioWeight")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative weight).
-    pub blkio_weight: Option<usize>,
+    pub blkio_weight: Option<isize>,
     #[serde(rename = "BlkioWeightDevice")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative device weight) in the form:
@@ -991,7 +1026,7 @@ pub struct ContainerUpdateUpdateParam {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// An integer value representing this container's relative CPU weight
     /// versus other containers.
-    pub cpu_shares: Option<usize>,
+    pub cpu_shares: Option<isize>,
     #[serde(rename = "CpusetCpus")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// CPUs in which to allow execution (e.g., `0-3`, `0,1`).
@@ -1091,7 +1126,7 @@ pub struct ContainerUpdateUpdateParamBlkioWeightDeviceInlineItem {
     pub path: Option<String>,
     #[serde(rename = "Weight")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weight: Option<usize>,
+    pub weight: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1099,7 +1134,7 @@ pub struct ContainerUpdateUpdateParamUlimitsInlineItem {
     #[serde(rename = "Hard")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Hard limit
-    pub hard: Option<usize>,
+    pub hard: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of ulimit
@@ -1107,7 +1142,7 @@ pub struct ContainerUpdateUpdateParamUlimitsInlineItem {
     #[serde(rename = "Soft")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Soft limit
-    pub soft: Option<usize>,
+    pub soft: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1123,10 +1158,10 @@ pub struct ContainerWaitExitError {
 /// OK response to ContainerWait operation
 pub struct ContainerWaitResponse {
     #[serde(rename = "Error")]
-    pub error: ContainerWaitExitError,
+    pub error: Option<ContainerWaitExitError>,
     #[serde(rename = "StatusCode")]
     /// Exit code of the container
-    pub status_code: usize,
+    pub status_code: isize,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1166,7 +1201,7 @@ pub struct DeviceRequest {
     pub capabilities: Option<Vec<Vec<String>>>,
     #[serde(rename = "Count")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub count: Option<usize>,
+    pub count: Option<isize>,
     #[serde(rename = "DeviceIDs")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub device_i_ds: Option<Vec<String>>,
@@ -1188,6 +1223,7 @@ pub struct DistributionInspect {
     pub descriptor: OciDescriptor,
     #[serde(rename = "Platforms")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     /// An array containing all platforms supported by the image.
     pub platforms: Vec<OciPlatform>,
 }
@@ -1241,11 +1277,11 @@ pub struct EndpointPortConfig {
     #[serde(rename = "PublishedPort")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The port on the swarm hosts.
-    pub published_port: Option<usize>,
+    pub published_port: Option<isize>,
     #[serde(rename = "TargetPort")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The port inside the container.
-    pub target_port: Option<usize>,
+    pub target_port: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1342,7 +1378,7 @@ pub struct EndpointSettings {
     #[serde(rename = "IPPrefixLen")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Mask length of the IPv4 address.
-    pub ip_prefix_len: Option<usize>,
+    pub ip_prefix_len: Option<isize>,
     #[serde(rename = "IPv6Gateway")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// IPv6 gateway address.
@@ -1425,7 +1461,7 @@ pub struct EngineDescriptionPluginsInlineItem {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ErrorDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub code: Option<usize>,
+    pub code: Option<isize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
 }
@@ -1567,7 +1603,7 @@ pub struct ExecInspect200Response {
     pub detach_keys: Option<String>,
     #[serde(rename = "ExitCode")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub exit_code: Option<usize>,
+    pub exit_code: Option<isize>,
     #[serde(rename = "ID")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -1583,7 +1619,7 @@ pub struct ExecInspect200Response {
     #[serde(rename = "Pid")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The system process ID for the exec process.
-    pub pid: Option<usize>,
+    pub pid: Option<isize>,
     #[serde(rename = "ProcessConfig")]
     pub process_config: Option<ProcessConfig>,
     #[serde(rename = "Running")]
@@ -1646,6 +1682,7 @@ pub type GetPluginPrivileges200Response = Vec<PluginPrivilege>;
 pub struct GraphDriverData {
     #[serde(rename = "Data")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_map")]
     /// Low-level storage metadata, provided as key/value pairs.
     ///
     /// This information is driver-specific, and depends on the storage-driver
@@ -1662,7 +1699,7 @@ pub struct Health {
     #[serde(rename = "FailingStreak")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// FailingStreak is the number of consecutive failures
-    pub failing_streak: Option<usize>,
+    pub failing_streak: Option<isize>,
     #[serde(rename = "Log")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Log contains the last few results (oldest first)
@@ -1685,18 +1722,18 @@ pub struct HealthConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The time to wait between checks in nanoseconds. It should be 0 or at
     /// least 1000000 (1 ms). 0 means inherit.
-    pub interval: Option<usize>,
+    pub interval: Option<isize>,
     #[serde(rename = "Retries")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The number of consecutive failures needed to consider a container as
     /// unhealthy. 0 means inherit.
-    pub retries: Option<usize>,
+    pub retries: Option<isize>,
     #[serde(rename = "StartPeriod")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Start period for the container to initialize before starting
     /// health-retries countdown in nanoseconds. It should be 0 or at least
     /// 1000000 (1 ms). 0 means inherit.
-    pub start_period: Option<usize>,
+    pub start_period: Option<isize>,
     #[serde(rename = "Test")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The test to perform. Possible values are:
@@ -1710,7 +1747,7 @@ pub struct HealthConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The time to wait before considering the check to have hung. It should
     /// be 0 or at least 1000000 (1 ms). 0 means inherit.
-    pub timeout: Option<usize>,
+    pub timeout: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1764,7 +1801,7 @@ pub struct HealthcheckResult {
     /// - `1` unhealthy
     /// - `2` reserved (considered unhealthy)
     /// - other values: error running probe
-    pub exit_code: Option<usize>,
+    pub exit_code: Option<isize>,
     #[serde(rename = "Output")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Output from last check
@@ -1791,6 +1828,7 @@ pub struct HistoryResponseItem {
     pub size: i64,
     #[serde(rename = "Tags")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub tags: Vec<String>,
 }
 
@@ -1878,7 +1916,7 @@ pub struct HostConfig {
     #[serde(rename = "BlkioWeight")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative weight).
-    pub blkio_weight: Option<usize>,
+    pub blkio_weight: Option<isize>,
     #[serde(rename = "BlkioWeightDevice")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative device weight) in the form:
@@ -1921,7 +1959,7 @@ pub struct HostConfig {
     #[serde(rename = "ConsoleSize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Initial console size, as an `[height, width]` array. (Windows only)
-    pub console_size: Option<Vec<usize>>,
+    pub console_size: Option<Vec<isize>>,
     #[serde(rename = "ContainerIDFile")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Path to a file where the container ID is written
@@ -1964,7 +2002,7 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// An integer value representing this container's relative CPU weight
     /// versus other containers.
-    pub cpu_shares: Option<usize>,
+    pub cpu_shares: Option<isize>,
     #[serde(rename = "CpusetCpus")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// CPUs in which to allow execution (e.g., `0-3`, `0,1`).
@@ -2106,7 +2144,7 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// An integer value containing the score given to the container in
     /// order to tune OOM killer preferences.
-    pub oom_score_adj: Option<usize>,
+    pub oom_score_adj: Option<isize>,
     #[serde(rename = "PidMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Set the PID (Process) Namespace mode for the container. It can be
@@ -2162,7 +2200,7 @@ pub struct HostConfig {
     #[serde(rename = "ShmSize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Size of `/dev/shm` in bytes. If omitted, the system uses 64MB.
-    pub shm_size: Option<usize>,
+    pub shm_size: Option<isize>,
     #[serde(rename = "StorageOpt")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Storage driver options for this container, in the form `{"size": "120G"}`.
@@ -2220,7 +2258,7 @@ pub struct HostConfigBlkioWeightDeviceInlineItem {
     pub path: Option<String>,
     #[serde(rename = "Weight")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weight: Option<usize>,
+    pub weight: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -2340,7 +2378,7 @@ pub struct HostConfigUlimitsInlineItem {
     #[serde(rename = "Hard")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Hard limit
-    pub hard: Option<usize>,
+    pub hard: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of ulimit
@@ -2348,7 +2386,7 @@ pub struct HostConfigUlimitsInlineItem {
     #[serde(rename = "Soft")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Soft limit
-    pub soft: Option<usize>,
+    pub soft: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -2474,7 +2512,7 @@ pub struct ImageInspect {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// ID is the content-addressable ID of an image.
     ///
-    /// This identified is a content-addressable digest calculated from the
+    /// This identifier is a content-addressable digest calculated from the
     /// image's configuration (which includes the digests of layers used by
     /// the image).
     ///
@@ -2604,34 +2642,86 @@ pub struct ImageSearchResponseItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub star_count: Option<usize>,
+    pub star_count: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ImageSummary {
     #[serde(rename = "Containers")]
-    pub containers: usize,
+    /// Number of containers using this image. Includes both stopped and running
+    /// containers.
+    ///
+    /// This size is not calculated by default, and depends on which API endpoint
+    /// is used. `-1` indicates that the value has not been set / calculated.
+    pub containers: isize,
     #[serde(rename = "Created")]
-    pub created: usize,
+    /// Date and time at which the image was created as a Unix timestamp
+    /// (number of seconds sinds EPOCH).
+    pub created: isize,
     #[serde(rename = "Id")]
+    /// ID is the content-addressable ID of an image.
+    ///
+    /// This identifier is a content-addressable digest calculated from the
+    /// image's configuration (which includes the digests of layers used by
+    /// the image).
+    ///
+    /// Note that this digest differs from the `RepoDigests` below, which
+    /// holds digests of image manifests that reference the image.
     pub id: String,
     #[serde(rename = "Labels")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_map")]
+    /// User-defined key/value metadata.
     pub labels: HashMap<String, String>,
     #[serde(rename = "ParentId")]
+    /// ID of the parent image.
+    ///
+    /// Depending on how the image was created, this field may be empty and
+    /// is only set for images that were built/created locally. This field
+    /// is empty if the image was pulled from an image registry.
     pub parent_id: String,
     #[serde(rename = "RepoDigests")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
+    /// List of content-addressable digests of locally available image manifests
+    /// that the image is referenced from. Multiple manifests can refer to the
+    /// same image.
+    ///
+    /// These digests are usually only available if the image was either pulled
+    /// from a registry, or if the image was pushed to a registry, which is when
+    /// the manifest is generated and its digest calculated.
     pub repo_digests: Vec<String>,
     #[serde(rename = "RepoTags")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
+    /// List of image names/tags in the local image cache that reference this
+    /// image.
+    ///
+    /// Multiple image tags can refer to the same imagem and this list may be
+    /// empty if no tags reference the image, in which case the image is
+    /// "untagged", in which case it can still be referenced by its ID.
     pub repo_tags: Vec<String>,
     #[serde(rename = "SharedSize")]
-    pub shared_size: usize,
+    /// Total size of image layers that are shared between this image and other
+    /// images.
+    ///
+    /// This size is not calculated by default. `-1` indicates that the value
+    /// has not been set / calculated.
+    pub shared_size: isize,
     #[serde(rename = "Size")]
-    pub size: usize,
+    /// Total size of the image including all layers it is composed of.
+    pub size: i64,
     #[serde(rename = "VirtualSize")]
-    pub virtual_size: usize,
+    /// Total size of the image including all layers it is composed of.
+    ///
+    /// In versions of Docker before v1.10, this field was calculated from
+    /// the image itself and all of its parent images. Docker v1.10 and up
+    /// store images self-contained, and no longer use a parent-chain, making
+    /// this field an equivalent of the Size field.
+    ///
+    /// This field is kept for backward compatibility, but may be removed in
+    /// a future version of the API.
+    pub virtual_size: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -2933,7 +3023,7 @@ pub struct MountTmpfsOptionsInlineItem {
     #[serde(rename = "Mode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The permission mode for the tmpfs mount in an integer.
-    pub mode: Option<usize>,
+    pub mode: Option<isize>,
     #[serde(rename = "SizeBytes")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The size for the tmpfs mount in bytes.
@@ -3232,7 +3322,7 @@ pub struct NetworkSettings {
     /// > network inside the `Networks` map instead, which contains the same
     /// > information. This field was deprecated in Docker 1.9 and is scheduled
     /// > to be removed in Docker 17.12.0
-    pub global_i_pv_6_prefix_len: Option<usize>,
+    pub global_i_pv_6_prefix_len: Option<isize>,
     #[serde(rename = "HairpinMode")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Indicates if hairpin NAT should be enabled on the virtual interface.
@@ -3260,7 +3350,7 @@ pub struct NetworkSettings {
     /// > network inside the `Networks` map instead, which contains the same
     /// > information. This field was deprecated in Docker 1.9 and is scheduled
     /// > to be removed in Docker 17.12.0
-    pub ip_prefix_len: Option<usize>,
+    pub ip_prefix_len: Option<isize>,
     #[serde(rename = "IPv6Gateway")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// IPv6 gateway address for this network.
@@ -3280,7 +3370,7 @@ pub struct NetworkSettings {
     #[serde(rename = "LinkLocalIPv6PrefixLen")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Prefix length of the IPv6 unicast address.
-    pub link_local_i_pv_6_prefix_len: Option<usize>,
+    pub link_local_i_pv_6_prefix_len: Option<isize>,
     #[serde(rename = "MacAddress")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// MAC address for the container on the default "bridge" network.
@@ -3615,9 +3705,11 @@ pub struct PluginConfigInlineItem {
     pub documentation: String,
     #[serde(rename = "Entrypoint")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub entrypoint: Vec<String>,
     #[serde(rename = "Env")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub env: Vec<PluginEnv>,
     #[serde(rename = "Interface")]
     /// The interface between Docker and the plugin
@@ -3628,6 +3720,7 @@ pub struct PluginConfigInlineItem {
     pub linux: PluginConfigInlineItemLinuxInlineItem,
     #[serde(rename = "Mounts")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub mounts: Vec<PluginMount>,
     #[serde(rename = "Network")]
     pub network: PluginConfigInlineItemNetworkInlineItem,
@@ -3652,9 +3745,11 @@ pub struct PluginConfigInlineItemArgsInlineItem {
     pub name: String,
     #[serde(rename = "Settable")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub settable: Vec<String>,
     #[serde(rename = "Value")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub value: Vec<String>,
 }
 
@@ -3669,6 +3764,7 @@ pub struct PluginConfigInlineItemInterfaceInlineItem {
     pub socket: String,
     #[serde(rename = "Types")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub types: Vec<PluginInterfaceType>,
 }
 
@@ -3702,9 +3798,11 @@ pub struct PluginConfigInlineItemLinuxInlineItem {
     pub allow_all_devices: bool,
     #[serde(rename = "Capabilities")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub capabilities: Vec<String>,
     #[serde(rename = "Devices")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub devices: Vec<PluginDevice>,
 }
 
@@ -3745,6 +3843,7 @@ pub struct PluginDevice {
     pub path: String,
     #[serde(rename = "Settable")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub settable: Vec<String>,
 }
 
@@ -3756,6 +3855,7 @@ pub struct PluginEnv {
     pub name: String,
     #[serde(rename = "Settable")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub settable: Vec<String>,
     #[serde(rename = "Value")]
     pub value: String,
@@ -3784,9 +3884,11 @@ pub struct PluginMount {
     pub name: String,
     #[serde(rename = "Options")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub options: Vec<String>,
     #[serde(rename = "Settable")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub settable: Vec<String>,
     #[serde(rename = "Source")]
     pub source: String,
@@ -3818,15 +3920,19 @@ pub type PluginSetBodyParam = Vec<String>;
 pub struct PluginSettingsInlineItem {
     #[serde(rename = "Args")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub args: Vec<String>,
     #[serde(rename = "Devices")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub devices: Vec<PluginDevice>,
     #[serde(rename = "Env")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub env: Vec<String>,
     #[serde(rename = "Mounts")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     pub mounts: Vec<PluginMount>,
 }
 
@@ -3942,9 +4048,9 @@ pub struct ProcessConfig {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ProgressDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub current: Option<usize>,
+    pub current: Option<isize>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub total: Option<usize>,
+    pub total: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -4126,7 +4232,7 @@ pub struct Resources {
     #[serde(rename = "BlkioWeight")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative weight).
-    pub blkio_weight: Option<usize>,
+    pub blkio_weight: Option<isize>,
     #[serde(rename = "BlkioWeightDevice")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Block IO weight (relative device weight) in the form:
@@ -4180,7 +4286,7 @@ pub struct Resources {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// An integer value representing this container's relative CPU weight
     /// versus other containers.
-    pub cpu_shares: Option<usize>,
+    pub cpu_shares: Option<isize>,
     #[serde(rename = "CpusetCpus")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// CPUs in which to allow execution (e.g., `0-3`, `0,1`).
@@ -4278,7 +4384,7 @@ pub struct ResourcesBlkioWeightDeviceInlineItem {
     pub path: Option<String>,
     #[serde(rename = "Weight")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weight: Option<usize>,
+    pub weight: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -4286,7 +4392,7 @@ pub struct ResourcesUlimitsInlineItem {
     #[serde(rename = "Hard")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Hard limit
-    pub hard: Option<usize>,
+    pub hard: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of ulimit
@@ -4294,7 +4400,7 @@ pub struct ResourcesUlimitsInlineItem {
     #[serde(rename = "Soft")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Soft limit
-    pub soft: Option<usize>,
+    pub soft: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -4307,7 +4413,7 @@ pub struct RestartPolicy {
     #[serde(rename = "MaximumRetryCount")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// If `on-failure` is used, the number of times to retry before giving up.
-    pub maximum_retry_count: Option<usize>,
+    pub maximum_retry_count: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// - Empty string means not to restart
@@ -5458,7 +5564,7 @@ pub struct SwarmInfo {
     #[serde(rename = "Managers")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Total number of managers in the swarm.
-    pub managers: Option<usize>,
+    pub managers: Option<isize>,
     #[serde(rename = "NodeAddr")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// IP address at which this node can be reached by other nodes in the
@@ -5471,7 +5577,7 @@ pub struct SwarmInfo {
     #[serde(rename = "Nodes")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Total number of nodes in the swarm.
-    pub nodes: Option<usize>,
+    pub nodes: Option<isize>,
     #[serde(rename = "RemoteManagers")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// List of ID's and addresses of other managers in the swarm.
@@ -5731,7 +5837,7 @@ pub struct SwarmSpecRaftInlineItem {
     ///
     /// A tick currently defaults to one second, so these translate
     /// directly to seconds currently, but this is NOT guaranteed.
-    pub election_tick: Option<usize>,
+    pub election_tick: Option<isize>,
     #[serde(rename = "HeartbeatTick")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The number of ticks between heartbeats. Every HeartbeatTick ticks,
@@ -5739,7 +5845,7 @@ pub struct SwarmSpecRaftInlineItem {
     ///
     /// A tick currently defaults to one second, so these translate
     /// directly to seconds currently, but this is NOT guaranteed.
-    pub heartbeat_tick: Option<usize>,
+    pub heartbeat_tick: Option<isize>,
     #[serde(rename = "KeepOldSnapshots")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The number of snapshots to keep beyond the current snapshot.
@@ -5903,19 +6009,19 @@ pub struct SystemInfo {
     #[serde(rename = "Containers")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Total number of containers on the host.
-    pub containers: Option<usize>,
+    pub containers: Option<isize>,
     #[serde(rename = "ContainersPaused")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Number of containers with status `"paused"`.
-    pub containers_paused: Option<usize>,
+    pub containers_paused: Option<isize>,
     #[serde(rename = "ContainersRunning")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Number of containers with status `"running"`.
-    pub containers_running: Option<usize>,
+    pub containers_running: Option<isize>,
     #[serde(rename = "ContainersStopped")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Number of containers with status `"stopped"`.
-    pub containers_stopped: Option<usize>,
+    pub containers_stopped: Option<isize>,
     #[serde(rename = "CpuCfsPeriod")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Indicates if CPU CFS(Completely Fair Scheduler) period is supported by
@@ -6013,7 +6119,7 @@ pub struct SystemInfo {
     /// Total number of images on the host.
     ///
     /// Both _tagged_ and _untagged_ (dangling) images are counted.
-    pub images: Option<usize>,
+    pub images: Option<isize>,
     #[serde(rename = "IndexServerAddress")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Address / URL of the index server that is used for image search,
@@ -6100,23 +6206,23 @@ pub struct SystemInfo {
     /// The number of available CPUs is checked by querying the operating
     /// system when the daemon starts. Changes to operating system CPU
     /// allocation after the daemon is started are not reflected.
-    pub ncpu: Option<usize>,
+    pub ncpu: Option<isize>,
     #[serde(rename = "NEventsListener")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Number of event listeners subscribed.
-    pub n_events_listener: Option<usize>,
+    pub n_events_listener: Option<isize>,
     #[serde(rename = "NFd")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The total number of file Descriptors in use by the daemon process.
     ///
     /// This information is only returned if debug-mode is enabled.
-    pub n_fd: Option<usize>,
+    pub n_fd: Option<isize>,
     #[serde(rename = "NGoroutines")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The  number of goroutines that currently exist.
     ///
     /// This information is only returned if debug-mode is enabled.
-    pub n_goroutines: Option<usize>,
+    pub n_goroutines: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Hostname of the host.
@@ -6283,7 +6389,7 @@ pub struct SystemInfoDefaultAddressPoolsInlineItem {
     #[serde(rename = "Size")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The network pool size
-    pub size: Option<usize>,
+    pub size: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -6440,7 +6546,7 @@ pub struct Task {
     pub service_id: Option<String>,
     #[serde(rename = "Slot")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub slot: Option<usize>,
+    pub slot: Option<isize>,
     #[serde(rename = "Spec")]
     pub spec: Option<TaskSpec>,
     #[serde(rename = "Status")]
@@ -6477,7 +6583,7 @@ pub struct TaskSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// A counter that triggers an update even if no relevant parameters have
     /// been changed.
-    pub force_update: Option<usize>,
+    pub force_update: Option<isize>,
     #[serde(rename = "LogDriver")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Specifies the log driver to use for tasks created from this spec. If
@@ -6905,7 +7011,7 @@ pub struct TaskSpecContainerSpecInlineItemUlimitsInlineItem {
     #[serde(rename = "Hard")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Hard limit
-    pub hard: Option<usize>,
+    pub hard: Option<isize>,
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of ulimit
@@ -6913,7 +7019,7 @@ pub struct TaskSpecContainerSpecInlineItemUlimitsInlineItem {
     #[serde(rename = "Soft")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Soft limit
-    pub soft: Option<usize>,
+    pub soft: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -7180,10 +7286,10 @@ pub struct TaskStatusInlineItemContainerStatusInlineItem {
     pub container_id: Option<String>,
     #[serde(rename = "ExitCode")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub exit_code: Option<usize>,
+    pub exit_code: Option<isize>,
     #[serde(rename = "PID")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pid: Option<usize>,
+    pub pid: Option<isize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -7209,6 +7315,7 @@ pub struct Volume {
     pub driver: String,
     #[serde(rename = "Labels")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_map")]
     /// User-defined key/value metadata.
     pub labels: HashMap<String, String>,
     #[serde(rename = "Mountpoint")]
@@ -7219,6 +7326,7 @@ pub struct Volume {
     pub name: String,
     #[serde(rename = "Options")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_map")]
     /// The driver specific options used when creating the volume.
     pub options: HashMap<String, String>,
     #[serde(rename = "Scope")]
@@ -7268,10 +7376,12 @@ pub struct VolumeCreateOptions {
 pub struct VolumeList200Response {
     #[serde(rename = "Volumes")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     /// List of volumes
     pub volumes: Vec<Volume>,
     #[serde(rename = "Warnings")]
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
     /// Warnings that occurred when fetching the list of volumes.
     pub warnings: Vec<String>,
 }
@@ -7321,18 +7431,25 @@ pub struct VolumeUsageDataInlineItem {
     #[serde(rename = "RefCount")]
     /// The number of containers referencing this volume. This field
     /// is set to `-1` if the reference-count is not available.
-    pub ref_count: usize,
+    pub ref_count: isize,
     #[serde(rename = "Size")]
     /// Amount of disk space used by the volume (in bytes). This information
     /// is only available for volumes created with the `"local"` volume
     /// driver. For volumes created with other volume drivers, this field
     /// is set to `-1` ("not available")
-    pub size: usize,
+    pub size: isize,
 }
 
 pub type ConfigUpdateBodyParam = ConfigSpec;
 
 /// Configuration for a container that is portable between hosts.
+///
+/// When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+/// optional field containing the configuration of the container that was last
+/// committed when creating the image.
+///
+/// Previous versions of Docker builder used this field to store build cache,
+/// and it is not in active use anymore.
 pub type ImageCommitContainerConfigParam = ContainerConfig;
 
 pub type NodeUpdateBodyParam = NodeSpec;
