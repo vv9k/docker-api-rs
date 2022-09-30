@@ -243,12 +243,12 @@ impl Container {
     /// directory, `path` should end in `/` or `/`. (assuming a path separator of `/`). If `path`
     /// ends in `/.`  then this indicates that only the contents of the path directory should be
     /// copied.  A symlink is always resolved to its target.
-    pub fn copy_from(&self, path: &Path) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
+    pub fn copy_from(&self, path: impl AsRef<Path>) -> impl Stream<Item = Result<Vec<u8>>> + '_ {
         self.docker
             .get_stream(format!(
                 "/containers/{}/archive?{}",
                 self.id,
-                encoded_pair("path", path.to_string_lossy())
+                encoded_pair("path", path.as_ref().to_string_lossy())
             ))
             .map_ok(|c| c.to_vec())
     }}
