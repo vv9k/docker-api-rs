@@ -660,32 +660,41 @@ mod tests {
     #[test]
     fn create_container_opts() {
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image"),
+            ContainerCreateOptsBuilder::default().image("test_image"),
             r#"{"HostConfig":{},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").env(vec!["foo", "bar"]),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .env(vec!["foo", "bar"]),
             r#"{"Env":["foo","bar"],"HostConfig":{},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").env(&["foo", "bar", "baz"]),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .env(&["foo", "bar", "baz"]),
             r#"{"Env":["foo","bar","baz"],"HostConfig":{},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").env(std::iter::once("test")),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .env(std::iter::once("test")),
             r#"{"Env":["test"],"HostConfig":{},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").user("alice"),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .user("alice"),
             r#"{"HostConfig":{},"Image":"test_image","User":"alice"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image")
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
                 .network_mode("host")
                 .auto_remove(true)
                 .privileged(true),
@@ -693,19 +702,23 @@ mod tests {
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").expose(PublishPort::tcp(80), 8080),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .expose(PublishPort::tcp(80), 8080),
             r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}]}},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image")
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
                 .expose(PublishPort::udp(80), 8080)
                 .expose(PublishPort::sctp(81), 8081),
             r#"{"ExposedPorts":{"80/udp":{},"81/sctp":{}},"HostConfig":{"PortBindings":{"80/udp":[{"HostPort":"8080"}],"81/sctp":[{"HostPort":"8081"}]}},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image")
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
                 .publish(PublishPort::udp(80))
                 .publish(PublishPort::sctp(6969))
                 .publish(PublishPort::tcp(1337)),
@@ -713,22 +726,30 @@ mod tests {
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").publish_all_ports(),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .publish_all_ports(),
             r#"{"HostConfig":{"PublishAllPorts":true},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").log_driver("fluentd"),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .log_driver("fluentd"),
             r#"{"HostConfig":{"LogConfig":{"Type":"fluentd"}},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").restart_policy("on-failure", 10),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .restart_policy("on-failure", 10),
             r#"{"HostConfig":{"RestartPolicy":{"MaximumRetryCount":10,"Name":"on-failure"}},"Image":"test_image"}"#
         );
 
         test_case!(
-            ContainerCreateOptsBuilder::new("test_image").restart_policy("always", 0),
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .restart_policy("always", 0),
             r#"{"HostConfig":{"RestartPolicy":{"Name":"always"}},"Image":"test_image"}"#
         );
     }
