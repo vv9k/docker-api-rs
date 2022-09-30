@@ -43,7 +43,7 @@ impl Docker {
         .into_async_read();
 
         Box::pin(
-            futures_codec::FramedRead::new(reader, futures_codec::LinesCodec)
+            asynchronous_codec::FramedRead::new(reader, asynchronous_codec::LinesCodec)
                 .map_err(Error::IO)
                 .and_then(|s: String| async move {
                     serde_json::from_str(&s).map_err(Error::SerdeJsonError)

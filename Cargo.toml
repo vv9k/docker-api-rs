@@ -35,7 +35,7 @@ serde_json = "1.0"
 
 url = "2.1"
 futures-util = "0.3"
-futures_codec = "0.4"
+asynchronous-codec = "0.6"
 
 http = "0.2"
 hyper = { version="0.14", features=["client", "http1", "tcp", "stream"] }
