@@ -89,7 +89,7 @@ impl Container {
     |
     /// Returns a stream of stats specific to this container instance.
     pub fn stats(&self) -> impl Stream<Item = Result<serde_json::Value>> + Unpin + '_ {
-        let codec = futures_codec::LinesCodec {};
+        let codec = asynchronous_codec::LinesCodec {};
 
         let reader = Box::pin(
             self.docker
@@ -99,7 +99,7 @@ impl Container {
         .into_async_read();
 
         Box::pin(
-            futures_codec::FramedRead::new(reader, codec)
+            asynchronous_codec::FramedRead::new(reader, codec)
                 .map_err(Error::IO)
                 .and_then(|s: String| async move {
                     log::trace!("{}", s);
