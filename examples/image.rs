@@ -92,8 +92,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             force,
             noprune,
         } => {
-            use docker_api::opts::RmImageOpts;
-            let opts = RmImageOpts::builder().force(force).noprune(noprune).build();
+            use docker_api::opts::ImageRemoveOpts;
+            let opts = ImageRemoveOpts::builder()
+                .force(force)
+                .noprune(noprune)
+                .build();
             match docker.images().get(&image).remove(&opts).await {
                 Ok(statuses) => {
                     for status in statuses {

@@ -2,7 +2,7 @@
 use crate::models;
 use crate::opts::{
     ContainerCommitOpts, ContainerCreateOpts, ContainerListOpts, ContainerPruneOpts,
-    RmContainerOpts,
+    ContainerRemoveOpts,
 };
 
 use std::{io, path::Path, str, time::Duration};

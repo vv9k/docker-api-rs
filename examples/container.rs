@@ -207,10 +207,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Cmd::Delete { id, force } => {
-            use docker_api::opts::RmContainerOpts;
+            use docker_api::opts::ContainerRemoveOpts;
 
             let opts = if force {
-                RmContainerOpts::builder().force(true).build()
+                ContainerRemoveOpts::builder().force(true).build()
             } else {
                 Default::default()
             };

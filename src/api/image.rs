@@ -3,8 +3,8 @@
 use crate::{
     models,
     opts::{
-        ClearCacheOpts, ImageBuildOpts, ImageListOpts, ImagePruneOpts, ImagePushOpts, PullOpts,
-        RmImageOpts, TagOpts,
+        ClearCacheOpts, ImageBuildOpts, ImageListOpts, ImagePruneOpts, ImagePushOpts,
+        ImageRemoveOpts, PullOpts, TagOpts,
     },
 };
 
@@ -32,7 +32,7 @@ impl Image {
     /// Remove this image with options.
     ///
     /// Use [`delete`](Image::delete) to delete without options.
-    pub async fn remove(&self, opts: &RmImageOpts) -> Result<Vec<models::ImageDeleteResponseItem>> {
+    pub async fn remove(&self, opts: &ImageRemoveOpts) -> Result<Vec<models::ImageDeleteResponseItem>> {
         let ep =
             containers_api::url::construct_ep(&format!("/images/{}", self.name), opts.serialize());
         self.docker.delete_json(ep.as_ref()).await

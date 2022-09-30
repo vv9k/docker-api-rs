@@ -216,7 +216,7 @@ macro_rules! impl_api_ep {
         |
         #[doc = concat!("Delete this ", stringify!($base), ".")]
         #[doc = concat!("Use [`delete`](", stringify!($base), "::delete) to delete without options.")]
-        pub async fn remove(&self, opts: &[< Rm $base Opts >]) -> Result<$ret> {
+        pub async fn remove(&self, opts: &[< $base RemoveOpts >]) -> Result<$ret> {
             let $it = self;
             let ep = containers_api::url::construct_ep($ep, opts.serialize());
             self.docker.$fn(ep.as_ref()).await

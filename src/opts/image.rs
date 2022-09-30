@@ -459,9 +459,9 @@ impl ImageListOptsBuilder {
     );
 }
 
-impl_opts_builder!(url => RmImage);
+impl_opts_builder!(url => ImageRemove);
 
-impl RmImageOptsBuilder {
+impl ImageRemoveOptsBuilder {
     impl_url_bool_field!(
         /// Remove the image even if it is being used by stopped containers or has other tags.
         force => "force"

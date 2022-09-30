@@ -8,6 +8,8 @@
 - Change `ContainerCreateOpts::builder` to not require a name
 - Add a missing `ContainerOptsBuilder::image` method to set the image of container
 - Rename `ContainerOptsBuilder` -> `ContainerCreateOptsBuilder`
+- Rename `RmContainerOpts` -> `ContainerRemoveOpts`
+- Rename `RmImageOpts` -> `ImageRemoveOpts`
 
 # 0.11.0
 - *BREAKING* Rename `BuildOpts` -> `ImageBuildOpts` and `BuildOptsBuilder` -> `ImageBuildOptsBuilder`

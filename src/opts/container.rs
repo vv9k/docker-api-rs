@@ -554,9 +554,9 @@ impl ContainerCreateOptsBuilder {
     }
 }
 
-impl_opts_builder!(url => RmContainer);
+impl_opts_builder!(url => ContainerRemove);
 
-impl RmContainerOptsBuilder {
+impl ContainerRemoveOptsBuilder {
     impl_url_bool_field!(
         /// If the container is running, kill it before removing it.
         force => "force"
