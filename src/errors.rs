@@ -38,8 +38,8 @@ pub enum Error {
     InvalidPort(String),
     #[error("Invalid protocol - {0}")]
     InvalidProtocol(String),
-    #[error("Invalid version - {0}")]
-    MalformedVersion(String),
+    #[error(transparent)]
+    MalformedVersion(#[from] containers_api::version::Error),
     #[error(transparent)]
     Error(#[from] containers_api::conn::Error),
     #[error(transparent)]
