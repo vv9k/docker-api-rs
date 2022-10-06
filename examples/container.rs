@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
@@ -31,36 +31,36 @@ enum Cmd {
     Commit {
         /// Container ID
         id: String,
-        #[clap(short, long)]
+        #[arg(short, long)]
         /// Repository name for the created image
         repo: Option<String>,
-        #[clap(short, long)]
+        #[arg(short, long)]
         /// Tag name for the create image
         tag: Option<String>,
-        #[clap(short, long)]
+        #[arg(short, long)]
         /// Commit message
         comment: Option<String>,
-        #[clap(short, long)]
+        #[arg(short, long)]
         /// Author of the image (e.g., John Hannibal Smith <hannibal@a-team.com>)
         author: Option<String>,
-        #[clap(short, long)]
+        #[arg(short, long)]
         ///  Whether to pause the container before committing
         pause: Option<bool>,
-        #[clap(long)]
+        #[arg(long)]
         /// Dockerfile instructions to apply while committing
         changes: Option<String>,
     },
     /// Create a new container.
     Create {
         image: String,
-        #[clap(short, long = "name")] // for some reason naming field `name` makes clap error. Possibly a bug?
+        #[arg(short, long = "name")] // for some reason naming field `name` makes clap error. Possibly a bug?
         /// The name of the container to create.
         nam: Option<String>,
     },
     /// Delete an existing container.
     Delete {
         id: String,
-        #[clap(short, long)]
+        #[arg(short, long)]
         force: bool,
     },
     /// Execute a command in a running container.
@@ -69,21 +69,21 @@ enum Cmd {
     Inspect { id: String },
     /// List active containers.
     List {
-        #[clap(long, short)]
+        #[arg(long, short)]
         /// List stopped and running containers.
         all: bool,
     },
     /// Print logs of a container.
     Logs {
         id: String,
-        #[clap(long)]
+        #[arg(long)]
         stdout: bool,
-        #[clap(long)]
+        #[arg(long)]
         stderr: bool,
     },
     /// Delete stopped containers.
     Prune {
-        #[clap(long)]
+        #[arg(long)]
         /// Prune containers before this timestamp. Can be a unix timestamp or duration
         /// string like `1h30m`
         until: Option<String>,

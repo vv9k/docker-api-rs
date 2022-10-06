@@ -5,7 +5,7 @@ use docker_api::Exec;
 
 #[derive(Parser)]
 pub struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
