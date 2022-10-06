@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 pub struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
@@ -16,15 +16,15 @@ enum Cmd {
     Build {
         /// A path to the directory containing Dockerfile for the image.
         path: PathBuf,
-        #[clap(default_value = "latest")]
+        #[arg(default_value = "latest")]
         tag: String,
     },
     /// Delete an image.
     Delete {
         image: String,
-        #[clap(short, long)]
+        #[arg(short, long)]
         force: bool,
-        #[clap(long)]
+        #[arg(long)]
         noprune: bool,
     },
     /// Export an image as a tar archive.
@@ -40,7 +40,7 @@ enum Cmd {
     },
     /// List existing images.
     List {
-        #[clap(long, short)]
+        #[arg(long, short)]
         /// Show all images. By default only final layer images are shown.
         all: bool,
     },

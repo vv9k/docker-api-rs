@@ -4,7 +4,7 @@ use common::new_docker;
 
 #[derive(Parser)]
 struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 

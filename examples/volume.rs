@@ -4,7 +4,7 @@ use common::new_docker;
 
 #[derive(Parser)]
 pub struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
@@ -12,7 +12,7 @@ pub struct Opts {
 enum Cmd {
     Create {
         volume: String,
-        #[clap(default_value = "overlay2")]
+        #[arg(default_value = "overlay2")]
         driver: String,
     },
     Inspect {

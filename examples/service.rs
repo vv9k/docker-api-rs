@@ -9,7 +9,7 @@ use common::new_docker;
 #[cfg(feature = "swarm")]
 #[derive(Parser)]
 pub struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
@@ -23,14 +23,14 @@ enum Cmd {
         service: String,
     },
     List {
-        #[clap(long)]
+        #[arg(long)]
         with_status: bool,
     },
     Logs {
         service: String,
-        #[clap(long)]
+        #[arg(long)]
         stdout: bool,
-        #[clap(long)]
+        #[arg(long)]
         stderr: bool,
     },
 }

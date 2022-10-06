@@ -4,7 +4,7 @@ use common::new_docker;
 
 #[derive(Parser)]
 pub struct Opts {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     subcmd: Cmd,
 }
 
@@ -18,7 +18,7 @@ enum Cmd {
     /// Create a new network.
     Create {
         network: String,
-        #[clap(default_value = "bridge")]
+        #[arg(default_value = "bridge")]
         driver: String,
     },
     /// Delete a network.
