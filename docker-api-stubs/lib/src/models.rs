@@ -4003,7 +4003,7 @@ pub struct PortBinding {
 ///
 /// If a container's port is mapped for multiple protocols, separate entries
 /// are added to the mapping table.
-pub type PortMap = HashMap<String, Vec<PortBinding>>;
+pub type PortMap = HashMap<String, Option<Vec<PortBinding>>>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PortTypeInlineItem {
