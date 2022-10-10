@@ -30,3 +30,7 @@ cd lib
 
 cargo fmt
 
+# Fix for https://github.com/vv9k/docker-api-rs/pull/29
+sed -r -i 's/(PortMap = HashMap<String, )(Vec<PortBinding>)/\1Option<\2>/g' src/models.rs
+
+cargo fmt
