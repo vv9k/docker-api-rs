@@ -1,6 +1,6 @@
 [package]
 name = "docker-api"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["Wojciech Kępka <wojciech@wkepka.dev"]
 description = "Interface to Docker API"
 documentation = "https://docs.rs/docker-api"
@@ -12,11 +12,11 @@ edition = "2021"
 readme = "README.md"
 
 [dependencies]
-#containers-api = "0.5"
-containers-api = { git = "https://github.com/vv9k/containers-api" }
+containers-api = "0.6"
+#containers-api = { git = "https://github.com/vv9k/containers-api" }
 
-#docker-api-stubs = "0.3"
-docker-api-stubs = { path = "./docker-api-stubs/lib" }
+docker-api-stubs = "0.4"
+#docker-api-stubs = { path = "./docker-api-stubs/lib" }
 
 log = "0.4"
 paste = "1"
