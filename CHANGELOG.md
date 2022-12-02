@@ -1,4 +1,4 @@
-#
+# 0.12.0
 - Fix some integer fields that could be negative but previously were a usize like `ImageSummary::containers`
 - Fix deserialization of nullable map types like `ImageSummary::labels`
 - Rename `ExecContainerOpts` -> `ExecCreateOpts`
