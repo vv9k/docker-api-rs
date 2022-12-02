@@ -16,7 +16,7 @@ use serde::Deserialize;
 
 use crate::{
     api::Exec,
-    conn::{Headers, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
+    conn::{decode_chunk, Headers, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
     opts::ExecCreateOpts,
     Error, Result,
 };
@@ -64,7 +64,7 @@ impl Container {
     ///
     /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
     pub async fn attach(&self) -> Result<TtyMultiplexer<'_>> {
-        self.attach_raw().await.map(TtyMultiplexer::new)
+        self.attach_raw().await.map(|s| TtyMultiplexer::new(s, decode_chunk))
     }}
 
     api_doc! { Container => Changes
