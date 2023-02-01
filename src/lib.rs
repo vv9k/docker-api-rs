@@ -9,10 +9,10 @@
 //! match docker.images().list(&Default::default()).await {
 //!     Ok(images) => {
 //!         for image in images {
-//!             println!("{:?}", image.repo_tags);
+//!             println!("{0:?}", image.repo_tags);
 //!         }
 //!     },
-//!     Err(e) => eprintln!("Something bad happened! {}", e),
+//!     Err(e) => eprintln!("Something bad happened! {e}"),
 //! }
 //! # };
 //! ```

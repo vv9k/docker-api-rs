@@ -82,8 +82,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut stream = images.build(&options);
             while let Some(build_result) = stream.next().await {
                 match build_result {
-                    Ok(output) => println!("{:?}", output),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Ok(output) => println!("{output:?}"),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
@@ -100,10 +100,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             match docker.images().get(&image).remove(&opts).await {
                 Ok(statuses) => {
                     for status in statuses {
-                        println!("{:?}", status);
+                        println!("{status:?}");
                     }
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::Export { image } => {
@@ -117,15 +117,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             while let Some(export_result) = docker.images().get(&image).export().next().await {
                 match export_result.and_then(|bytes| export_file.write(&bytes).map_err(Error::from))
                 {
-                    Ok(n) => println!("copied {} bytes", n),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Ok(n) => println!("copied {n} bytes"),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
         Cmd::Inspect { image } => {
             match docker.images().get(&image).inspect().await {
-                Ok(image) => println!("{:#?}", image),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(image) => println!("{image:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::Import { path } => {
@@ -139,8 +139,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             while let Some(import_result) = stream.next().await {
                 match import_result {
-                    Ok(output) => println!("{:?}", output),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Ok(output) => println!("{output:?}"),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
@@ -163,13 +163,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             image
                                 .labels
                                 .into_iter()
-                                .map(|(k, v)| format!(" - {}={}", k, v))
+                                .map(|(k, v)| format!(" - {k}={v}"))
                                 .collect::<Vec<_>>()
                                 .join("\n"),
                         );
                     });
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Pull {
@@ -192,8 +192,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             while let Some(pull_result) = stream.next().await {
                 match pull_result {
-                    Ok(output) => println!("{:?}", output),
-                    Err(e) => eprintln!("{}", e),
+                    Ok(output) => println!("{output:?}"),
+                    Err(e) => eprintln!("{e}"),
                 }
             }
         }
@@ -208,7 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         );
                     }
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::Tag {
@@ -224,13 +224,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let image = Image::new(docker, name);
 
             if let Err(e) = image.tag(&tag_opts).await {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Prune => {
             match docker.images().prune(&Default::default()).await {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
     }

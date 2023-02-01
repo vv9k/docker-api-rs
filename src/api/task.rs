@@ -65,7 +65,7 @@ pub mod opts {
                 DesiredState(state) => FilterItem::new("desired-state", state.as_ref().to_string()),
                 Id(id) => FilterItem::new("id", id.to_owned()),
                 LabelKey(key) => FilterItem::new("label", key.to_owned()),
-                Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+                Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
                 Name(name) => FilterItem::new("name", name.to_owned()),
                 Node(node) => FilterItem::new("node", node.to_owned()),
                 Service(service) => FilterItem::new("service", service.to_owned()),

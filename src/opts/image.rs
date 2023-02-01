@@ -52,7 +52,7 @@ impl RegistryAuth {
     /// serialize authentication as JSON in base64
     pub fn serialize(&self) -> String {
         serde_json::to_string(self)
-            .map(|c| base64::encode_config(&c, base64::URL_SAFE))
+            .map(|c| base64::encode_config(c, base64::URL_SAFE))
             .unwrap_or_default()
     }
 }
@@ -375,11 +375,11 @@ impl ToString for ImageName {
     fn to_string(&self) -> String {
         match &self {
             ImageName::Tag { image, tag } => match tag {
-                Some(tag) => format!("{}:{}", image, tag),
+                Some(tag) => format!("{image}:{tag}"),
                 None => image.to_owned(),
             },
             ImageName::Id(id) => id.to_owned(),
-            ImageName::Digest { image, digest } => format!("{}@{}", image, digest),
+            ImageName::Digest { image, digest } => format!("{image}@{digest}"),
         }
     }
 }
@@ -436,7 +436,7 @@ impl Filter for ImageFilter {
             Before(name) => FilterItem::new("before", name.to_string()),
             Dangling => FilterItem::new("dangling", true.to_string()),
             LabelKey(n) => FilterItem::new("label", n.to_owned()),
-            Label(n, v) => FilterItem::new("label", format!("{}={}", n, v)),
+            Label(n, v) => FilterItem::new("label", format!("{n}={v}")),
             Since(name) => FilterItem::new("since", name.to_string()),
         }
     }
@@ -501,7 +501,7 @@ impl Filter for ImagesPruneFilter {
             #[cfg(feature = "chrono")]
             UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
             LabelKey(label) => FilterItem::new("label", label.to_owned()),
-            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
         }
     }
 }

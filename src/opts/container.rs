@@ -47,6 +47,7 @@ pub enum Isolation {
     HyperV,
 }
 
+// Need to Default the above, so that the below is not required.
 impl Default for Isolation {
     fn default() -> Self {
         Isolation::Default
@@ -133,7 +134,7 @@ impl Filter for ContainerFilter {
             Isolation(isolation) => FilterItem::new("isolation", isolation.as_ref().to_string()),
             IsTask(is_task) => FilterItem::new("is-task", is_task.to_string()),
             LabelKey(key) => FilterItem::new("label", key.to_owned()),
-            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
             Name(name) => FilterItem::new("name", name.to_owned()),
             Publish(port) => FilterItem::new("publsh", port.to_string()),
             Network(net) => FilterItem::new("net", net.to_owned()),
@@ -318,7 +319,7 @@ impl FromStr for PublishPort {
             .ok_or_else(|| Error::InvalidPort("missing port number".into()))
             .and_then(|port| {
                 port.parse::<u32>()
-                    .map_err(|e| Error::InvalidPort(format!("expected port number - {}", e)))
+                    .map_err(|e| Error::InvalidPort(format!("expected port number - {e}")))
             })?;
 
         let protocol = elems
@@ -598,7 +599,7 @@ impl Filter for ContainerPruneFilter {
             #[cfg(feature = "chrono")]
             UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
             LabelKey(label) => FilterItem::new("label", label.to_owned()),
-            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
         }
     }
 }
@@ -674,7 +675,7 @@ mod tests {
         test_case!(
             ContainerCreateOptsBuilder::default()
                 .image("test_image")
-                .env(&["foo", "bar", "baz"]),
+                .env(["foo", "bar", "baz"]),
             r#"{"Env":["foo","bar","baz"],"HostConfig":{},"Image":"test_image"}"#
         );
 

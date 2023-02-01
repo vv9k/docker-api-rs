@@ -49,7 +49,7 @@ impl TryFrom<&HeaderMap> for PingInfo {
                 .get("builder-version")
                 .and_then(|v| v.to_str().map(ToString::to_string).ok()),
             docker_experimental: extract_str!("docker-experimental").parse().map_err(|e| {
-                Error::InvalidResponse(format!("expected header value to be bool - {}", e))
+                Error::InvalidResponse(format!("expected header value to be bool - {e}"))
             })?,
             cache_control: extract_str!("cache-control"),
             pragma: extract_str!("pragma"),

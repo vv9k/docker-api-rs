@@ -116,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             while let Some(tty_result) = reader.next().await {
                 match tty_result {
                     Ok(chunk) => print_chunk(chunk),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
@@ -155,7 +155,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .copy_file_into(remote_path, &bytes)
                 .await
             {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Commit {
@@ -190,8 +190,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 opts = opts.changes(changes)
             }
             match docker.containers().get(id).commit(&opts.build()).await {
-                Ok(id) => println!("{:?}", id),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(id) => println!("{id:?}"),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Create { image, nam } => {
@@ -205,8 +205,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ContainerCreateOpts::builder().image(image).build()
             };
             match docker.containers().create(&opts).await {
-                Ok(info) => println!("{:?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:?}"),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Delete { id, force } => {
@@ -218,7 +218,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Default::default()
             };
             if let Err(e) = docker.containers().get(&id).remove(&opts).await {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Exec { id, cmd } => {
@@ -232,14 +232,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             while let Some(exec_result) = docker.containers().get(&id).exec(&options).next().await {
                 match exec_result {
                     Ok(chunk) => print_chunk(chunk),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
         Cmd::Inspect { id } => {
             match docker.containers().get(&id).inspect().await {
-                Ok(container) => println!("{:#?}", container),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(container) => println!("{container:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::List { all } => {
@@ -263,7 +263,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         );
                     });
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Logs { id, stdout, stderr } => {
@@ -276,7 +276,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .map(|chunk| match chunk {
                     Ok(chunk) => chunk.to_vec(),
                     Err(e) => {
-                        eprintln!("Error: {}", e);
+                        eprintln!("Error: {e}");
                         vec![]
                     }
                 })
@@ -299,25 +299,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             if let Err(e) = docker.containers().prune(&opts).await {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::StatFile { id, path } => {
             let stats = docker.containers().get(&id).stat_file(path).await?;
-            println!("{}", stats);
+            println!("{stats}");
         }
         Cmd::Stats { id } => {
             while let Some(result) = docker.containers().get(&id).stats().next().await {
                 match result {
-                    Ok(stat) => println!("{:?}", stat),
-                    Err(e) => eprintln!("Error: {}", e),
+                    Ok(stat) => println!("{stat:?}"),
+                    Err(e) => eprintln!("Error: {e}"),
                 }
             }
         }
         Cmd::Top { id, psargs } => {
             match docker.containers().get(&id).top(psargs.as_deref()).await {
-                Ok(top) => println!("{:#?}", top),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(top) => println!("{top:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
     }

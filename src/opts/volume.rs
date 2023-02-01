@@ -51,7 +51,7 @@ impl Filter for VolumeFilter {
             Dangling(dangling) => FilterItem::new("dangling", dangling.to_string()),
             Driver(driver) => FilterItem::new("driver", driver.to_owned()),
             LabelKey(label) => FilterItem::new("label", label.to_owned()),
-            Label { key, val } => FilterItem::new("label", format!("{}:{}", key, val)),
+            Label { key, val } => FilterItem::new("label", format!("{key}:{val}")),
             Name(name) => FilterItem::new("name", name.to_owned()),
         }
     }

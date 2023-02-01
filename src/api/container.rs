@@ -316,28 +316,24 @@ impl Container {
             .await?;
         if let Some(header) = resp.headers().get(PATH_STAT_HEADER) {
             let header = header.to_str().map_err(|e| {
-                Error::InvalidResponse(format!("response header was invalid - {}", e))
+                Error::InvalidResponse(format!("response header was invalid - {e}"))
             })?;
 
             base64::decode(header)
                 .map_err(|e| {
-                    Error::InvalidResponse(format!("expected header to be valid base64 - {}", e))
+                    Error::InvalidResponse(format!("expected header to be valid base64 - {e}"))
                 })
                 .and_then(|s| {
                     str::from_utf8(s.as_slice())
                         .map(str::to_string)
                         .map_err(|e| {
                             Error::InvalidResponse(format!(
-                                "expected header to be valid utf8 - {}",
-                                e
+                                "expected header to be valid utf8 - {e}"
                             ))
                         })
                 })
         } else {
-            Err(Error::InvalidResponse(format!(
-                "missing `{}` header",
-                PATH_STAT_HEADER
-            )))
+            Err(Error::InvalidResponse(format!("missing `{PATH_STAT_HEADER}` header")))
         }
     }}
 
