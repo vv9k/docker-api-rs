@@ -16,7 +16,7 @@ use serde::Deserialize;
 
 use crate::{
     api::Exec,
-    conn::{decode_chunk, Headers, Multiplexer as TtyMultiplexer, Payload, TtyChunk},
+    conn::{tty, Headers, Payload, TtyChunk},
     opts::ExecCreateOpts,
     Error, Result,
 };
@@ -63,8 +63,14 @@ impl Container {
     /// The [`TtyMultiplexer`](TtyMultiplexer) implements Stream for returning Stdout and Stderr chunks. It also implements [`AsyncWrite`](futures_util::io::AsyncWrite) for writing to Stdin.
     ///
     /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
-    pub async fn attach(&self) -> Result<TtyMultiplexer<'_>> {
-        self.attach_raw().await.map(|s| TtyMultiplexer::new(s, decode_chunk))
+    pub async fn attach(&self) -> Result<tty::Multiplexer<'_>> {
+        let inspect = self.inspect().await?;
+        let is_tty = inspect.config.and_then(|c| c.tty).unwrap_or_default();
+        self.attach_raw().await.map(|s| if is_tty {
+            tty::Multiplexer::new(s, tty::decode_raw)
+        } else {
+            tty::Multiplexer::new(s, tty::decode_chunk)
+        })
     }}
 
     api_doc! { Container => Changes

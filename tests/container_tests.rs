@@ -630,3 +630,81 @@ async fn containers_prune() {
     assert_eq!(prune_data.len(), 1);
     assert!(prune_data.iter().any(|id| id == &second_full_id));
 }
+
+#[tokio::test]
+async fn container_attach() {
+    let docker = init_runtime();
+
+    let container_name = "test-attach-tty-container";
+    let container = create_base_container(
+        &docker,
+        container_name,
+        Some(
+            ContainerCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .attach_stdin(true)
+                .tty(true)
+                .image(DEFAULT_IMAGE)
+                .name(container_name)
+                .command(["bash", "-c", "while true; do echo 123456 && sleep 2; done"])
+                .build(),
+        ),
+    )
+    .await;
+
+    let _ = container.start().await;
+
+    let mut multiplexer = container.attach().await.unwrap();
+    while let Some(chunk) = multiplexer.next().await {
+        match chunk {
+            Ok(TtyChunk::StdOut(chunk)) => {
+                let logs = String::from_utf8_lossy(&chunk);
+                assert_eq!(logs, "123456\r\n");
+                break;
+            }
+            chunk => {
+                eprintln!("invalid chunk {chunk:?}");
+                std::process::exit(1);
+            }
+        }
+    }
+
+    cleanup_container(&docker, container_name).await;
+
+    let container_name = "test-attach-non-tty-container";
+    let container = create_base_container(
+        &docker,
+        container_name,
+        Some(
+            ContainerCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .attach_stdin(true)
+                .image(DEFAULT_IMAGE)
+                .name(container_name)
+                .command(["bash", "-c", "while true; do echo 123456 && sleep 2; done"])
+                .build(),
+        ),
+    )
+    .await;
+
+    let _ = container.start().await;
+
+    let mut multiplexer = container.attach().await.unwrap();
+    while let Some(chunk) = multiplexer.next().await {
+        match chunk {
+            Ok(TtyChunk::StdOut(chunk)) => {
+                let logs = String::from_utf8_lossy(&chunk);
+                assert_eq!(logs, "123456\n");
+                break;
+            }
+            chunk => {
+                eprintln!("invalid chunk {chunk:?}");
+                std::process::exit(1);
+            }
+        }
+    }
+
+    cleanup_container(&docker, container_name).await;
+}
