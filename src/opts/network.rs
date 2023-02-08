@@ -73,7 +73,7 @@ impl Filter for NetworkFilter {
             Driver(driver) => FilterItem::new("driver", driver.to_owned()),
             Id(id) => FilterItem::new("id", id.to_owned()),
             LabelKey(key) => FilterItem::new("label", key.to_owned()),
-            LabelKeyVal(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            LabelKeyVal(key, val) => FilterItem::new("label", format!("{key}={val}")),
             Name(name) => FilterItem::new("name", name.to_owned()),
             Scope(scope) => FilterItem::new("scope", scope.as_ref().to_owned()),
             Type(type_) => FilterItem::new("type", type_.as_ref().to_owned()),
@@ -392,7 +392,7 @@ impl Filter for NetworkPruneFilter {
             #[cfg(feature = "chrono")]
             UntilDate(until) => FilterItem::new("until", until.timestamp().to_string()),
             LabelKey(label) => FilterItem::new("label", label.to_owned()),
-            Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+            Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
         }
     }
 }

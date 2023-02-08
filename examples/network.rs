@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .connect(&ContainerConnectionOpts::builder(&container).build())
                 .await
             {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Create { network, driver } => {
@@ -62,13 +62,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .create(&NetworkCreateOpts::builder(network).driver(driver).build())
                 .await
             {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Delete { network } => {
             if let Err(e) = docker.networks().get(&network).delete().await {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Disconnect { container, network } => {
@@ -79,13 +79,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .disconnect(&ContainerDisconnectionOpts::builder(container).build())
                 .await
             {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Inspect { network } => {
             match docker.networks().get(&network).inspect().await {
-                Ok(network_info) => println!("{:#?}", network_info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(network_info) => println!("{network_info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::List => match docker.networks().list(&Default::default()).await {
@@ -98,17 +98,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     net.labels
                         .unwrap_or_default()
                         .iter()
-                        .map(|(k, v)| format!("{}={}", k, v))
+                        .map(|(k, v)| format!("{k}={v}"))
                         .collect::<Vec<_>>()
                         .join(",")
                 )
             }),
-            Err(e) => eprintln!("Error: {}", e),
+            Err(e) => eprintln!("Error: {e}"),
         },
         Cmd::Prune => {
             match docker.networks().prune(&Default::default()).await {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
     }

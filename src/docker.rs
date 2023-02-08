@@ -500,21 +500,18 @@ mod tests {
         let d = Docker::new("rand://127.0.0.1:80");
         match d.unwrap_err() {
             Error::UnsupportedScheme(scheme) if &scheme == "rand" => {}
-            e => panic!(r#"Expected Error::UnsupportedScheme("rand"), got {}"#, e),
+            e => panic!(r#"Expected Error::UnsupportedScheme("rand"), got {e}"#),
         }
 
         let d = Docker::new("invalid_uri");
         match d.unwrap_err() {
             Error::UnsupportedScheme(scheme) if &scheme == "invalid_uri" => {}
-            e => panic!(
-                r#"Expected Error::UnsupportedScheme("invalid_uri"), got {}"#,
-                e
-            ),
+            e => panic!(r#"Expected Error::UnsupportedScheme("invalid_uri"), got {e}"#),
         }
         let d = Docker::new("");
         match d.unwrap_err() {
             Error::UnsupportedScheme(scheme) if scheme.is_empty() => {}
-            e => panic!(r#"Expected Error::UnsupportedScheme(""), got {}"#, e),
+            e => panic!(r#"Expected Error::UnsupportedScheme(""), got {e}"#),
         }
     }
 }

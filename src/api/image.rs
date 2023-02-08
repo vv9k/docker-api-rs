@@ -34,7 +34,7 @@ impl Image {
     /// Use [`delete`](Image::delete) to delete without options.
     pub async fn remove(&self, opts: &ImageRemoveOpts) -> Result<Vec<models::ImageDeleteResponseItem>> {
         let ep =
-            containers_api::url::construct_ep(&format!("/images/{}", self.name), opts.serialize());
+            containers_api::url::construct_ep(format!("/images/{}", self.name), opts.serialize());
         self.docker.delete_json(ep.as_ref()).await
     }}
 

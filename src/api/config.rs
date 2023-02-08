@@ -69,7 +69,7 @@ pub mod opts {
             match &self {
                 Id(id) => FilterItem::new("id", id.to_owned()),
                 LabelKey(label) => FilterItem::new("label", label.to_owned()),
-                Label(key, val) => FilterItem::new("label", format!("{}={}", key, val)),
+                Label(key, val) => FilterItem::new("label", format!("{key}={val}")),
                 Name(name) => FilterItem::new("name", name.to_owned()),
                 Names(names) => FilterItem::new("names", names.to_owned()),
             }

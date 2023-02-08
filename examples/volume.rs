@@ -44,36 +44,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .await
             {
-                Ok(info) => println!("{:?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:?}"),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Inspect { volume } => {
             match docker.volumes().get(&volume).inspect().await {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::Delete { volume } => {
             match docker.volumes().get(&volume).delete().await {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::List => {
             match docker.volumes().list(&Default::default()).await {
                 Ok(volumes) => {
                     for v in volumes.volumes {
-                        println!("{:#?}", v)
+                        println!("{v:#?}")
                     }
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::Prune => {
             match docker.volumes().prune(&Default::default()).await {
-                Ok(info) => println!("{:#?}", info),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(info) => println!("{info:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
     }

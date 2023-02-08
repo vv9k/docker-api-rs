@@ -111,7 +111,7 @@ impl Exec {
                 let stream = Box::pin(
                     docker
                         .post_stream(
-                            format!("/exec/{}/start", exec_id),
+                            format!("/exec/{exec_id}/start"),
                             Payload::Json("{}"),
                             Headers::none(),
                         )

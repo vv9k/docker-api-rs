@@ -45,13 +45,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match opts.subcmd {
         Cmd::Delete { service } => {
             if let Err(e) = docker.services().get(&service).delete().await {
-                eprintln!("Error: {}", e)
+                eprintln!("Error: {e}")
             }
         }
         Cmd::Inspect { service } => {
             match docker.services().get(&service).inspect().await {
-                Ok(service) => println!("{:#?}", service),
-                Err(e) => eprintln!("Error: {}", e),
+                Ok(service) => println!("{service:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
             };
         }
         Cmd::List { with_status } => {
@@ -64,10 +64,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             {
                 Ok(services) => {
                     for s in services {
-                        println!("{:#?}", s)
+                        println!("{s:#?}")
                     }
                 }
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         Cmd::Logs {
@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .map(|chunk| match chunk {
                     Ok(chunk) => chunk.to_vec(),
                     Err(e) => {
-                        eprintln!("Error: {}", e);
+                        eprintln!("Error: {e}");
                         vec![]
                     }
                 })

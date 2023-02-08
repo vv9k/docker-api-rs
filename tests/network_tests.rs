@@ -31,7 +31,7 @@ async fn network_inspect() {
     let inspect_result = network.inspect().await;
     assert!(inspect_result.is_ok());
     let inspect_data = inspect_result.unwrap();
-    assert!(inspect_data.name.as_ref().unwrap().contains(&network_name));
+    assert!(inspect_data.name.as_ref().unwrap().contains(network_name));
     assert!(network.delete().await.is_ok());
 }
 

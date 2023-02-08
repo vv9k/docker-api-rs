@@ -114,8 +114,8 @@ mod tests {
     #[cfg(feature = "chrono")]
     #[test]
     fn logs_options() {
-        let timestamp = chrono::NaiveDateTime::from_timestamp(2_147_483_647, 0);
-        let since = chrono::DateTime::<chrono::Utc>::from_utc(timestamp, chrono::Utc);
+        let timestamp = chrono::NaiveDateTime::from_timestamp_opt(2_147_483_647, 0);
+        let since = chrono::DateTime::<chrono::Utc>::from_utc(timestamp.unwrap(), chrono::Utc);
 
         let options = LogsOptsBuilder::default()
             .follow(true)
