@@ -16,6 +16,10 @@ enum Cmd {
     Build {
         /// A path to the directory containing Dockerfile for the image.
         path: PathBuf,
+        #[cfg(feature = "par-compress")]
+        #[arg(short, long)]
+        /// Use multithreaded compression algorithm
+        multithread: bool,
         #[arg(default_value = "latest")]
         tag: String,
     },
@@ -74,16 +78,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
 
     match opts.subcmd {
-        Cmd::Build { path, tag } => {
+        Cmd::Build {
+            path,
+            tag,
+            #[cfg(feature = "par-compress")]
+            multithread,
+        } => {
             use docker_api::opts::ImageBuildOpts;
             let options = ImageBuildOpts::builder(path).tag(tag).build();
 
             let images = docker.images();
-            let mut stream = images.build(&options);
-            while let Some(build_result) = stream.next().await {
-                match build_result {
-                    Ok(output) => println!("{output:?}"),
-                    Err(e) => eprintln!("Error: {e}"),
+
+            #[cfg(feature = "par-compress")]
+            {
+                if multithread {
+                    let mut stream = images.build_par(&options);
+                    while let Some(build_result) = stream.next().await {
+                        match build_result {
+                            Ok(output) => println!("{output:?}"),
+                            Err(e) => eprintln!("Error: {e}"),
+                        }
+                    }
+                } else {
+                    let mut stream = images.build(&options);
+                    while let Some(build_result) = stream.next().await {
+                        match build_result {
+                            Ok(output) => println!("{output:?}"),
+                            Err(e) => eprintln!("Error: {e}"),
+                        }
+                    }
+                }
+            }
+            #[cfg(not(feature = "par-compress"))]
+            {
+                let mut stream = images.build(&options);
+                while let Some(build_result) = stream.next().await {
+                    match build_result {
+                        Ok(output) => println!("{output:?}"),
+                        Err(e) => eprintln!("Error: {e}"),
+                    }
                 }
             }
         }
