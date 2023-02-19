@@ -119,24 +119,49 @@ impl Images {
 
     api_doc! { Image => Build
     |
-    /// Builds a new image build by reading a Dockerfile in a target directory.
+    /// Builds a new image by reading a Dockerfile in a target directory. If speed is
+    /// important consider using [`Image::build_par`](Image::build_par) that utilizes
+    /// parallel compression on big directories, to use it enable `par-compression` feature.
     pub fn build<'docker>(
         &'docker self,
         opts: &ImageBuildOpts,
     ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker {
         let ep = construct_ep("/build", opts.serialize());
-
-        // To not tie the lifetime of `opts` to the 'stream, we do the tarring work outside of the
-        // stream. But for backwards compatability, we have to return the error inside of the
-        // stream.
-        let mut bytes = Vec::default();
+        let mut bytes = vec![];
         let tar_result = tarball::dir(&mut bytes, &opts.path);
 
         let docker = &self.docker;
         Box::pin(
             async move {
-                // Bubble up error inside the stream for backwards compatability
                 tar_result?;
+
+                let value_stream =
+                    docker.post_into_stream(ep, Payload::Tar(bytes), Headers::none());
+
+                Ok(value_stream)
+            }
+            .try_flatten_stream(),
+        )
+    }}
+
+    api_doc! { Image => Build
+    |
+    #[cfg(feature = "par-compress")]
+    /// Builds a new image by reading a Dockerfile in a target directory. Uses parallel
+    /// compression algorithm to speed up the execution. For a single-threaded version check
+    /// [`Image::build`](Image::build).
+    pub fn build_par<'docker>(
+        &'docker self,
+        opts: &ImageBuildOpts,
+    ) -> impl Stream<Item = Result<models::ImageBuildChunk>> + Unpin + 'docker {
+        let ep = construct_ep("/build", opts.serialize());
+
+        let tar_result = tarball::dir_par(&opts.path);
+
+        let docker = &self.docker;
+        Box::pin(
+            async move {
+                let bytes = tar_result?;
 
                 let value_stream =
                     docker.post_into_stream(ep, Payload::Tar(bytes), Headers::none());
