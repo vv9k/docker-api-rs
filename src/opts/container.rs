@@ -38,20 +38,14 @@ impl AsRef<str> for Health {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Isolation {
     #[serde(alias = "")]
+    #[default]
     Default,
     Process,
     HyperV,
-}
-
-// Need to Default the above, so that the below is not required.
-impl Default for Isolation {
-    fn default() -> Self {
-        Isolation::Default
-    }
 }
 
 impl AsRef<str> for Isolation {
