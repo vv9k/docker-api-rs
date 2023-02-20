@@ -298,4 +298,21 @@ macro_rules! impl_api_ep {
         }
         }}
     };
+    (
+        Reize $it:ident: $base:ident -> $resp:ident $ep:expr, $ret:expr $(, $extra:expr)*
+    ) => {
+        paste::item! {
+            api_doc! { $base => Resize
+            |
+            #[doc = concat!("Resizes TTY of container ", stringify!($base), ".")]
+            pub fn resize(&self, opts: &[< $base ResizeOpts >]) -> Result<$ret> {
+                self.docker
+                .post_json(
+                    &containers_api::url::construct_ep($ep, opts.serialize()),
+                    crate::conn:Payload::empty(),
+                    crate::conn::Headers::none(),
+                ).await
+            }}
+        }
+    };
 }
