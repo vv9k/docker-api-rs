@@ -2,10 +2,10 @@
 use crate::models;
 use crate::opts::{
     ContainerCommitOpts, ContainerCreateOpts, ContainerListOpts, ContainerPruneOpts,
-    ContainerRemoveOpts,
+    ContainerRemoveOpts, ContainerRestartOpts, ContainerStopOpts,
 };
 
-use std::{io, path::Path, str, time::Duration};
+use std::{io, path::Path, str};
 
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
@@ -131,11 +131,8 @@ impl Container {
     api_doc! { Container => Stop
     |
     /// Stop the container instance.
-    pub async fn stop(&self, wait: Option<Duration>) -> Result<()> {
-        let mut ep = format!("/containers/{}/stop", self.id);
-        if let Some(w) = wait {
-            append_query(&mut ep, encoded_pair("t", w.as_secs()));
-        }
+    pub async fn stop(&self, opts: &ContainerStopOpts) -> Result<()> {
+        let ep = construct_ep(format!("/containers/{}/stop", self.id), opts.serialize());
         self.docker
             .post_string(&ep, Payload::empty(), Headers::none())
             .await
@@ -145,11 +142,8 @@ impl Container {
     api_doc! { Container => Restart
     |
     /// Restart the container instance.
-    pub async fn restart(&self, wait: Option<Duration>) -> Result<()> {
-        let mut ep = format!("/containers/{}/restart", self.id);
-        if let Some(w) = wait {
-            append_query(&mut ep, encoded_pair("t", w.as_secs()));
-        }
+    pub async fn restart(&self, opts: &ContainerRestartOpts) -> Result<()> {
+        let ep = construct_ep(format!("/containers/{}/restart", self.id), opts.serialize());
         self.docker
             .post_string(&ep, Payload::empty(), Headers::none())
             .await
