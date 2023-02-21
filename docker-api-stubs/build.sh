@@ -24,7 +24,7 @@ cd $BASE_DIR
 
 cat base/models.rs > lib/src/models.rs
 
-$BUILD_DIR/swagger-rustgen/target/release/swagger-rustgen generate models $BUILD_DIR/$DOCKER_SPEC_FILE >> lib/src/models.rs
+$BUILD_DIR/swagger-rustgen/target/release/swagger-gen generate models $BUILD_DIR/$DOCKER_SPEC_FILE >> lib/src/models.rs
 
 cd lib
 
