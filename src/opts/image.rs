@@ -453,6 +453,10 @@ impl ImageListOptsBuilder {
         /// Show digest information as a RepoDigests field on each image.
         digests => "digests"
     );
+    impl_url_bool_field!(
+        /// Compute and show shared size as a SharedSize field on each image.
+        shared_size => "shared-size"
+    );
     impl_filter_func!(
         /// Filter the listed images by one of the variants of the enum.
         ImageFilter
