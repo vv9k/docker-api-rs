@@ -25,7 +25,7 @@ impl Network {
         self.docker
             .post_string(
                 &format!("/networks/{}/connect", self.id),
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none(),
             )
             .await
@@ -39,7 +39,7 @@ impl Network {
         self.docker
             .post_string(
                 &format!("/networks/{}/disconnect", &self.id),
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none(),
             )
             .await
@@ -61,7 +61,7 @@ impl Networks {
         self.docker
             .post_json(
                 "/networks/create",
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none(),
             )
             .await

@@ -34,7 +34,7 @@ impl Configs {
             pub id: String,
         }
         self.docker
-            .post_json("/configs/create", Payload::Json(opts.serialize()?), Headers::none())
+            .post_json("/configs/create", Payload::Json(opts.serialize_vec()?), Headers::none())
             .await
             .map(|resp: ConfigCreateResponse| {
                 Config::new(self.docker.clone(), resp.id)
@@ -130,6 +130,10 @@ pub mod opts {
 
         pub fn serialize(&self) -> Result<String> {
             serde_json::to_string(&self).map_err(Error::from)
+        }
+
+        pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+            serde_json::to_vec(&self).map_err(Error::from)
         }
     }
 }

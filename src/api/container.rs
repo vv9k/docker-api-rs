@@ -378,7 +378,7 @@ impl Containers {
             "/containers/create".to_owned()
         };
         self.docker
-            .post_json(&ep, Payload::Json(opts.serialize()?), Headers::none())
+            .post_json(&ep, Payload::Json(opts.serialize_vec()?), Headers::none())
             .await
             .map(|resp: models::ContainerCreateResponse| {
                 Container::new(self.docker.clone(), resp.id)

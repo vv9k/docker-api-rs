@@ -45,7 +45,7 @@ impl Swarm {
     /// Initialize a new swarm.
     pub async fn initialize(&self, opts: &SwarmInitOpts) -> Result<()> {
         self.docker
-            .post("/swarm/init", Payload::Json(opts.serialize()?), Headers::none())
+            .post("/swarm/init", Payload::Json(opts.serialize_vec()?), Headers::none())
             .await
             .map(|_| ())
     }}
@@ -55,7 +55,7 @@ impl Swarm {
     /// Join an existing swarm.
     pub async fn join(&self, opts: &SwarmJoinOpts) -> Result<()> {
         self.docker
-            .post("/swarm/join", Payload::Json(opts.serialize()?), Headers::none())
+            .post("/swarm/join", Payload::Json(opts.serialize_vec()?), Headers::none())
             .await
             .map(|_| ())
     }}

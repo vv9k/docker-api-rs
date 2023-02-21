@@ -32,7 +32,7 @@ impl Node {
                     self.name,
                     encoded_pair("version", opts.version().to_string())
                 ),
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none()
             )
             .await

@@ -107,6 +107,11 @@ impl NetworkCreateOpts {
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
+
+    /// Serializes the options as a JSON bytes.
+    pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+        serde_json::to_vec(&self.params).map_err(Error::from)
+    }
 }
 
 #[derive(Default)]
@@ -189,6 +194,11 @@ impl ContainerDisconnectionOpts {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
+    /// Serializes the options as a JSON bytes.
+    pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+        serde_json::to_vec(&self.params).map_err(Error::from)
+    }
+
     /// Return a new instance of a builder for disconnecting a container from a network.
     pub fn builder<I>(container_id: I) -> ContainerDisconnectionOptsBuilder
     where
@@ -232,6 +242,11 @@ impl ContainerConnectionOpts {
     /// Serializes the options as a JSON string.
     pub fn serialize(&self) -> Result<String> {
         serde_json::to_string(&self.params).map_err(Error::from)
+    }
+
+    /// Serializes the options as a JSON bytes.
+    pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+        serde_json::to_vec(&self.params).map_err(Error::from)
     }
 
     /// Return a new instance of a builder for connecting a container to a network.

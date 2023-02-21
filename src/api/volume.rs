@@ -22,7 +22,7 @@ impl Volume {
     pub async fn update(&self, opts: &ClusterVolumeUpdateOpts) -> Result<()> {
         let mut ep = format!("/volumes/{}", self.name());
         url::append_query(&mut ep, url::encoded_pair("version", opts.version()));
-        self.docker.put(&ep, Payload::Json(opts.serialize()?)).await.map(|_| ())
+        self.docker.put(&ep, Payload::Json(opts.serialize_vec()?)).await.map(|_| ())
     }}
 }
 
@@ -47,7 +47,7 @@ impl Volumes {
         self.docker
             .post_json(
                 "/volumes/create",
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none(),
             )
             .await

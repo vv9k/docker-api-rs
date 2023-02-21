@@ -19,7 +19,7 @@ impl Service {
         self.docker
             .post_json(
                 "/services/create",
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 headers,
             )
             .await

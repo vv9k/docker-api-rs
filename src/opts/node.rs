@@ -60,6 +60,10 @@ impl NodeUpdateOpts {
         serde_json::to_string(&self.params).map_err(Error::from)
     }
 
+    pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+        serde_json::to_vec(&self).map_err(Error::from)
+    }
+
     pub fn version(&self) -> &str {
         &self.version
     }

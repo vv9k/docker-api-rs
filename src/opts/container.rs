@@ -205,6 +205,11 @@ impl ContainerCreateOpts {
         serde_json::to_string(&self.to_json()).map_err(Error::from)
     }
 
+    /// Serialize options as a JSON bytes.
+    pub fn serialize_vec(&self) -> Result<Vec<u8>> {
+        serde_json::to_vec(&self.to_json()).map_err(Error::from)
+    }
+
     fn to_json(&self) -> Value {
         let mut body_members = Map::new();
         // The HostConfig element gets initialized to an empty object,

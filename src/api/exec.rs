@@ -53,7 +53,7 @@ impl Exec {
         docker
             .post_json(
                 &format!("/containers/{}/exec", container_id.as_ref()),
-                Payload::Json(opts.serialize()?),
+                Payload::Json(opts.serialize_vec()?),
                 Headers::none(),
             )
             .await
