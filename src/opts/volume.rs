@@ -1,5 +1,7 @@
 use containers_api::opts::{Filter, FilterItem};
-use containers_api::{impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field};
+use containers_api::{
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
+};
 
 impl_opts_builder!(json => VolumeCreate);
 
@@ -22,6 +24,11 @@ impl VolumeCreateOptsBuilder {
     impl_map_field!(json
         /// User-defined key/value metadata.
         labels => "Labels"
+    );
+
+    impl_field!(
+        /// Cluster-specific options used to create the volume.
+        cluster_spec: crate::models::ClusterVolumeSpec => "ClusterVolumeSpec"
     );
 }
 
