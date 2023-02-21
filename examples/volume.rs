@@ -63,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Cmd::List => {
             match docker.volumes().list(&Default::default()).await {
                 Ok(volumes) => {
-                    for v in volumes.volumes {
+                    for v in volumes.volumes.unwrap() {
                         println!("{v:#?}")
                     }
                 }
