@@ -1,6 +1,7 @@
 use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
-    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_opts_required_builder,
+    impl_str_field,
 };
 
 impl_opts_builder!(json => VolumeCreate);
@@ -75,5 +76,26 @@ impl VolumeListOptsBuilder {
     impl_filter_func!(
         /// Filter listed volumes by one of the variants of the filter enum.
         VolumeFilter
+    );
+}
+
+impl_opts_required_builder!(json =>
+    /// Update swarm cluster volume
+    ClusterVolumeUpdate,
+    /// The version number of the volume being updated. This is required to avoid conflicting writes. Found in the volume's ClusterVolume field.
+    version: i64 => "version"
+);
+
+impl ClusterVolumeUpdateOptsBuilder {
+    impl_str_field!(
+        /// Group defines the volume group of this volume. Volumes belonging to the same group can be referred to by group name when creating Services.
+        /// Referring to a volume by group instructs Swarm to treat volumes in that group interchangeably for the purpose of scheduling. Volumes with
+        /// an empty string for a group technically all belong to the same, emptystring group.
+        group => "Group"
+    );
+
+    impl_field!(
+        /// Defines how the volume is used by tasks.
+        access_mode: serde_json::Value => "AccessMode"
     );
 }

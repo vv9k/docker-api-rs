@@ -6,6 +6,7 @@
 - `Container::stop` and `Container::restart` now take `ContainerStopOpts` and `ContainerRestartOpts` as paramaters respectively
 - Add `VolumeCreateOptsBuilder::cluster_spec` parameter
 - Add `ExecCreateOptsBuilder::console_size` parameter
+- Add `Volume::update` endpoint
 
 # 0.12.0
 - Fix some integer fields that could be negative but previously were a usize like `ImageSummary::containers`
