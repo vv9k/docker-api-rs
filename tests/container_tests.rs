@@ -108,7 +108,7 @@ async fn container_restart() {
         .started_at
         .unwrap();
 
-    let restart_result = container.restart(None).await;
+    let restart_result = container.restart(&Default::default()).await;
     assert!(restart_result.is_ok());
 
     let timestamp_after = container
@@ -198,7 +198,7 @@ async fn container_stop() {
         .expect("stopped container inspect data");
     assert!(inspect_data.state.unwrap().running.unwrap());
 
-    let stop_result = container.stop(None).await;
+    let stop_result = container.stop(&Default::default()).await;
     assert!(stop_result.is_ok());
 
     let inspect_data = container

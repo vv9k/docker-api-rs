@@ -640,6 +640,36 @@ impl ContainerCommitOptsBuilder {
     );
 }
 
+impl_opts_builder!(url => ContainerStop);
+
+impl ContainerStopOptsBuilder {
+    impl_url_str_field!(
+        /// Signal to send to the container as an integer or string (e.g. `SIGINT`).
+        signal => "signal"
+    );
+
+    /// Duration to wait before stopping the container
+    pub fn wait(mut self, duration: Duration) -> Self {
+        self.params.insert("t", duration.as_secs().to_string());
+        self
+    }
+}
+
+impl_opts_builder!(url => ContainerRestart);
+
+impl ContainerRestartOptsBuilder {
+    impl_url_str_field!(
+        /// Signal to send to the container as an integer or string (e.g. `SIGINT`).
+        signal => "signal"
+    );
+
+    /// Duration to wait before restarting the container
+    pub fn wait(mut self, duration: Duration) -> Self {
+        self.params.insert("t", duration.as_secs().to_string());
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

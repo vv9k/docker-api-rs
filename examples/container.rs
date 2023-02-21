@@ -90,6 +90,26 @@ enum Cmd {
     },
     /// Get information about a file in container.
     StatFile { id: String, path: PathBuf },
+    /// Stops the container
+    Stop {
+        id: String,
+        #[arg(long)]
+        /// Time in seconds to wait before stopping the container
+        wait: Option<usize>,
+        #[arg(long)]
+        /// Example `SIGINT`
+        signal: Option<String>,
+    },
+    /// Restarts the container
+    Restart {
+        id: String,
+        #[arg(long)]
+        /// Time in seconds to wait before restarting the container
+        wait: Option<usize>,
+        #[arg(long)]
+        /// Example `SIGINT`
+        signal: Option<String>,
+    },
     /// Returns usage statistics of the container.
     Stats { id: String },
     /// Returns information about running processes in the container.
@@ -317,6 +337,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Cmd::Top { id, psargs } => {
             match docker.containers().get(&id).top(psargs.as_deref()).await {
                 Ok(top) => println!("{top:#?}"),
+                Err(e) => eprintln!("Error: {e}"),
+            };
+        }
+        Cmd::Stop { id, wait, signal } => {
+            use docker_api::opts::ContainerStopOpts;
+
+            let mut opts = ContainerStopOpts::builder();
+            if let Some(w) = wait {
+                opts = opts.wait(std::time::Duration::from_secs(w as u64));
+            }
+            if let Some(s) = signal {
+                opts = opts.signal(s);
+            }
+
+            match docker.containers().get(&id).stop(&opts.build()).await {
+                Ok(_) => println!("Container {id} stopped..."),
+                Err(e) => eprintln!("Error: {e}"),
+            };
+        }
+        Cmd::Restart { id, wait, signal } => {
+            use docker_api::opts::ContainerRestartOpts;
+
+            let mut opts = ContainerRestartOpts::builder();
+            if let Some(w) = wait {
+                opts = opts.wait(std::time::Duration::from_secs(w as u64));
+            }
+            if let Some(s) = signal {
+                opts = opts.signal(s);
+            }
+
+            match docker.containers().get(&id).restart(&opts.build()).await {
+                Ok(_) => println!("Container {id} restarted..."),
                 Err(e) => eprintln!("Error: {e}"),
             };
         }
