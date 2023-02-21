@@ -386,7 +386,7 @@ impl Containers {
         self.docker
             .post_json(&ep, Payload::Json(opts.serialize()?), Headers::none())
             .await
-            .map(|resp: models::ContainerCreate201Response| {
+            .map(|resp: models::ContainerCreateResponse| {
                 Container::new(self.docker.clone(), resp.id)
             })
     }}

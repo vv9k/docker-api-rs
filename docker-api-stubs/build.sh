@@ -3,7 +3,7 @@
 set -ex
 
 DOCKER_SWAGGER_URL="https://docs.docker.com/engine/api"
-DOCKER_API_VERSION="v1.41"
+DOCKER_API_VERSION="v1.42"
 DOCKER_SPEC_FILE="${DOCKER_API_VERSION}.yaml"
 DOCKER_FULL_URL="${DOCKER_SWAGGER_URL}/${DOCKER_SPEC_FILE}"
 RUSTGEN="https://github.com/vv9k/swagger-rustgen.git"

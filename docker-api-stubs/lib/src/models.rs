@@ -84,7 +84,13 @@ pub struct BuildCache {
     #[serde(rename = "Parent")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// ID of the parent build cache record.
+    ///
+    /// > **Deprecated**: This field is deprecated, and omitted if empty.
     pub parent: Option<String>,
+    #[serde(rename = "Parents")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// List of parent build cache record IDs.
+    pub parents: Option<Vec<String>>,
     #[serde(rename = "Shared")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Indicates if the build cache is shared.
@@ -213,6 +219,353 @@ pub struct ClusterInfo {
     pub updated_at: Option<DateTime<Utc>>,
     #[serde(rename = "Version")]
     pub version: Option<ObjectVersion>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Options and information specific to, and only present on, Swarm CSI
+/// cluster volumes.
+pub struct ClusterVolume {
+    #[serde(rename = "CreatedAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<DateTime<Utc>>,
+    #[serde(rename = "ID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The Swarm ID of this volume. Because cluster volumes are Swarm
+    /// objects, they have an ID, unlike non-cluster volumes. This ID can
+    /// be used to refer to the Volume instead of the name.
+    pub id: Option<String>,
+    #[serde(rename = "Info")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Information about the global status of the volume.
+    pub info: Option<ClusterVolumeInfoInlineItem>,
+    #[serde(rename = "PublishStatus")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The status of the volume as it pertains to its publishing and use on
+    /// specific nodes
+    pub publish_status: Option<Vec<ClusterVolumePublishStatusInlineItem>>,
+    #[serde(rename = "Spec")]
+    pub spec: Option<ClusterVolumeSpec>,
+    #[serde(rename = "UpdatedAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<DateTime<Utc>>,
+    #[serde(rename = "Version")]
+    pub version: Option<ObjectVersion>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Information about the global status of the volume.
+pub struct ClusterVolumeInfoInlineItem {
+    #[serde(rename = "AccessibleTopology")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The topology this volume is actually accessible from.
+    pub accessible_topology: Option<Vec<Topology>>,
+    #[serde(rename = "CapacityBytes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The capacity of the volume in bytes. A value of 0 indicates that
+    /// the capacity is unknown.
+    pub capacity_bytes: Option<i64>,
+    #[serde(rename = "VolumeContext")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A map of strings to strings returned from the storage plugin when
+    /// the volume is created.
+    pub volume_context: Option<HashMap<String, String>>,
+    #[serde(rename = "VolumeID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the volume as returned by the CSI storage plugin. This
+    /// is distinct from the volume's ID as provided by Docker. This ID
+    /// is never used by the user when communicating with Docker to refer
+    /// to this volume. If the ID is blank, then the Volume has not been
+    /// successfully created in the plugin yet.
+    pub volume_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ClusterVolumePublishStatusInlineItem {
+    #[serde(rename = "NodeID")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The ID of the Swarm node the volume is published on.
+    pub node_id: Option<String>,
+    #[serde(rename = "PublishContext")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A map of strings to strings returned by the CSI controller
+    /// plugin when a volume is published.
+    pub publish_context: Option<HashMap<String, String>>,
+    #[serde(rename = "State")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The published state of the volume.
+    /// * `pending-publish` The volume should be published to this node, but the call to the controller plugin to do so has not yet been successfully completed.
+    /// * `published` The volume is published successfully to the node.
+    /// * `pending-node-unpublish` The volume should be unpublished from the node, and the manager is awaiting confirmation from the worker that it has done so.
+    /// * `pending-controller-unpublish` The volume is successfully unpublished from the node, but has not yet been successfully unpublished on the controller.
+    pub state: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The published state of the volume.
+/// * `pending-publish` The volume should be published to this node, but the call to the controller plugin to do so has not yet been successfully completed.
+/// * `published` The volume is published successfully to the node.
+/// * `pending-node-unpublish` The volume should be unpublished from the node, and the manager is awaiting confirmation from the worker that it has done so.
+/// * `pending-controller-unpublish` The volume is successfully unpublished from the node, but has not yet been successfully unpublished on the controller.
+pub enum ClusterVolumePublishStatusInlineItemStateInlineItem {
+    #[serde(rename = "pending-publish")]
+    PendingPublish,
+    #[serde(rename = "published")]
+    Published,
+    #[serde(rename = "pending-node-unpublish")]
+    PendingNodeUnpublish,
+    #[serde(rename = "pending-controller-unpublish")]
+    PendingControllerUnpublish,
+}
+
+impl AsRef<str> for ClusterVolumePublishStatusInlineItemStateInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ClusterVolumePublishStatusInlineItemStateInlineItem::PendingPublish => {
+                "pending-publish"
+            }
+            ClusterVolumePublishStatusInlineItemStateInlineItem::Published => "published",
+            ClusterVolumePublishStatusInlineItemStateInlineItem::PendingNodeUnpublish => {
+                "pending-node-unpublish"
+            }
+            ClusterVolumePublishStatusInlineItemStateInlineItem::PendingControllerUnpublish => {
+                "pending-controller-unpublish"
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for ClusterVolumePublishStatusInlineItemStateInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Cluster-specific options used to create the volume.
+pub struct ClusterVolumeSpec {
+    #[serde(rename = "AccessMode")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Defines how the volume is used by tasks.
+    pub access_mode: Option<ClusterVolumeSpecAccessModeInlineItem>,
+    #[serde(rename = "Group")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Group defines the volume group of this volume. Volumes belonging to
+    /// the same group can be referred to by group name when creating
+    /// Services.  Referring to a volume by group instructs Swarm to treat
+    /// volumes in that group interchangeably for the purpose of scheduling.
+    /// Volumes with an empty string for a group technically all belong to
+    /// the same, emptystring group.
+    pub group: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Defines how the volume is used by tasks.
+pub struct ClusterVolumeSpecAccessModeInlineItem {
+    #[serde(rename = "AccessibilityRequirements")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Requirements for the accessible topology of the volume. These
+    /// fields are optional. For an in-depth description of what these
+    /// fields mean, see the CSI specification.
+    pub accessibility_requirements:
+        Option<ClusterVolumeSpecAccessModeInlineItemAccessibilityRequirementsInlineItem>,
+    #[serde(rename = "Availability")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The availability of the volume for use in tasks.
+    /// - `active` The volume is fully available for scheduling on the cluster
+    /// - `pause` No new workloads should use the volume, but existing workloads are not stopped.
+    /// - `drain` All workloads using this volume should be stopped and rescheduled, and no new ones should be started.
+    pub availability: Option<String>,
+    #[serde(rename = "CapacityRange")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The desired capacity that the volume should be created with. If
+    /// empty, the plugin will decide the capacity.
+    pub capacity_range: Option<ClusterVolumeSpecAccessModeInlineItemCapacityRangeInlineItem>,
+    #[serde(rename = "MountVolume")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Options for using this volume as a Mount-type volume.
+    ///
+    ///     Either MountVolume or BlockVolume, but not both, must be
+    ///     present.
+    ///   properties:
+    ///     FsType:
+    ///       type: "string"
+    ///       description: |
+    ///         Specifies the filesystem type for the mount volume.
+    ///         Optional.
+    ///     MountFlags:
+    ///       type: "array"
+    ///       description: |
+    ///         Flags to pass when mounting the volume. Optional.
+    ///       items:
+    ///         type: "string"
+    /// BlockVolume:
+    ///   type: "object"
+    ///   description: |
+    ///     Options for using this volume as a Block-type volume.
+    ///     Intentionally empty.
+    pub mount_volume: Option<Value>,
+    #[serde(rename = "Scope")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The set of nodes this volume can be used on at one time.
+    /// - `single` The volume may only be scheduled to one node at a time.
+    /// - `multi` the volume may be scheduled to any supported number of nodes at a time.
+    pub scope: Option<String>,
+    #[serde(rename = "Secrets")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Swarm Secrets that are passed to the CSI storage plugin when
+    /// operating on this volume.
+    pub secrets: Option<Vec<ClusterVolumeSpecAccessModeInlineItemSecretsInlineItem>>,
+    #[serde(rename = "Sharing")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The number and way that different tasks can use this volume
+    /// at one time.
+    /// - `none` The volume may only be used by one task at a time.
+    /// - `readonly` The volume may be used by any number of tasks, but they all must mount the volume as readonly
+    /// - `onewriter` The volume may be used by any number of tasks, but only one may mount it as read/write.
+    /// - `all` The volume may have any number of readers and writers.
+    pub sharing: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Requirements for the accessible topology of the volume. These
+/// fields are optional. For an in-depth description of what these
+/// fields mean, see the CSI specification.
+pub struct ClusterVolumeSpecAccessModeInlineItemAccessibilityRequirementsInlineItem {
+    #[serde(rename = "Preferred")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of topologies that the volume should attempt to be
+    /// provisioned in.
+    pub preferred: Option<Vec<Topology>>,
+    #[serde(rename = "Requisite")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// A list of required topologies, at least one of which the
+    /// volume must be accessible from.
+    pub requisite: Option<Vec<Topology>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The availability of the volume for use in tasks.
+/// - `active` The volume is fully available for scheduling on the cluster
+/// - `pause` No new workloads should use the volume, but existing workloads are not stopped.
+/// - `drain` All workloads using this volume should be stopped and rescheduled, and no new ones should be started.
+pub enum ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem {
+    #[serde(rename = "active")]
+    Active,
+    #[serde(rename = "pause")]
+    Pause,
+    #[serde(rename = "drain")]
+    Drain,
+}
+
+impl AsRef<str> for ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem::Active => "active",
+            ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem::Pause => "pause",
+            ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem::Drain => "drain",
+        }
+    }
+}
+
+impl std::fmt::Display for ClusterVolumeSpecAccessModeInlineItemAvailabilityInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The desired capacity that the volume should be created with. If
+/// empty, the plugin will decide the capacity.
+pub struct ClusterVolumeSpecAccessModeInlineItemCapacityRangeInlineItem {
+    #[serde(rename = "LimitBytes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The volume must not be bigger than this. The value of 0
+    /// indicates an unspecified maximum.
+    pub limit_bytes: Option<i64>,
+    #[serde(rename = "RequiredBytes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// The volume must be at least this big. The value of 0
+    /// indicates an unspecified minimum
+    pub required_bytes: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The set of nodes this volume can be used on at one time.
+/// - `single` The volume may only be scheduled to one node at a time.
+/// - `multi` the volume may be scheduled to any supported number of nodes at a time.
+pub enum ClusterVolumeSpecAccessModeInlineItemScopeInlineItem {
+    #[serde(rename = "single")]
+    Single,
+    #[serde(rename = "multi")]
+    Multi,
+}
+
+impl AsRef<str> for ClusterVolumeSpecAccessModeInlineItemScopeInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ClusterVolumeSpecAccessModeInlineItemScopeInlineItem::Single => "single",
+            ClusterVolumeSpecAccessModeInlineItemScopeInlineItem::Multi => "multi",
+        }
+    }
+}
+
+impl std::fmt::Display for ClusterVolumeSpecAccessModeInlineItemScopeInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// One cluster volume secret entry. Defines a key-value pair that
+/// is passed to the plugin.
+pub struct ClusterVolumeSpecAccessModeInlineItemSecretsInlineItem {
+    #[serde(rename = "Key")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Key is the name of the key of the key-value pair passed to
+    /// the plugin.
+    pub key: Option<String>,
+    #[serde(rename = "Secret")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Secret is the swarm Secret object from which to read data.
+    /// This can be a Secret name or ID. The Secret data is
+    /// retrieved by swarm and used as the value of the key-value
+    /// pair passed to the plugin.
+    pub secret: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The number and way that different tasks can use this volume
+/// at one time.
+/// - `none` The volume may only be used by one task at a time.
+/// - `readonly` The volume may be used by any number of tasks, but they all must mount the volume as readonly
+/// - `onewriter` The volume may be used by any number of tasks, but only one may mount it as read/write.
+/// - `all` The volume may have any number of readers and writers.
+pub enum ClusterVolumeSpecAccessModeInlineItemSharingInlineItem {
+    #[serde(rename = "none")]
+    None,
+    #[serde(rename = "readonly")]
+    Readonly,
+    #[serde(rename = "onewriter")]
+    Onewriter,
+    #[serde(rename = "all")]
+    All,
+}
+
+impl AsRef<str> for ClusterVolumeSpecAccessModeInlineItemSharingInlineItem {
+    fn as_ref(&self) -> &str {
+        match self {
+            ClusterVolumeSpecAccessModeInlineItemSharingInlineItem::None => "none",
+            ClusterVolumeSpecAccessModeInlineItemSharingInlineItem::Readonly => "readonly",
+            ClusterVolumeSpecAccessModeInlineItemSharingInlineItem::Onewriter => "onewriter",
+            ClusterVolumeSpecAccessModeInlineItemSharingInlineItem::All => "all",
+        }
+    }
+}
+
+impl std::fmt::Display for ClusterVolumeSpecAccessModeInlineItemSharingInlineItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -442,19 +795,6 @@ pub struct ContainerConfig {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-/// Container created successfully
-pub struct ContainerCreate201Response {
-    #[serde(rename = "Id")]
-    /// The ID of the created container
-    pub id: String,
-    #[serde(rename = "Warnings")]
-    #[serde(default)]
-    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
-    /// Warnings encountered when creating the container
-    pub warnings: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Configuration for a container that is portable between hosts.
 ///
 /// When used as `ContainerConfig` field in an image, `ContainerConfig` is an
@@ -579,6 +919,19 @@ pub struct ContainerCreateBodyParam {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// OK response to ContainerCreate operation
+pub struct ContainerCreateResponse {
+    #[serde(rename = "Id")]
+    /// The ID of the created container
+    pub id: String,
+    #[serde(rename = "Warnings")]
+    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
+    /// Warnings encountered when creating the container
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ContainerExecExecConfigParam {
     #[serde(rename = "AttachStderr")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -596,6 +949,10 @@ pub struct ContainerExecExecConfigParam {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Command to run, as a string or array of strings.
     pub cmd: Option<Vec<String>>,
+    #[serde(rename = "ConsoleSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Initial console size, as an `[height, width]` array.
+    pub console_size: Option<Vec<isize>>,
     #[serde(rename = "DetachKeys")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Override the key sequence for detaching a container. Format is
@@ -1063,18 +1420,13 @@ pub struct ContainerUpdateUpdateParam {
     /// processes. This field is omitted if empty, and the default (as
     /// configured on the daemon) is used.
     pub init: Option<bool>,
-    #[serde(rename = "KernelMemory")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    /// Kernel memory limit in bytes.
-    ///
-    /// <p><br /></p>
-    ///
-    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-    /// > `kmem.limit_in_bytes`.
-    pub kernel_memory: Option<i64>,
     #[serde(rename = "KernelMemoryTCP")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Hard limit for kernel TCP buffer memory (in bytes).
+    /// Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+    /// OCI runtime in use, this option may be ignored. It is no longer supported
+    /// by the default (runc) runtime.
+    ///
+    /// This field is omitted when empty.
     pub kernel_memory_tcp: Option<i64>,
     #[serde(rename = "Memory")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1161,13 +1513,15 @@ pub struct ContainerWaitResponse {
     pub error: Option<ContainerWaitExitError>,
     #[serde(rename = "StatusCode")]
     /// Exit code of the container
-    pub status_code: isize,
+    pub status_code: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CreateImageInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
+    #[serde(rename = "errorDetail")]
+    pub error_detail: Option<ErrorDetail>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1629,6 +1983,10 @@ pub struct ExecInspect200Response {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ExecStartExecStartConfigParam {
+    #[serde(rename = "ConsoleSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Initial console size, as an `[height, width]` array.
+    pub console_size: Option<Vec<isize>>,
     #[serde(rename = "Detach")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Detach from the command.
@@ -1722,7 +2080,7 @@ pub struct HealthConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The time to wait between checks in nanoseconds. It should be 0 or at
     /// least 1000000 (1 ms). 0 means inherit.
-    pub interval: Option<isize>,
+    pub interval: Option<i64>,
     #[serde(rename = "Retries")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The number of consecutive failures needed to consider a container as
@@ -1733,7 +2091,7 @@ pub struct HealthConfig {
     /// Start period for the container to initialize before starting
     /// health-retries countdown in nanoseconds. It should be 0 or at least
     /// 1000000 (1 ms). 0 means inherit.
-    pub start_period: Option<isize>,
+    pub start_period: Option<i64>,
     #[serde(rename = "Test")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The test to perform. Possible values are:
@@ -1747,7 +2105,7 @@ pub struct HealthConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The time to wait before considering the check to have hung. It should
     /// be 0 or at least 1000000 (1 ms). 0 means inherit.
-    pub timeout: Option<isize>,
+    pub timeout: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1958,7 +2316,7 @@ pub struct HostConfig {
     pub cgroupns_mode: Option<String>,
     #[serde(rename = "ConsoleSize")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Initial console size, as an `[height, width]` array. (Windows only)
+    /// Initial console size, as an `[height, width]` array.
     pub console_size: Option<Vec<isize>>,
     #[serde(rename = "ContainerIDFile")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2077,18 +2435,13 @@ pub struct HostConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Isolation technology of the container. (Windows only)
     pub isolation: Option<String>,
-    #[serde(rename = "KernelMemory")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    /// Kernel memory limit in bytes.
-    ///
-    /// <p><br /></p>
-    ///
-    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-    /// > `kmem.limit_in_bytes`.
-    pub kernel_memory: Option<i64>,
     #[serde(rename = "KernelMemoryTCP")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Hard limit for kernel TCP buffer memory (in bytes).
+    /// Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+    /// OCI runtime in use, this option may be ignored. It is no longer supported
+    /// by the default (runc) runtime.
+    ///
+    /// This field is omitted when empty.
     pub kernel_memory_tcp: Option<i64>,
     #[serde(rename = "Links")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2200,7 +2553,7 @@ pub struct HostConfig {
     #[serde(rename = "ShmSize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Size of `/dev/shm` in bytes. If omitted, the system uses 64MB.
-    pub shm_size: Option<isize>,
+    pub shm_size: Option<i64>,
     #[serde(rename = "StorageOpt")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Storage driver options for this container, in the form `{"size": "120G"}`.
@@ -2556,7 +2909,7 @@ pub struct ImageInspect {
     /// List of image names/tags in the local image cache that reference this
     /// image.
     ///
-    /// Multiple image tags can refer to the same imagem and this list may be
+    /// Multiple image tags can refer to the same image, and this list may be
     /// empty if no tags reference the image, in which case the image is
     /// "untagged", in which case it can still be referenced by its ID.
     pub repo_tags: Option<Vec<String>>,
@@ -2697,7 +3050,7 @@ pub struct ImageSummary {
     /// List of image names/tags in the local image cache that reference this
     /// image.
     ///
-    /// Multiple image tags can refer to the same imagem and this list may be
+    /// Multiple image tags can refer to the same image, and this list may be
     /// empty if no tags reference the image, in which case the image is
     /// "untagged", in which case it can still be referenced by its ID.
     pub repo_tags: Vec<String>,
@@ -2707,7 +3060,7 @@ pub struct ImageSummary {
     ///
     /// This size is not calculated by default. `-1` indicates that the value
     /// has not been set / calculated.
-    pub shared_size: isize,
+    pub shared_size: i64,
     #[serde(rename = "Size")]
     /// Total size of the image including all layers it is composed of.
     pub size: i64,
@@ -2871,6 +3224,7 @@ pub struct Mount {
     /// - `volume` Creates a volume with the given name and options (or uses a pre-existing volume with the same name and options). These are **not** removed when the container is removed.
     /// - `tmpfs` Create a tmpfs with the given options. The mount source cannot be specified for tmpfs.
     /// - `npipe` Mounts a named pipe from the host into the container. Must exist prior to creating the container.
+    /// - `cluster` a Swarm cluster volume
     pub type_: Option<String>,
     #[serde(rename = "VolumeOptions")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -2881,6 +3235,10 @@ pub struct Mount {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Optional configuration for the `bind` type.
 pub struct MountBindOptionsInlineItem {
+    #[serde(rename = "CreateMountpoint")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Create mount point on host if missing
+    pub create_mountpoint: Option<bool>,
     #[serde(rename = "NonRecursive")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Disable recursive bind mount.
@@ -2979,6 +3337,7 @@ pub struct MountPoint {
     /// - `volume` a docker volume with the given `Name`.
     /// - `tmpfs` a `tmpfs`.
     /// - `npipe` a named pipe from the host into the container.
+    /// - `cluster` a Swarm cluster volume
     pub type_: Option<String>,
 }
 
@@ -2989,6 +3348,7 @@ pub struct MountPoint {
 /// - `volume` a docker volume with the given `Name`.
 /// - `tmpfs` a `tmpfs`.
 /// - `npipe` a named pipe from the host into the container.
+/// - `cluster` a Swarm cluster volume
 pub enum MountPointTypeInlineItem {
     #[serde(rename = "bind")]
     Bind,
@@ -2998,6 +3358,8 @@ pub enum MountPointTypeInlineItem {
     Tmpfs,
     #[serde(rename = "npipe")]
     Npipe,
+    #[serde(rename = "cluster")]
+    Cluster,
 }
 
 impl AsRef<str> for MountPointTypeInlineItem {
@@ -3007,6 +3369,7 @@ impl AsRef<str> for MountPointTypeInlineItem {
             MountPointTypeInlineItem::Volume => "volume",
             MountPointTypeInlineItem::Tmpfs => "tmpfs",
             MountPointTypeInlineItem::Npipe => "npipe",
+            MountPointTypeInlineItem::Cluster => "cluster",
         }
     }
 }
@@ -3037,6 +3400,7 @@ pub struct MountTmpfsOptionsInlineItem {
 /// - `volume` Creates a volume with the given name and options (or uses a pre-existing volume with the same name and options). These are **not** removed when the container is removed.
 /// - `tmpfs` Create a tmpfs with the given options. The mount source cannot be specified for tmpfs.
 /// - `npipe` Mounts a named pipe from the host into the container. Must exist prior to creating the container.
+/// - `cluster` a Swarm cluster volume
 pub enum MountTypeInlineItem {
     #[serde(rename = "bind")]
     Bind,
@@ -3046,6 +3410,8 @@ pub enum MountTypeInlineItem {
     Tmpfs,
     #[serde(rename = "npipe")]
     Npipe,
+    #[serde(rename = "cluster")]
+    Cluster,
 }
 
 impl AsRef<str> for MountTypeInlineItem {
@@ -3055,6 +3421,7 @@ impl AsRef<str> for MountTypeInlineItem {
             MountTypeInlineItem::Volume => "volume",
             MountTypeInlineItem::Tmpfs => "tmpfs",
             MountTypeInlineItem::Npipe => "npipe",
+            MountTypeInlineItem::Cluster => "cluster",
         }
     }
 }
@@ -3273,7 +3640,7 @@ pub struct NetworkPrune200Response {
 pub struct NetworkSettings {
     #[serde(rename = "Bridge")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Name of the network'a bridge (for example, `docker0`).
+    /// Name of the network's bridge (for example, `docker0`).
     pub bridge: Option<String>,
     #[serde(rename = "EndpointID")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -4323,18 +4690,13 @@ pub struct Resources {
     /// processes. This field is omitted if empty, and the default (as
     /// configured on the daemon) is used.
     pub init: Option<bool>,
-    #[serde(rename = "KernelMemory")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    /// Kernel memory limit in bytes.
-    ///
-    /// <p><br /></p>
-    ///
-    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-    /// > `kmem.limit_in_bytes`.
-    pub kernel_memory: Option<i64>,
     #[serde(rename = "KernelMemoryTCP")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Hard limit for kernel TCP buffer memory (in bytes).
+    /// Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+    /// OCI runtime in use, this option may be ignored. It is no longer supported
+    /// by the default (runc) runtime.
+    ///
+    /// This field is omitted when empty.
     pub kernel_memory_tcp: Option<i64>,
     #[serde(rename = "Memory")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -5659,7 +6021,7 @@ pub struct SwarmJoinBodyParam {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Address or interface to use for data path traffic (format:
     /// `<ip|interface>`), for example,  `192.168.1.1`, or an interface,
-    /// like `eth0`. If `DataPathAddr` is unspecified, the same addres
+    /// like `eth0`. If `DataPathAddr` is unspecified, the same address
     /// as `AdvertiseAddr` is used.
     ///
     /// The `DataPathAddr` specifies the address that global scope
@@ -6144,18 +6506,10 @@ pub struct SystemInfo {
     ///
     /// This option is currently not used on other platforms.
     pub isolation: Option<String>,
-    #[serde(rename = "KernelMemory")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    /// Indicates if the host has kernel memory limit support enabled.
-    ///
-    /// <p><br /></p>
-    ///
-    /// > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-    /// > `kmem.limit_in_bytes`.
-    pub kernel_memory: Option<bool>,
     #[serde(rename = "KernelMemoryTCP")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Indicates if the host has kernel memory TCP limit support enabled.
+    /// Indicates if the host has kernel memory TCP limit support enabled. This
+    /// field is omitted if not supported.
     ///
     /// Kernel memory TCP limits are not supported when using cgroups v2, which
     /// does not support the corresponding `memory.kmem.tcp.limit_in_bytes` cgroup.
@@ -7304,8 +7658,31 @@ pub struct ThrottleDevice {
     pub rate: Option<i64>,
 }
 
+/// A map of topological domains to topological segments. For in depth
+/// details, see documentation for the Topology object in the CSI
+/// specification.
+pub type Topology = HashMap<String, String>;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Usage details about the volume. This information is used by the
+/// `GET /system/df` endpoint, and omitted in other endpoints.
+pub struct UsageData {
+    #[serde(rename = "RefCount")]
+    /// The number of containers referencing this volume. This field
+    /// is set to `-1` if the reference-count is not available.
+    pub ref_count: i64,
+    #[serde(rename = "Size")]
+    /// Amount of disk space used by the volume (in bytes). This information
+    /// is only available for volumes created with the `"local"` volume
+    /// driver. For volumes created with other volume drivers, this field
+    /// is set to `-1` ("not available")
+    pub size: i64,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Volume {
+    #[serde(rename = "ClusterVolume")]
+    pub cluster_volume: Option<ClusterVolume>,
     #[serde(rename = "CreatedAt")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Date/Time the volume was created.
@@ -7346,12 +7723,14 @@ pub struct Volume {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Usage details about the volume. This information is used by the
     /// `GET /system/df` endpoint, and omitted in other endpoints.
-    pub usage_data: Option<VolumeUsageDataInlineItem>,
+    pub usage_data: Option<UsageData>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Volume configuration
 pub struct VolumeCreateOptions {
+    #[serde(rename = "ClusterVolumeSpec")]
+    pub cluster_volume_spec: Option<ClusterVolumeSpec>,
     #[serde(rename = "Driver")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Name of the volume driver to use.
@@ -7372,18 +7751,16 @@ pub struct VolumeCreateOptions {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-/// Summary volume data that matches the query
-pub struct VolumeList200Response {
+/// Volume list response
+pub struct VolumeListResponse {
     #[serde(rename = "Volumes")]
-    #[serde(default)]
-    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// List of volumes
-    pub volumes: Vec<Volume>,
+    pub volumes: Option<Vec<Volume>>,
     #[serde(rename = "Warnings")]
-    #[serde(default)]
-    #[serde(deserialize_with = "deserialize_nonoptional_vec")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// Warnings that occurred when fetching the list of volumes.
-    pub warnings: Vec<String>,
+    pub warnings: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -7425,19 +7802,10 @@ impl std::fmt::Display for VolumeScopeInlineItem {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-/// Usage details about the volume. This information is used by the
-/// `GET /system/df` endpoint, and omitted in other endpoints.
-pub struct VolumeUsageDataInlineItem {
-    #[serde(rename = "RefCount")]
-    /// The number of containers referencing this volume. This field
-    /// is set to `-1` if the reference-count is not available.
-    pub ref_count: isize,
-    #[serde(rename = "Size")]
-    /// Amount of disk space used by the volume (in bytes). This information
-    /// is only available for volumes created with the `"local"` volume
-    /// driver. For volumes created with other volume drivers, this field
-    /// is set to `-1` ("not available")
-    pub size: isize,
+/// Volume configuration
+pub struct VolumeUpdateBodyParam {
+    #[serde(rename = "Spec")]
+    pub spec: Option<ClusterVolumeSpec>,
 }
 
 pub type ConfigUpdateBodyParam = ConfigSpec;
