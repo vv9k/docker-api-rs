@@ -1,6 +1,23 @@
 use containers_api::{impl_field, impl_opts_builder, impl_str_field, impl_vec_field};
+use serde::Serialize;
 
 impl_opts_builder!(json => ExecCreate);
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+/// Initial size of the console
+pub struct ConsoleSize {
+    pub height: u64,
+    pub width: u64,
+}
+
+impl Serialize for ConsoleSize {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        [self.height, self.width].serialize(serializer)
+    }
+}
 
 impl ExecCreateOptsBuilder {
     impl_vec_field!(
@@ -48,6 +65,11 @@ impl ExecCreateOptsBuilder {
     impl_str_field!(
         /// The working directory for the exec process inside the container.
         working_dir => "WorkingDir"
+    );
+
+    impl_field!(
+        /// Initial console size
+        console_size: ConsoleSize => "ConsoleSize"
     );
 }
 
