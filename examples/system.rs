@@ -43,7 +43,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
         }
         Cmd::DataUsage => {
-            match docker.data_usage().await {
+            use docker_api::opts::{DataUsageType, SystemDataUsageOpts};
+            match docker
+                .data_usage(
+                    &SystemDataUsageOpts::builder()
+                        .types([
+                            DataUsageType::Image,
+                            DataUsageType::Container,
+                            DataUsageType::Volume,
+                        ])
+                        .build(),
+                )
+                .await
+            {
                 Ok(info) => println!("{info:#?}"),
                 Err(e) => eprintln!("Error: {e}"),
             };

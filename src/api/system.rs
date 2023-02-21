@@ -1,4 +1,8 @@
-use crate::{models, opts::EventsOpts, Docker, Error, Result};
+use crate::{
+    models,
+    opts::{EventsOpts, SystemDataUsageOpts},
+    Docker, Error, Result,
+};
 use containers_api::url::construct_ep;
 use futures_util::{Stream, TryStreamExt};
 
@@ -54,7 +58,8 @@ impl Docker {
     api_doc! { System => DataUsage
     |
     /// Returns data usage of this Docker instance
-    pub async fn data_usage(&self) -> Result<models::SystemDataUsage200Response> {
-        self.get_json("/system/df").await
+    pub async fn data_usage(&self, opts: &SystemDataUsageOpts) -> Result<models::SystemDataUsage200Response> {
+        let ep = construct_ep("/system/df", opts.serialize());
+        self.get_json(&ep).await
     }}
 }

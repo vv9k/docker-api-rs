@@ -1,3 +1,4 @@
+use containers_api::impl_opts_builder;
 use std::collections::HashMap;
 
 /// Opts for filtering streams of Docker events
@@ -157,5 +158,35 @@ impl EventsOptsBuilder {
         EventsOpts {
             params: self.params,
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum DataUsageType {
+    Container,
+    Image,
+    Volume,
+    BuildCache,
+}
+
+impl AsRef<str> for DataUsageType {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Container => "container",
+            Self::Image => "image",
+            Self::Volume => "volume",
+            Self::BuildCache => "build-cache",
+        }
+    }
+}
+
+impl_opts_builder!(url => SystemDataUsage);
+impl SystemDataUsageOptsBuilder {
+    pub fn types(mut self, types: impl IntoIterator<Item = DataUsageType>) -> Self {
+        self.vec_params.insert(
+            "type",
+            types.into_iter().map(|s| s.as_ref().into()).collect(),
+        );
+        self
     }
 }

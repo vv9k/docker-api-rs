@@ -1,6 +1,7 @@
 mod common;
 
 use common::init_runtime;
+use docker_api::opts::{DataUsageType, SystemDataUsageOpts};
 
 #[tokio::test]
 async fn docker_info() {
@@ -44,7 +45,17 @@ async fn docker_version() {
 async fn docker_data_usage() {
     let docker = init_runtime();
 
-    let du_result = docker.data_usage().await;
+    let du_result = docker
+        .data_usage(
+            &SystemDataUsageOpts::builder()
+                .types([
+                    DataUsageType::Image,
+                    DataUsageType::Container,
+                    DataUsageType::Volume,
+                ])
+                .build(),
+        )
+        .await;
     assert!(du_result.is_ok());
     let _du_data = du_result.unwrap();
 }
