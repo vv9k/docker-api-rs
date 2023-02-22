@@ -547,6 +547,26 @@ impl ContainerCreateOptsBuilder {
             params: self.params.clone(),
         }
     }
+
+    impl_str_field!(
+    /// The hostname to use for the container, as a valid RFC 1123 hostname.
+        hostname => "Hostname"
+    );
+
+    impl_str_field!(
+    /// The domain name to use for the container.
+        domainname => "Domainname"
+    );
+
+    impl_str_field!(
+    /// IPC sharing mode for the container. Default is "private" or "shareable", depending on daemon version.
+        ipc => "HostConfig.IpcMode"
+    );
+
+    impl_str_field!(
+    /// Set the PID (Process) Namespace mode for the container.
+        pid => "HostConfig.PidMode"
+    );
 }
 
 impl_opts_builder!(url => ContainerRemove);
