@@ -331,11 +331,17 @@ impl ToString for PublishPort {
     }
 }
 
+/// IPC sharing mode for the container.
 pub enum IpcMode {
+    /// "none": own private IPC namespace, with /dev/shm not mounted
     None,
+    /// "private": own private IPC namespace
     Private,
+    /// "shareable": own private IPC namespace, with a possibility to share it with other containers
     Shareable,
+    /// "container:<name|id>": join another (shareable) container's IPC namespace
     Container(String),
+    /// "host": use the host system's IPC namespace
     Host,
 }
 
@@ -351,8 +357,11 @@ impl ToString for IpcMode {
     }
 }
 
+/// PID (Process) Namespace mode for the container.
 pub enum PidMode {
+    /// "container:<name|id>": joins another container's PID namespace
     Container(String),
+    /// "host": use the host's PID namespace inside the container
     Host,
 }
 
