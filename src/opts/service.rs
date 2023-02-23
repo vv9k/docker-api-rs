@@ -58,7 +58,7 @@ impl ServiceOpts {
     }
 
     pub fn serialize_vec(&self) -> Result<Vec<u8>> {
-        serde_json::to_vec(&self).map_err(Error::from)
+        serde_json::to_vec(&self.params).map_err(Error::from)
     }
 
     pub(crate) fn auth_header(&self) -> Option<String> {
