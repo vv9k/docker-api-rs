@@ -2,8 +2,8 @@ use crate::models::Labels;
 use crate::opts::ImageName;
 use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
-    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
-    impl_url_bool_field, impl_url_str_field, impl_vec_field,
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_enum_field,
+    impl_str_field, impl_url_bool_field, impl_url_str_field, impl_vec_field,
 };
 
 use std::{
@@ -331,6 +331,40 @@ impl ToString for PublishPort {
     }
 }
 
+pub enum IpcMode {
+    None,
+    Private,
+    Shareable,
+    Container(String),
+    Host,
+}
+
+impl ToString for IpcMode {
+    fn to_string(&self) -> String {
+        match &self {
+            IpcMode::None => String::from("none"),
+            IpcMode::Private => String::from("private"),
+            IpcMode::Shareable => String::from("shareable"),
+            IpcMode::Container(id) => format!("container:{}", id),
+            IpcMode::Host => String::from("host"),
+        }
+    }
+}
+
+pub enum PidMode {
+    Container(String),
+    Host,
+}
+
+impl ToString for PidMode {
+    fn to_string(&self) -> String {
+        match &self {
+            PidMode::Container(id) => format!("container:{}", id),
+            PidMode::Host => String::from("host"),
+        }
+    }
+}
+
 impl ContainerCreateOptsBuilder {
     pub fn new(name: impl Into<String>) -> Self {
         Self {
@@ -558,14 +592,14 @@ impl ContainerCreateOptsBuilder {
         domainname => "Domainname"
     );
 
-    impl_str_field!(
+    impl_str_enum_field!(
     /// IPC sharing mode for the container. Default is "private" or "shareable", depending on daemon version.
-        ipc => "HostConfig.IpcMode"
+        ipc: IpcMode => "HostConfig.IpcMode"
     );
 
-    impl_str_field!(
+    impl_str_enum_field!(
     /// Set the PID (Process) Namespace mode for the container.
-        pid => "HostConfig.PidMode"
+        pid: PidMode => "HostConfig.PidMode"
     );
 }
 
