@@ -2,8 +2,8 @@ use crate::models::Labels;
 use crate::opts::ImageName;
 use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
-    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field,
-    impl_url_bool_field, impl_url_str_field, impl_vec_field,
+    impl_field, impl_filter_func, impl_map_field, impl_opts_builder, impl_str_enum_field,
+    impl_str_field, impl_url_bool_field, impl_url_str_field, impl_vec_field,
 };
 
 use std::{
@@ -336,6 +336,49 @@ impl ToString for PublishPort {
     }
 }
 
+/// IPC sharing mode for the container.
+pub enum IpcMode {
+    /// "none": own private IPC namespace, with /dev/shm not mounted
+    None,
+    /// "private": own private IPC namespace
+    Private,
+    /// "shareable": own private IPC namespace, with a possibility to share it with other containers
+    Shareable,
+    /// "container:<name|id>": join another (shareable) container's IPC namespace
+    Container(String),
+    /// "host": use the host system's IPC namespace
+    Host,
+}
+
+impl ToString for IpcMode {
+    fn to_string(&self) -> String {
+        match &self {
+            IpcMode::None => String::from("none"),
+            IpcMode::Private => String::from("private"),
+            IpcMode::Shareable => String::from("shareable"),
+            IpcMode::Container(id) => format!("container:{}", id),
+            IpcMode::Host => String::from("host"),
+        }
+    }
+}
+
+/// PID (Process) Namespace mode for the container.
+pub enum PidMode {
+    /// "container:<name|id>": joins another container's PID namespace
+    Container(String),
+    /// "host": use the host's PID namespace inside the container
+    Host,
+}
+
+impl ToString for PidMode {
+    fn to_string(&self) -> String {
+        match &self {
+            PidMode::Container(id) => format!("container:{}", id),
+            PidMode::Host => String::from("host"),
+        }
+    }
+}
+
 impl ContainerCreateOptsBuilder {
     pub fn new(name: impl Into<String>) -> Self {
         Self {
@@ -552,6 +595,26 @@ impl ContainerCreateOptsBuilder {
             params: self.params.clone(),
         }
     }
+
+    impl_str_field!(
+    /// The hostname to use for the container, as a valid RFC 1123 hostname.
+        hostname => "Hostname"
+    );
+
+    impl_str_field!(
+    /// The domain name to use for the container.
+        domainname => "Domainname"
+    );
+
+    impl_str_enum_field!(
+    /// IPC sharing mode for the container. Default is "private" or "shareable", depending on daemon version.
+        ipc: IpcMode => "HostConfig.IpcMode"
+    );
+
+    impl_str_enum_field!(
+    /// Set the PID (Process) Namespace mode for the container.
+        pid: PidMode => "HostConfig.PidMode"
+    );
 }
 
 impl_opts_builder!(url => ContainerRemove);
