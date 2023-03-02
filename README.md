@@ -10,7 +10,7 @@ Add the following to your `Cargo.toml` file
 
 ```toml
 [dependencies]
-docker-api = "0.12"
+docker-api = "0.13"
 ```
 
 ## Supported API
@@ -24,7 +24,7 @@ Default endpoints include:
 
 To enable swarm endpoints add a `swarm` feature to `Cargo.toml` like so:
 ```toml
-docker-api = { version = "0.12", features = ["swarm"] }
+docker-api = { version = "0.13", features = ["swarm"] }
 ```
 
 Swarm endpoints include:
@@ -36,7 +36,7 @@ Swarm endpoints include:
  - Configs
  - Plugins
 
-Latest stable version of this crate supports API version: **v1.41**
+Latest stable version of this crate supports API version: **v1.42**
 Master branch supports: **v1.42**
 
 ## Features
@@ -53,7 +53,7 @@ To enable chrono DateTime timestamps add a `chrono` feature flag to `Cargo.toml`
 
 By default only `chrono` feature is enabled. To disable it use:
 ```toml
-docker-api = { version = "0.12", default-features = false }
+docker-api = { version = "0.13", default-features = false }
 ```
 
 ## Usage

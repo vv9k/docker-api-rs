@@ -1,6 +1,6 @@
 //! Main entrypoint for interacting with the Docker API.
 //!
-//! API Reference: <https://docs.docker.com/engine/api/v1.41/>
+//! API Reference: <https://docs.docker.com/engine/api/v1.42/>
 use crate::{
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},

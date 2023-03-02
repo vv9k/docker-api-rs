@@ -19,12 +19,12 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 /// Latest Docker API version supported by this crate.
-pub const LATEST_API_VERSION: ApiVersion = ApiVersion::new(1, Some(41), None);
+pub const LATEST_API_VERSION: ApiVersion = ApiVersion::new(1, Some(42), None);
 
 /// https://github.com/rust-lang/rust/issues/53749
 macro_rules! version {
     () => {
-        "v1.41"
+        "v1.42"
     };
 }
 
