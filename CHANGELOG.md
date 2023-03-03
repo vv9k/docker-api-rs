@@ -9,6 +9,7 @@
 - Add `Volume::update` endpoint
 - Bumped default API version and models to v1.42
 - Add parameters Hostname,Domainname,IpcMode and PidMode to `ContainerCreateOptsBuilder`
+- Fix `Container::commit` and change the signature to take optional container config as second parameter
 
 # 0.12.0
 - Fix some integer fields that could be negative but previously were a usize like `ImageSummary::containers`

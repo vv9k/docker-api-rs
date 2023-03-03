@@ -340,12 +340,19 @@ impl Container {
     api_doc! { Image => Commit
     |
     /// Create a new image from this container
-    pub async fn commit(&self, opts: &ContainerCommitOpts) -> Result<String> {
+    pub async fn commit(&self, opts: &ContainerCommitOpts, config: Option<&models::ContainerConfig>) -> Result<String> {
         #[derive(Deserialize)]
         struct IdStruct {
             #[serde(rename = "Id")]
             id: String,
         }
+
+        let payload = if let Some(config) = config {
+            Payload::Json(serde_json::to_string(config)?)
+        } else {
+            Payload::Json("{}".into()) // empty json
+        };
+
         self.docker
             .post_json(
                 format!(
@@ -354,7 +361,7 @@ impl Container {
                         .serialize()
                         .unwrap_or_default()
                 ),
-                Payload::None::<Vec<_>>,
+                payload,
                 Headers::none(),
             )
             .await

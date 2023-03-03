@@ -209,7 +209,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if let Some(changes) = changes {
                 opts = opts.changes(changes)
             }
-            match docker.containers().get(id).commit(&opts.build()).await {
+            match docker
+                .containers()
+                .get(id)
+                .commit(&opts.build(), None)
+                .await
+            {
                 Ok(id) => println!("{id:?}"),
                 Err(e) => eprintln!("Error: {e}"),
             }

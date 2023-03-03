@@ -226,6 +226,7 @@ async fn container_commit() {
                 .repo("test-commit-image")
                 .tag("test")
                 .build(),
+            None,
         )
         .await;
     assert!(commit_result.is_ok());
