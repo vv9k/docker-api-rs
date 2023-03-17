@@ -1,4 +1,4 @@
-use crate::models::Labels;
+use crate::models::{Labels, NetworkingConfig};
 use crate::opts::ImageName;
 use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
@@ -614,6 +614,11 @@ impl ContainerCreateOptsBuilder {
     impl_str_enum_field!(
     /// Set the PID (Process) Namespace mode for the container.
         pid: PidMode => "HostConfig.PidMode"
+    );
+
+    impl_field!(
+    /// Represents the container's networking configuration for each of its interfaces.
+        network_config: NetworkingConfig => "NetworkingConfig"
     );
 }
 

@@ -1,3 +1,6 @@
+#
+- Add `ContainerCreateOptsBuilder::network_config`
+
 # 0.13.0
 - Fix Container::attach output when TTY is enabled on container
 - Add `Image::build_par` that uses multithreaded compression algorithm for creating context directory archive. This method is behind `par-compression` feature flag.
