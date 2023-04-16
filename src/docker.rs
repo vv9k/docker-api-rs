@@ -4,7 +4,7 @@
 use crate::{
     conn::{get_http_connector, Headers, Payload, Transport},
     errors::{Error, Result},
-    ApiVersion, Containers, Images, Networks, Volumes, LATEST_API_VERSION,
+    ApiVersion, Containers, Images, Networks, Volumes,
 };
 use containers_api::conn::RequestClient;
 
@@ -23,13 +23,13 @@ use futures_util::{
 use hyper::{body::Bytes, Body, Client, Response};
 use serde::de::DeserializeOwned;
 use std::future::Future;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 
 /// Entrypoint interface for communicating with docker daemon
 #[derive(Debug, Clone)]
 pub struct Docker {
-    version: ApiVersion,
+    version: Option<ApiVersion>,
     client: RequestClient<Error>,
 }
 
@@ -45,29 +45,25 @@ impl Docker {
     ///  To create a Docker instance utilizing TLS use explicit [Docker::tls](Docker::tls)
     ///  constructor (this requires `tls` feature enabled).
     ///  
-    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
-    ///  [`Docker::new_versioned`](Docker::new_versioned).
-    pub fn new<U>(uri: U) -> Result<Docker>
-    where
-        U: AsRef<str>,
-    {
-        Self::new_versioned(uri, LATEST_API_VERSION)
+    ///  This creates an unversioned connector that'll use the latest server version, to use a specific version see
+    ///  [`Docker::unix_versioned`](Docker::unix_versioned).
+    pub fn new(uri: impl AsRef<str>) -> Result<Self> {
+        Self::new_impl(uri.as_ref(), None)
     }
 
     /// Same as [`Docker::new`](Docker::new) but the API version can be explicitly specified.
-    pub fn new_versioned<U>(uri: U, version: impl Into<ApiVersion>) -> Result<Docker>
-    where
-        U: AsRef<str>,
-    {
-        let version = version.into();
-        let uri = uri.as_ref();
+    pub fn new_versioned(uri: impl AsRef<str>, version: impl Into<ApiVersion>) -> Result<Self> {
+        Self::new_impl(uri.as_ref(), Some(version.into()))
+    }
+
+    fn new_impl(uri: &str, version: Option<ApiVersion>) -> Result<Self> {
         let mut it = uri.split("://");
 
         match it.next() {
             #[cfg(unix)]
             Some("unix") => {
                 if let Some(path) = it.next() {
-                    Ok(Docker::unix_versioned(path, version))
+                    Ok(Self::new_unix_impl(path, version))
                 } else {
                     Err(Error::MissingAuthority)
                 }
@@ -76,7 +72,7 @@ impl Docker {
             Some("unix") => Err(Error::UnsupportedScheme("unix".to_string())),
             Some("tcp") | Some("http") => {
                 if let Some(host) = it.next() {
-                    Docker::tcp_versioned(host, version)
+                    Self::new_tcp_impl(host, version)
                 } else {
                     Err(Error::MissingAuthority)
                 }
@@ -94,30 +90,29 @@ impl Docker {
     /// `socket_path` is the part of URI that comes after the `unix://`. For example a URI `unix:///run/docker.sock` has a
     /// `socket_path` == "/run/docker.sock".
     ///  
-    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
+    ///  This creates an unversioned connector that'll use the latest server version, to use a specific version see
     ///  [`Docker::unix_versioned`](Docker::unix_versioned).
-    pub fn unix<P>(socket_path: P) -> Docker
-    where
-        P: AsRef<Path>,
-    {
-        Self::unix_versioned(socket_path, LATEST_API_VERSION)
+    pub fn unix(socket_path: impl AsRef<Path>) -> Self {
+        Self::new_unix_impl(socket_path.as_ref(), None)
     }
 
     #[cfg(unix)]
     #[cfg_attr(docsrs, doc(cfg(unix)))]
     /// Same as [`Docker::unix`](Docker::unix) but the API version can be explicitly specified.
-    pub fn unix_versioned<P>(socket_path: P, version: impl Into<ApiVersion>) -> Docker
-    where
-        P: AsRef<Path>,
-    {
+    pub fn unix_versioned(socket_path: impl AsRef<Path>, version: impl Into<ApiVersion>) -> Self {
+        Self::new_unix_impl(socket_path.as_ref(), Some(version.into()))
+    }
+
+    #[cfg(unix)]
+    fn new_unix_impl(socket_path: impl Into<PathBuf>, version: Option<ApiVersion>) -> Self {
         Docker {
-            version: version.into(),
+            version,
             client: RequestClient::new(
                 Transport::Unix {
                     client: Client::builder()
                         .pool_max_idle_per_host(0)
                         .build(get_unix_connector()),
-                    path: socket_path.as_ref().to_path_buf(),
+                    path: socket_path.into(),
                 },
                 Box::new(validate_response),
             ),
@@ -137,37 +132,42 @@ impl Docker {
     /// Returns an error if the provided host will fail to parse as URL or reading the certificate
     /// files will fail.
     ///  
-    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
-    ///  [`Docker::tls_versioned`](Docker::tls_versioned).
-    pub fn tls<H, P>(host: H, cert_path: P, verify: bool) -> Result<Docker>
-    where
-        H: AsRef<str>,
-        P: AsRef<Path>,
-    {
-        Self::tls_versioned(host, LATEST_API_VERSION, cert_path, verify)
+    ///  This creates an unversioned connector that'll use the latest server version, to use a specific version see
+    ///  [`Docker::unix_versioned`](Docker::unix_versioned).
+    pub fn tls(host: impl AsRef<str>, cert_path: impl AsRef<Path>, verify: bool) -> Result<Self> {
+        Self::new_tls_impl(host.as_ref(), None, cert_path.as_ref(), verify)
     }
 
     #[cfg(feature = "tls")]
     #[cfg_attr(docsrs, doc(cfg(feature = "tls")))]
     /// Same as [`Docker::tls`](Docker::tls) but the API version can be explicitly specified.
-    pub fn tls_versioned<H, P>(
-        host: H,
+    pub fn tls_versioned(
+        host: impl AsRef<str>,
         version: impl Into<ApiVersion>,
-        cert_path: P,
+        cert_path: impl AsRef<Path>,
         verify: bool,
-    ) -> Result<Docker>
-    where
-        H: AsRef<str>,
-        P: AsRef<Path>,
-    {
-        Ok(Docker {
-            version: version.into(),
+    ) -> Result<Self> {
+        Self::new_tls_impl(
+            host.as_ref(),
+            Some(version.into()),
+            cert_path.as_ref(),
+            verify,
+        )
+    }
+
+    #[cfg(feature = "tls")]
+    fn new_tls_impl(
+        host: &str,
+        version: Option<ApiVersion>,
+        cert_path: &Path,
+        verify: bool,
+    ) -> Result<Self> {
+        Ok(Self {
+            version,
             client: RequestClient::new(
                 Transport::EncryptedTcp {
-                    client: Client::builder()
-                        .build(get_https_connector(cert_path.as_ref(), verify)?),
-                    host: url::Url::parse(&format!("https://{}", host.as_ref()))
-                        .map_err(Error::InvalidUrl)?,
+                    client: Client::builder().build(get_https_connector(cert_path, verify)?),
+                    host: url::Url::parse(&format!("https://{host}")).map_err(Error::InvalidUrl)?,
                 },
                 Box::new(validate_response),
             ),
@@ -182,27 +182,24 @@ impl Docker {
     ///
     /// Returns an error if the provided host will fail to parse as URL.
     ///  
-    ///  Uses [`LATEST_API_VERSION`](crate::LATEST_API_VERSION), to use a specific version see
-    ///  [`Docker::tcp_versioned`](Docker::tcp_versioned).
-    pub fn tcp<H>(host: H) -> Result<Docker>
-    where
-        H: AsRef<str>,
-    {
-        Self::tcp_versioned(host, LATEST_API_VERSION)
+    ///  This creates an unversioned connector that'll use the latest server version, to use a specific version see
+    ///  [`Docker::unix_versioned`](Docker::unix_versioned).
+    pub fn tcp(host: impl AsRef<str>) -> Result<Self> {
+        Self::new_tcp_impl(host.as_ref(), None)
     }
 
     /// Same as [`Docker::tcp`](Docker::tcp) but the API version can be explicitly specified.
-    pub fn tcp_versioned<H>(host: H, version: impl Into<ApiVersion>) -> Result<Docker>
-    where
-        H: AsRef<str>,
-    {
-        Ok(Docker {
-            version: version.into(),
+    pub fn tcp_versioned(host: impl AsRef<str>, version: impl Into<ApiVersion>) -> Result<Self> {
+        Self::new_tcp_impl(host.as_ref(), Some(version.into()))
+    }
+
+    fn new_tcp_impl(host: &str, version: Option<ApiVersion>) -> Result<Self> {
+        Ok(Self {
+            version,
             client: RequestClient::new(
                 Transport::Tcp {
                     client: Client::builder().build(get_http_connector()),
-                    host: url::Url::parse(&format!("tcp://{}", host.as_ref()))
-                        .map_err(Error::InvalidUrl)?,
+                    host: url::Url::parse(&format!("tcp://{host}")).map_err(Error::InvalidUrl)?,
                 },
                 Box::new(validate_response),
             ),
@@ -239,9 +236,7 @@ impl Docker {
                 .map_err(Error::MalformedVersion)
         })?;
 
-        if server_version <= self.version {
-            self.version = server_version;
-        }
+        self.version = Some(server_version);
 
         Ok(())
     }
@@ -252,14 +247,20 @@ impl Docker {
     //
     //####################################################################################################
 
+    fn make_endpoint(&self, endpoint: impl AsRef<str>) -> String {
+        if let Some(version) = self.version {
+            version.make_endpoint(endpoint)
+        } else {
+            endpoint.as_ref().to_owned()
+        }
+    }
+
     pub(crate) async fn get(&self, endpoint: &str) -> Result<Response<Body>> {
-        self.client.get(self.version.make_endpoint(endpoint)).await
+        self.client.get(self.make_endpoint(endpoint)).await
     }
 
     pub(crate) async fn get_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
-        self.client
-            .get_json(self.version.make_endpoint(endpoint))
-            .await
+        self.client.get_json(self.make_endpoint(endpoint)).await
     }
 
     #[allow(dead_code)]
@@ -273,7 +274,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.client
-            .post(self.version.make_endpoint(endpoint), body, headers)
+            .post(self.make_endpoint(endpoint), body, headers)
             .await
     }
 
@@ -287,7 +288,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.client
-            .post_string(self.version.make_endpoint(endpoint), body, headers)
+            .post_string(self.make_endpoint(endpoint), body, headers)
             .await
     }
 
@@ -302,7 +303,7 @@ impl Docker {
         B: Into<Body>,
     {
         self.client
-            .post_json(self.version.make_endpoint(endpoint), body, headers)
+            .post_json(self.make_endpoint(endpoint), body, headers)
             .await
     }
 
@@ -311,24 +312,22 @@ impl Docker {
         B: Into<Body>,
     {
         self.client
-            .put_string(self.version.make_endpoint(endpoint), body)
+            .put_string(self.make_endpoint(endpoint), body)
             .await
     }
 
     pub(crate) async fn delete(&self, endpoint: &str) -> Result<String> {
         self.client
-            .delete_string(self.version.make_endpoint(endpoint))
+            .delete_string(self.make_endpoint(endpoint))
             .await
     }
 
     pub(crate) async fn delete_json<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
-        self.client
-            .delete_json(self.version.make_endpoint(endpoint))
-            .await
+        self.client.delete_json(self.make_endpoint(endpoint)).await
     }
 
     pub(crate) async fn head(&self, endpoint: &str) -> Result<Response<Body>> {
-        self.client.head(self.version.make_endpoint(endpoint)).await
+        self.client.head(self.make_endpoint(endpoint)).await
     }
 
     /// Send a streaming post request.
@@ -344,7 +343,7 @@ impl Docker {
         B: Into<Body> + 'a,
     {
         self.client
-            .post_stream(self.version.make_endpoint(endpoint), body, headers)
+            .post_stream(self.make_endpoint(endpoint), body, headers)
     }
 
     /// Send a streaming post request that returns a stream of JSON values
@@ -361,14 +360,14 @@ impl Docker {
         T: DeserializeOwned + 'a,
     {
         self.client
-            .post_into_stream(self.version.make_endpoint(endpoint), body, headers)
+            .post_into_stream(self.make_endpoint(endpoint), body, headers)
     }
 
     pub(crate) fn get_stream<'a>(
         &'a self,
         endpoint: impl AsRef<str> + Unpin + 'a,
     ) -> impl Stream<Item = Result<Bytes>> + 'a {
-        self.client.get_stream(self.version.make_endpoint(endpoint))
+        self.client.get_stream(self.make_endpoint(endpoint))
     }
 
     pub(crate) async fn post_upgrade_stream<'a, B>(
@@ -380,7 +379,7 @@ impl Docker {
         B: Into<Body> + 'a,
     {
         self.client
-            .post_upgrade_stream(self.version.make_endpoint(endpoint), body)
+            .post_upgrade_stream(self.make_endpoint(endpoint), body)
             .await
     }
 }
