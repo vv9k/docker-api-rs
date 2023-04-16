@@ -84,3 +84,22 @@ impl ExecResizeOptsBuilder {
     impl_field!(height: u64 => "Height");
     impl_field!(width: u64 => "Width");
 }
+
+impl_opts_builder!(json => ExecStart);
+
+impl ExecStartOptsBuilder {
+    impl_field!(
+        /// Detach from the command.
+        detach: bool => "Detach"
+    );
+
+    impl_field!(
+        /// Allocate a pseudo-TTY.
+        tty: bool => "Tty"
+    );
+
+    impl_field!(
+        /// Initial console size
+        console_size: ConsoleSize => "ConsoleSize"
+    );
+}
