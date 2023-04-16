@@ -6,16 +6,16 @@ use hyper::Body;
 use crate::{Docker, Result};
 
 /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
-async fn attach_raw<'docker>(
-    docker: &'docker Docker,
+async fn attach_raw(
+    docker: &Docker,
     endpoint: String,
     payload: Payload<Body>,
-) -> Result<impl AsyncRead + AsyncWrite + Send + 'docker> {
+) -> Result<impl AsyncRead + AsyncWrite + Send + '_> {
     docker.post_upgrade_stream(endpoint, payload).await
 }
 
-pub async fn attach<'docker>(
-    docker: &'docker Docker,
+pub async fn attach(
+    docker: &Docker,
     endpoint: String,
     payload: Payload<Body>,
     is_tty: bool,

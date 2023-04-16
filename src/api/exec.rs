@@ -86,7 +86,7 @@ impl Exec {
         opts: &ExecStartOpts,
     ) -> Result<tty::Multiplexer<'docker>> {
         let endpoint = format!("/exec/{}/start", id);
-        let inspect_data = Self::inspect_impl(&docker, &id).await?;
+        let inspect_data = Self::inspect_impl(docker, id).await?;
         let is_tty = inspect_data
             .process_config
             .and_then(|c| c.tty)
@@ -115,9 +115,9 @@ impl Exec {
         start_opts: &ExecStartOpts,
     ) -> Result<tty::Multiplexer<'docker>> {
         let container_id = container_id.as_ref();
-        let id = Self::create_impl(docker.clone(), container_id, &create_opts).await?;
+        let id = Self::create_impl(docker.clone(), container_id, create_opts).await?;
 
-        Self::start_impl(docker, id.as_ref(), &start_opts).await
+        Self::start_impl(docker, id.as_ref(), start_opts).await
     }
 
     api_doc! { Exec => Resize
