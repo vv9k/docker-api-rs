@@ -40,6 +40,11 @@ impl ExecCreateOptsBuilder {
         attach_stderr: bool => "AttachStderr"
     );
 
+    impl_field!(
+        /// Attach to stdin of the exec command.
+        attach_stdin: bool => "AttachStdin"
+    );
+
     impl_str_field!(
         /// Override the key sequence for detaching a container. Format is a single
         /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
