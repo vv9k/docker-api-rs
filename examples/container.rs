@@ -254,7 +254,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .attach_stderr(true)
                 .build();
 
-            while let Some(exec_result) = docker.containers().get(&id).exec(&options).next().await {
+            let container = docker.containers().get(&id);
+            let mut stream = container
+                .exec(&options, &Default::default())
+                .await
+                .expect("exec stream");
+            while let Some(exec_result) = stream.next().await {
                 match exec_result {
                     Ok(chunk) => print_chunk(chunk),
                     Err(e) => eprintln!("Error: {e}"),

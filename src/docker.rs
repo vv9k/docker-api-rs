@@ -330,6 +330,7 @@ impl Docker {
         self.client.head(self.make_endpoint(endpoint)).await
     }
 
+    #[allow(dead_code)]
     /// Send a streaming post request.
     ///
     /// Use stream_post_into_values if the endpoint returns JSON values

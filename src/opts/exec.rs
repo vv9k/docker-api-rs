@@ -40,6 +40,11 @@ impl ExecCreateOptsBuilder {
         attach_stderr: bool => "AttachStderr"
     );
 
+    impl_field!(
+        /// Attach to stdin of the exec command.
+        attach_stdin: bool => "AttachStdin"
+    );
+
     impl_str_field!(
         /// Override the key sequence for detaching a container. Format is a single
         /// character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
@@ -78,4 +83,23 @@ impl_opts_builder!(json => ExecResize);
 impl ExecResizeOptsBuilder {
     impl_field!(height: u64 => "Height");
     impl_field!(width: u64 => "Width");
+}
+
+impl_opts_builder!(json => ExecStart);
+
+impl ExecStartOptsBuilder {
+    impl_field!(
+        /// Detach from the command.
+        detach: bool => "Detach"
+    );
+
+    impl_field!(
+        /// Allocate a pseudo-TTY.
+        tty: bool => "Tty"
+    );
+
+    impl_field!(
+        /// Initial console size
+        console_size: ConsoleSize => "ConsoleSize"
+    );
 }

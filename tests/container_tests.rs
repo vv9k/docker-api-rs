@@ -252,27 +252,35 @@ async fn container_exec() {
 
     let _ = container.start().await;
 
-    let mut exec_stream = container.exec(
-        &ExecCreateOpts::builder()
-            .attach_stderr(true)
-            .attach_stdout(true)
-            .command([
-                "bash",
-                "-c",
-                "mkdir /tmp/test123 && echo 1234 >> /tmp/test123/testfile",
-            ])
-            .build(),
-    );
+    let mut exec_stream = container
+        .exec(
+            &ExecCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .command([
+                    "bash",
+                    "-c",
+                    "mkdir /tmp/test123 && echo 1234 >> /tmp/test123/testfile",
+                ])
+                .build(),
+            &Default::default(),
+        )
+        .await
+        .unwrap();
     while exec_stream.next().await.is_some() {}
 
-    let mut exec_stream = container.exec(
-        &ExecCreateOpts::builder()
-            .attach_stderr(true)
-            .attach_stdout(true)
-            .command(["cat", "test123/testfile"])
-            .working_dir("/tmp")
-            .build(),
-    );
+    let mut exec_stream = container
+        .exec(
+            &ExecCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .command(["cat", "test123/testfile"])
+                .working_dir("/tmp")
+                .build(),
+            &Default::default(),
+        )
+        .await
+        .unwrap();
     let chunk = exec_stream.next().await;
     assert!(chunk.is_some());
     match chunk.unwrap() {
@@ -308,17 +316,21 @@ async fn container_copy_from() {
 
     let _ = container.start().await;
 
-    let mut exec_stream = container.exec(
-        &ExecCreateOpts::builder()
-            .attach_stderr(true)
-            .attach_stdout(true)
-            .command([
-                "bash",
-                "-c",
-                "mkdir /tmp/test123 && echo 1234 >> /tmp/test123/test-copy-from",
-            ])
-            .build(),
-    );
+    let mut exec_stream = container
+        .exec(
+            &ExecCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .command([
+                    "bash",
+                    "-c",
+                    "mkdir /tmp/test123 && echo 1234 >> /tmp/test123/test-copy-from",
+                ])
+                .build(),
+            &Default::default(),
+        )
+        .await
+        .unwrap();
     while exec_stream.next().await.is_some() {}
 
     let tar_stream = container.copy_from("/tmp/test123");
@@ -347,13 +359,17 @@ async fn container_copy_file_into() {
     let copy_result = container.copy_file_into("/tmp/test-file", data).await;
     assert!(copy_result.is_ok());
 
-    let mut exec_stream = container.exec(
-        &ExecCreateOpts::builder()
-            .attach_stderr(true)
-            .attach_stdout(true)
-            .command(["cat", "/tmp/test-file"])
-            .build(),
-    );
+    let mut exec_stream = container
+        .exec(
+            &ExecCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .command(["cat", "/tmp/test-file"])
+                .build(),
+            &Default::default(),
+        )
+        .await
+        .unwrap();
     let chunk = exec_stream.next().await;
     assert!(chunk.is_some());
     match chunk.unwrap() {
@@ -378,17 +394,21 @@ async fn container_changes() {
 
     let _ = container.start().await;
 
-    let mut exec_stream = container.exec(
-        &ExecCreateOpts::builder()
-            .attach_stderr(true)
-            .attach_stdout(true)
-            .command([
-                "bash",
-                "-c",
-                "rm /etc/xattr.conf && echo 12345 >> /tmp/test-changes",
-            ])
-            .build(),
-    );
+    let mut exec_stream = container
+        .exec(
+            &ExecCreateOpts::builder()
+                .attach_stderr(true)
+                .attach_stdout(true)
+                .command([
+                    "bash",
+                    "-c",
+                    "rm /etc/xattr.conf && echo 12345 >> /tmp/test-changes",
+                ])
+                .build(),
+            &Default::default(),
+        )
+        .await
+        .unwrap();
     while exec_stream.next().await.is_some() {}
 
     use docker_api::models::ContainerChangeResponseItem;

@@ -1,7 +1,7 @@
 mod common;
 use clap::Parser;
 use common::new_docker;
-use docker_api::Exec;
+use docker_api::{conn::TtyChunk, Exec};
 
 #[derive(Parser)]
 pub struct Opts {
@@ -48,9 +48,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             println!("{:#?}", exec.inspect().await?);
 
-            let mut stream = exec.start();
+            let mut stream = exec.start(&Default::default()).await?;
 
-            stream.next().await;
+            while let Some(Ok(chunk)) = stream.next().await {
+                println!("{chunk:?}");
+                match chunk {
+                    TtyChunk::StdOut(buf) => {
+                        println!("STDOUT: {}", String::from_utf8_lossy(&buf));
+                    }
+                    TtyChunk::StdErr(buf) => {
+                        println!("STDERR: {}", String::from_utf8_lossy(&buf));
+                    }
+                    TtyChunk::StdIn(buf) => {
+                        println!("STDIN: {}", String::from_utf8_lossy(&buf));
+                    }
+                }
+            }
 
             println!("{:#?}", exec.inspect().await?);
         }

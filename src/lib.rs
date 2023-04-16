@@ -33,6 +33,7 @@ mod builder;
 
 pub mod api;
 pub mod models;
+mod stream;
 pub mod conn {
     //! Connection related items
     pub(crate) use containers_api::conn::*;
