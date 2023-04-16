@@ -1,22 +1,19 @@
 //! Create and manage containers.
-use crate::models;
 use crate::opts::{
     ContainerCommitOpts, ContainerCreateOpts, ContainerListOpts, ContainerPruneOpts,
-    ContainerRemoveOpts, ContainerRestartOpts, ContainerStopOpts,
+    ContainerRemoveOpts, ContainerRestartOpts, ContainerStopOpts, ExecStartOpts,
 };
+use crate::{models, stream};
 
 use std::{io, path::Path, str};
 
-use futures_util::{
-    io::{AsyncRead, AsyncWrite},
-    Stream, TryStreamExt,
-};
+use futures_util::{Stream, TryStreamExt};
 use hyper::Body;
 use serde::Deserialize;
 
 use crate::{
     api::Exec,
-    conn::{tty, Headers, Payload, TtyChunk},
+    conn::{tty, Headers, Payload},
     opts::ExecCreateOpts,
     Error, Result,
 };
@@ -43,19 +40,6 @@ impl Container {
         self.docker.get_json(&ep).await
     }}
 
-    /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
-    async fn attach_raw(&self) -> Result<impl AsyncRead + AsyncWrite + Send + '_> {
-        self.docker
-            .post_upgrade_stream(
-                format!(
-                    "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
-                    self.id
-                ),
-                Payload::empty(),
-            )
-            .await
-    }
-
     api_doc! { Container => Attach
     |
     /// Attaches a [`TtyMultiplexer`](TtyMultiplexer) to the container.
@@ -66,11 +50,16 @@ impl Container {
     pub async fn attach(&self) -> Result<tty::Multiplexer<'_>> {
         let inspect = self.inspect().await?;
         let is_tty = inspect.config.and_then(|c| c.tty).unwrap_or_default();
-        self.attach_raw().await.map(|s| if is_tty {
-            tty::Multiplexer::new(s, tty::decode_raw)
-        } else {
-            tty::Multiplexer::new(s, tty::decode_chunk)
-        })
+        stream::attach(
+            &self.docker,
+            format!(
+                "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
+                self.id
+            ),
+            Payload::empty(),
+            is_tty,
+        )
+        .await
     }}
 
     api_doc! { Container => Changes
@@ -226,11 +215,12 @@ impl Container {
     api_doc! { Exec
     |
     /// Execute a command in this container.
-    pub fn exec(
-        &self,
-        opts: &ExecCreateOpts,
-    ) -> impl Stream<Item = crate::conn::Result<TtyChunk>> + Unpin + '_ {
-        Exec::create_and_start(&self.docker, &self.id, opts)
+    pub async fn exec<'docker>(
+        &'docker self,
+        create_opts: &ExecCreateOpts,
+        start_opts: &ExecStartOpts,
+    ) ->  Result<tty::Multiplexer<'docker>> {
+        Exec::create_and_start(&self.docker, &self.id, create_opts, start_opts).await
     }}
 
     api_doc! { Container => Archive
