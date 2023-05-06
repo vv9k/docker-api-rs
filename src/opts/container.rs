@@ -620,6 +620,11 @@ impl ContainerCreateOptsBuilder {
     /// Represents the container's networking configuration for each of its interfaces.
         network_config: NetworkingConfig => "NetworkingConfig"
     );
+
+    impl_str_field!(
+        /// Runtime to use for this container like "nvidia"
+        runtime => "HostConfig.Runtime"
+    );
 }
 
 impl_opts_builder!(url => ContainerRemove);
