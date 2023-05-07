@@ -1,4 +1,4 @@
-use crate::models::{Labels, NetworkingConfig};
+use crate::models::{DeviceRequest, Labels, NetworkingConfig};
 use crate::opts::ImageName;
 use containers_api::opts::{Filter, FilterItem};
 use containers_api::{
@@ -624,6 +624,11 @@ impl ContainerCreateOptsBuilder {
     impl_str_field!(
         /// Runtime to use for this container like "nvidia"
         runtime => "HostConfig.Runtime"
+    );
+
+    impl_field!(
+        /// Requested list of available devices with capabilities
+        device_requests: Vec<DeviceRequest> => "HostConfig.DeviceRequests"
     );
 }
 
