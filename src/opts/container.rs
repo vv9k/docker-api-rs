@@ -557,6 +557,8 @@ impl ContainerCreateOptsBuilder {
 
     impl_str_field!(log_driver => "HostConfig.LogConfig.Type");
 
+    impl_map_field!(json log_driver_config => "HostConfig.LogConfig.Config");
+
     pub fn restart_policy(mut self, name: &str, maximum_retry_count: u64) -> Self {
         self.params
             .insert("HostConfig.RestartPolicy.Name", json!(name));
@@ -845,6 +847,13 @@ mod tests {
                 .image("test_image")
                 .log_driver("fluentd"),
             r#"{"HostConfig":{"LogConfig":{"Type":"fluentd"}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .log_driver_config(vec![("tag", "container-tag")]),
+            r#"{"HostConfig":{"LogConfig":{"Config":{"tag":"container-tag"}}},"Image":"test_image"}"#
         );
 
         test_case!(
