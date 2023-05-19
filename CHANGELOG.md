@@ -6,6 +6,7 @@
 - Add missing `attach_stdin` to `ExecCreateOpts`
 - `Exec::start` and `Container::exec` signature changed. It is now async and returns a result with `tty::Multiplexer` (same as attach) 
   so that it can handle writing to STDIN.
+- Add `ContainerCreateOptsBuilder::log_driver_config`
 
 # 0.13.0
 - Fix Container::attach output when TTY is enabled on container
