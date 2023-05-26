@@ -371,17 +371,16 @@ impl Docker {
         self.client.get_stream(self.make_endpoint(endpoint))
     }
 
-    pub(crate) async fn post_upgrade_stream<'a, B>(
-        &'a self,
-        endpoint: impl AsRef<str> + 'a,
+    pub(crate) async fn post_upgrade_stream<B>(
+        self,
+        endpoint: impl AsRef<str>,
         body: Payload<B>,
-    ) -> Result<impl AsyncRead + AsyncWrite + 'a>
+    ) -> Result<impl AsyncRead + AsyncWrite>
     where
-        B: Into<Body> + 'a,
+        B: Into<Body>,
     {
-        self.client
-            .post_upgrade_stream(self.make_endpoint(endpoint), body)
-            .await
+        let ep = self.make_endpoint(endpoint);
+        self.client.post_upgrade_stream(ep, body).await
     }
 }
 

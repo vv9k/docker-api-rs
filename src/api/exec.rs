@@ -80,13 +80,13 @@ impl Exec {
             .map(|id| Exec::new(docker, id))
     }}
 
-    async fn start_impl<'docker>(
-        docker: &'docker Docker,
+    async fn start_impl(
+        docker: Docker,
         id: &str,
         opts: &ExecStartOpts,
-    ) -> Result<tty::Multiplexer<'docker>> {
+    ) -> Result<tty::Multiplexer> {
         let endpoint = format!("/exec/{}/start", id);
-        let inspect_data = Self::inspect_impl(docker, id).await?;
+        let inspect_data = Self::inspect_impl(&docker, id).await?;
         let is_tty = inspect_data
             .process_config
             .and_then(|c| c.tty)
@@ -104,16 +104,16 @@ impl Exec {
     api_doc! { Exec => Start
     |
     /// Starts this exec instance returning a multiplexed tty stream.
-    pub async fn start(&self, opts: &ExecStartOpts) -> Result<tty::Multiplexer<'_>> {
-        Self::start_impl(&self.docker, self.id.as_ref(), opts).await
+    pub async fn start(&self, opts: &ExecStartOpts) -> Result<tty::Multiplexer> {
+        Self::start_impl(self.docker.clone(), self.id.as_ref(), opts).await
     }}
 
-    pub(crate) async fn create_and_start<'docker>(
-        docker: &'docker Docker,
+    pub(crate) async fn create_and_start(
+        docker: Docker,
         container_id: impl AsRef<str>,
         create_opts: &ExecCreateOpts,
         start_opts: &ExecStartOpts,
-    ) -> Result<tty::Multiplexer<'docker>> {
+    ) -> Result<tty::Multiplexer> {
         let container_id = container_id.as_ref();
         let id = Self::create_impl(docker.clone(), container_id, create_opts).await?;
 

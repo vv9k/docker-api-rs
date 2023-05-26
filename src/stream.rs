@@ -7,19 +7,19 @@ use crate::{Docker, Result};
 
 /// Attaches a multiplexed TCP stream to the container that can be used to read Stdout, Stderr and write Stdin.
 async fn attach_raw(
-    docker: &Docker,
+    docker: Docker,
     endpoint: String,
     payload: Payload<Body>,
-) -> Result<impl AsyncRead + AsyncWrite + Send + '_> {
+) -> Result<impl AsyncRead + AsyncWrite + Send> {
     docker.post_upgrade_stream(endpoint, payload).await
 }
 
 pub async fn attach(
-    docker: &Docker,
+    docker: Docker,
     endpoint: String,
     payload: Payload<Body>,
     is_tty: bool,
-) -> Result<tty::Multiplexer<'_>> {
+) -> Result<tty::Multiplexer> {
     attach_raw(docker, endpoint, payload).await.map(|s| {
         if is_tty {
             tty::Multiplexer::new(s, tty::decode_raw)
