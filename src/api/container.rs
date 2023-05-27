@@ -47,11 +47,11 @@ impl Container {
     /// The [`TtyMultiplexer`](TtyMultiplexer) implements Stream for returning Stdout and Stderr chunks. It also implements [`AsyncWrite`](futures_util::io::AsyncWrite) for writing to Stdin.
     ///
     /// The multiplexer can be split into its read and write halves with the [`split`](TtyMultiplexer::split) method
-    pub async fn attach(&self) -> Result<tty::Multiplexer<'_>> {
+    pub async fn attach(&self) -> Result<tty::Multiplexer> {
         let inspect = self.inspect().await?;
         let is_tty = inspect.config.and_then(|c| c.tty).unwrap_or_default();
         stream::attach(
-            &self.docker,
+            self.docker.clone(),
             format!(
                 "/containers/{}/attach?stream=1&stdout=1&stderr=1&stdin=1",
                 self.id
@@ -215,12 +215,12 @@ impl Container {
     api_doc! { Exec
     |
     /// Execute a command in this container.
-    pub async fn exec<'docker>(
-        &'docker self,
+    pub async fn exec(
+        &self,
         create_opts: &ExecCreateOpts,
         start_opts: &ExecStartOpts,
-    ) ->  Result<tty::Multiplexer<'docker>> {
-        Exec::create_and_start(&self.docker, &self.id, create_opts, start_opts).await
+    ) ->  Result<tty::Multiplexer> {
+        Exec::create_and_start(self.docker.clone(), &self.id, create_opts, start_opts).await
     }}
 
     api_doc! { Container => Archive
