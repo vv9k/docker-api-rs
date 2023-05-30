@@ -1,16 +1,15 @@
-use containers_api::opts::{Filter, FilterItem};
-use containers_api::url::encoded_pairs;
-use containers_api::{
-    impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_url_bool_field,
-    impl_url_field, impl_url_str_field,
-};
-
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     string::ToString,
 };
 
+use containers_api::opts::{Filter, FilterItem};
+use containers_api::url::encoded_pairs;
+use containers_api::{
+    impl_filter_func, impl_map_field, impl_opts_builder, impl_str_field, impl_url_bool_field,
+    impl_url_field, impl_url_str_field,
+};
 use serde::Serialize;
 
 #[derive(Clone, Serialize, Debug)]
@@ -427,6 +426,7 @@ pub enum ImageFilter {
     /// Label in the form of `label=key=val`.
     Label(String, String),
     Since(ImageName),
+    Reference(String, Option<String>),
 }
 
 impl Filter for ImageFilter {
@@ -438,6 +438,15 @@ impl Filter for ImageFilter {
             LabelKey(n) => FilterItem::new("label", n.to_owned()),
             Label(n, v) => FilterItem::new("label", format!("{n}={v}")),
             Since(name) => FilterItem::new("since", name.to_string()),
+            Reference(image, tag) => FilterItem::new(
+                "reference",
+                format!(
+                    "{}{}",
+                    image,
+                    tag.as_ref()
+                        .map_or("".to_string(), |tag| format!(":{}", tag))
+                ),
+            ),
         }
     }
 }
@@ -658,6 +667,32 @@ mod tests {
                 r#"{"username":"user_abc","password":"password_abc","email":"email_abc","serveraddress":"https://example.org"}"#
             ),
             opts.serialize()
+        );
+    }
+
+    #[test]
+    fn test_image_filter_reference() {
+        let opts = ImageListOpts::builder()
+            .filter(vec![ImageFilter::Reference("image".to_string(), None)])
+            .build();
+        let serialized = opts.serialize();
+        assert!(serialized.is_some());
+        assert_eq!(
+            "filters=%7B%22reference%22%3A%5B%22image%22%5D%7D".to_string(),
+            serialized.unwrap()
+        );
+
+        let opts = ImageListOpts::builder()
+            .filter(vec![ImageFilter::Reference(
+                "image".to_string(),
+                Some("tag".to_string()),
+            )])
+            .build();
+        let serialized = opts.serialize();
+        assert!(serialized.is_some());
+        assert_eq!(
+            "filters=%7B%22reference%22%3A%5B%22image%3Atag%22%5D%7D".to_string(),
+            serialized.unwrap()
         );
     }
 }

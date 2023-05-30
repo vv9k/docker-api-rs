@@ -22,3 +22,7 @@ lint:
 .PHONY: clean
 clean:
 	rm -rf target docker-api-stubs/target
+
+.PHONY: fmt
+fmt:
+	cargo +nightly fmt --all

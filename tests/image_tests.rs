@@ -208,6 +208,28 @@ async fn image_list() {
     assert!(!list_data.iter().any(|report| report.id == full_id_a));
     assert!(list_data.iter().any(|report| report.id == full_id_b));
 
+    let filter = opts::ImageFilter::Reference(name_a.to_string(), None);
+    let list_opts = opts::ImageListOpts::builder()
+        .filter([filter])
+        .all(true)
+        .build();
+    let list_result = images.list(&list_opts).await;
+    assert!(list_result.is_ok());
+    let list_data = list_result.unwrap();
+    assert_eq!(list_data.len(), 1);
+    assert_eq!(full_id_a, list_data[0].id);
+
+    let filter = opts::ImageFilter::Reference(name_a.to_string(), Some("latest".to_string()));
+    let list_opts = opts::ImageListOpts::builder()
+        .filter([filter])
+        .all(true)
+        .build();
+    let list_result = images.list(&list_opts).await;
+    assert!(list_result.is_ok());
+    let list_data = list_result.unwrap();
+    assert_eq!(list_data.len(), 1);
+    assert_eq!(full_id_a, list_data[0].id);
+
     let _ = image_a.delete().await;
     let _ = image_b.delete().await;
 }
