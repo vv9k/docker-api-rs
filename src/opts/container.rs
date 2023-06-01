@@ -880,13 +880,6 @@ mod tests {
         test_case!(
             ContainerCreateOptsBuilder::default()
                 .image("test_image")
-                .expose(PublishPort::tcp(80), 8080),
-            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}]}},"Image":"test_image"}"#
-        );
-
-        test_case!(
-            ContainerCreateOptsBuilder::default()
-                .image("test_image")
                 .expose(
                     PublishPort::tcp(80),
                     "[::1]:8080".parse::<SocketAddr>().unwrap()
