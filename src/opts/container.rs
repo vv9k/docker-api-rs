@@ -6,6 +6,7 @@ use containers_api::{
     impl_str_field, impl_url_bool_field, impl_url_str_field, impl_vec_field,
 };
 
+use std::net::SocketAddr;
 use std::{
     collections::HashMap,
     hash::Hash,
@@ -336,6 +337,43 @@ impl ToString for PublishPort {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+/// Structure used to bind a host port to a container port with [`expose`](ContainerCreateOptsBuilder::expose)
+pub struct HostPort {
+    port: u32,
+    ip: Option<String>,
+}
+
+impl HostPort {
+    /// Bind a host port to a container port
+    pub fn new(port: u32) -> Self {
+        Self { port, ip: None }
+    }
+
+    /// Bind a host port and a specific host IP to a container port
+    pub fn with_ip(port: u32, ip: String) -> Self {
+        Self { port, ip: Some(ip) }
+    }
+}
+
+impl From<u32> for HostPort {
+    fn from(value: u32) -> Self {
+        HostPort {
+            port: value,
+            ip: None,
+        }
+    }
+}
+
+impl From<SocketAddr> for HostPort {
+    fn from(value: SocketAddr) -> Self {
+        Self {
+            port: value.port().into(),
+            ip: Some(value.ip().to_string()),
+        }
+    }
+}
+
 /// IPC sharing mode for the container.
 pub enum IpcMode {
     /// "none": own private IPC namespace, with /dev/shm not mounted
@@ -403,9 +441,13 @@ impl ContainerCreateOptsBuilder {
         self
     }
 
-    pub fn expose(mut self, srcport: PublishPort, hostport: u32) -> Self {
+    pub fn expose<P: Into<HostPort>>(mut self, srcport: PublishPort, hostport: P) -> Self {
         let mut exposedport: HashMap<String, String> = HashMap::new();
-        exposedport.insert("HostPort".to_string(), hostport.to_string());
+        let hostport = hostport.into();
+        exposedport.insert("HostPort".to_string(), hostport.port.to_string());
+        if let Some(ip) = hostport.ip {
+            exposedport.insert("HostIp".to_string(), ip);
+        }
 
         // The idea here is to go thought the 'old' port binds and to apply them to the local
         // 'port_bindings' variable, add the bind we want and replace the 'old' value
@@ -833,6 +875,23 @@ mod tests {
                 .publish(PublishPort::sctp(6969))
                 .publish(PublishPort::tcp(1337)),
             r#"{"ExposedPorts":{"1337/tcp":{},"6969/sctp":{},"80/udp":{}},"HostConfig":{},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .expose(PublishPort::tcp(80), 8080),
+            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostPort":"8080"}]}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .expose(
+                    PublishPort::tcp(80),
+                    "[::1]:8080".parse::<SocketAddr>().unwrap()
+                ),
+            r#"{"ExposedPorts":{"80/tcp":{}},"HostConfig":{"PortBindings":{"80/tcp":[{"HostIp":"::1","HostPort":"8080"}]}},"Image":"test_image"}"#
         );
 
         test_case!(
