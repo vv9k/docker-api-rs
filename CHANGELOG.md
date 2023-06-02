@@ -9,6 +9,7 @@
 - Add `ContainerCreateOptsBuilder::log_driver_config`
 - `tty::Multiplexer` now doesn't rely on Docker client lifetime - this means a change in function signature for `Container::attach`, `Container::exec` and `Exec::start`
 - Add `ImageFilter::Reference` variant
+- Signature of `ContainerCreateOptsBuilder` changed so that it takes a `Into<HostPort>` instead of `u32` as a argument for `hostport`. The new type `HostPort` lets you specify the IP of the host in addtion to the port.
 
 # 0.13.0
 - Fix Container::attach output when TTY is enabled on container
