@@ -1,5 +1,6 @@
 #
 - Bump default API version to v1.43
+- Move opts structures for config, secret and task from `api` module to `opts` module
 
 # 0.14.0
 - Add `ContainerCreateOptsBuilder::network_config`

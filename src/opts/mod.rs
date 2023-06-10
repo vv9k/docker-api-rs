@@ -8,16 +8,25 @@ mod volume;
 
 #[cfg(feature = "swarm")]
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod config;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 mod node;
 #[cfg(feature = "swarm")]
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 mod plugin;
 #[cfg(feature = "swarm")]
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod secret;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 mod service;
 #[cfg(feature = "swarm")]
 #[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
 mod swarm;
+#[cfg(feature = "swarm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "swarm")))]
+mod task;
 
 pub use container::*;
 pub use exec::*;
@@ -27,13 +36,19 @@ pub use system::*;
 pub use volume::*;
 
 #[cfg(feature = "swarm")]
+pub use config::*;
+#[cfg(feature = "swarm")]
 pub use node::*;
 #[cfg(feature = "swarm")]
 pub use plugin::*;
 #[cfg(feature = "swarm")]
+pub use secret::*;
+#[cfg(feature = "swarm")]
 pub use service::*;
 #[cfg(feature = "swarm")]
 pub use swarm::*;
+#[cfg(feature = "swarm")]
+pub use task::*;
 
 use containers_api::{impl_opts_builder, impl_url_bool_field, impl_url_field};
 
