@@ -37,7 +37,7 @@ Swarm endpoints include:
  - Plugins
 
 Latest stable version of this crate supports API version: **v1.42**
-Master branch supports: **v1.42**
+Master branch supports: **v1.43**
 
 ## Features
 

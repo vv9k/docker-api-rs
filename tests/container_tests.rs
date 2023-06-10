@@ -411,22 +411,22 @@ async fn container_changes() {
         .unwrap();
     while exec_stream.next().await.is_some() {}
 
-    use docker_api::models::ContainerChangeResponseItem;
+    use docker_api::models::FilesystemChange;
 
     let changes = container
         .changes()
         .await
         .expect("container changes")
         .unwrap_or_default();
-    assert!(changes.contains(&ContainerChangeResponseItem {
+    assert!(changes.contains(&FilesystemChange {
         kind: 0,
         path: "/tmp".into()
     }));
-    assert!(changes.contains(&ContainerChangeResponseItem {
+    assert!(changes.contains(&FilesystemChange {
         kind: 1,
         path: "/tmp/test-changes".into()
     }));
-    assert!(changes.contains(&ContainerChangeResponseItem {
+    assert!(changes.contains(&FilesystemChange {
         kind: 2,
         path: "/etc/xattr.conf".into()
     }));

@@ -16,8 +16,8 @@ containers-api = "0.9"
 #containers-api = { path = "../containers-api" }
 #containers-api = { git = "https://github.com/vv9k/containers-api" }
 
-docker-api-stubs = "0.5"
-#docker-api-stubs = { path = "./docker-api-stubs/lib" }
+#docker-api-stubs = "0.5"
+docker-api-stubs = { path = "./docker-api-stubs/lib" }
 
 log = "0.4"
 paste = "1"

@@ -175,6 +175,15 @@ pub struct BuildPrune200Response {
     pub space_reclaimed: Option<i64>,
 }
 
+/// Kind of change
+///
+/// Can be one of:
+///
+/// - `0`: Modified ("C")
+/// - `1`: Added ("A")
+/// - `2`: Deleted ("D")
+pub type ChangeType = u8;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// ClusterInfo represents information about the swarm as is returned by the
 /// "/info" endpoint. Join-tokens are not included.
@@ -660,19 +669,8 @@ pub struct ConfigSpec {
     pub templating: Option<Driver>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-/// change item in response to ContainerChanges operation
-pub struct ContainerChangeResponseItem {
-    #[serde(rename = "Kind")]
-    /// Kind of change
-    pub kind: u8,
-    #[serde(rename = "Path")]
-    /// Path to file that has changed
-    pub path: String,
-}
-
 /// The list of changes
-pub type ContainerChanges200Response = Vec<ContainerChangeResponseItem>;
+pub type ContainerChanges200Response = Vec<FilesystemChange>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Configuration for a container that is portable between hosts.
@@ -1111,7 +1109,8 @@ pub struct ContainerState {
     pub health: Option<Health>,
     #[serde(rename = "OOMKilled")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    /// Whether this container has been killed because it ran out of memory.
+    /// Whether a process within this container has been killed because it ran
+    /// out of memory since the container was last started.
     pub oom_killed: Option<bool>,
     #[serde(rename = "Paused")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1997,6 +1996,16 @@ pub struct ExecStartExecStartConfigParam {
     pub tty: Option<bool>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// Change in the container's filesystem.
+pub struct FilesystemChange {
+    #[serde(rename = "Kind")]
+    pub kind: u8,
+    #[serde(rename = "Path")]
+    /// Path to file or directory that has changed.
+    pub path: String,
+}
+
 /// User-defined resources can be either Integer resources (e.g, `SSD=3`) or
 /// String resources (e.g, `GPU=UUID1`).
 pub type GenericResources = Vec<GenericResourcesInlineItem>;
@@ -2193,6 +2202,11 @@ pub struct HistoryResponseItem {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 /// Container configuration that depends on the host we are running on
 pub struct HostConfig {
+    #[serde(rename = "Annotations")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Arbitrary non-identifying metadata attached to container and
+    /// provided to the runtime when the container is started.
+    pub annotations: Option<HashMap<String, String>>,
     #[serde(rename = "AutoRemove")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Automatically remove the container when the container's process
@@ -2930,12 +2944,12 @@ pub struct ImageInspect {
     /// Total size of the image including all layers it is composed of.
     ///
     /// In versions of Docker before v1.10, this field was calculated from
-    /// the image itself and all of its parent images. Docker v1.10 and up
-    /// store images self-contained, and no longer use a parent-chain, making
-    /// this field an equivalent of the Size field.
+    /// the image itself and all of its parent images. Images are now stored
+    /// self-contained, and no longer use a parent-chain, making this field
+    /// an equivalent of the Size field.
     ///
-    /// This field is kept for backward compatibility, but may be removed in
-    /// a future version of the API.
+    /// > **Deprecated**: this field is kept for backward compatibility, but
+    /// > will be removed in API v1.44.
     pub virtual_size: Option<i64>,
 }
 
@@ -3065,16 +3079,16 @@ pub struct ImageSummary {
     /// Total size of the image including all layers it is composed of.
     pub size: i64,
     #[serde(rename = "VirtualSize")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// Total size of the image including all layers it is composed of.
     ///
     /// In versions of Docker before v1.10, this field was calculated from
-    /// the image itself and all of its parent images. Docker v1.10 and up
-    /// store images self-contained, and no longer use a parent-chain, making
-    /// this field an equivalent of the Size field.
+    /// the image itself and all of its parent images. Images are now stored
+    /// self-contained, and no longer use a parent-chain, making this field
+    /// an equivalent of the Size field.
     ///
-    /// This field is kept for backward compatibility, but may be removed in
-    /// a future version of the API.
-    pub virtual_size: i64,
+    /// Deprecated: this field is kept for backward compatibility, and will be removed in API v1.44.
+    pub virtual_size: Option<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -6649,7 +6663,8 @@ pub struct SystemInfo {
     #[serde(rename = "SecurityOptions")]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// List of security features that are enabled on the daemon, such as
-    /// apparmor, seccomp, SELinux, user-namespaces (userns), and rootless.
+    /// apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
+    /// no-new-privileges.
     ///
     /// Additional configuration options for each security feature may
     /// be present, and are included as a comma-separated list of key/value

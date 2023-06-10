@@ -1,3 +1,6 @@
+#
+- Bump default API version to v1.43
+
 # 0.14.0
 - Add `ContainerCreateOptsBuilder::network_config`
 - `Docker` initializers like `new`, `tcp`, `unix`, `tls` now create an unversioned connector that will use the server's latest version instead of setting it to `LATEST_API_VERSION`.
