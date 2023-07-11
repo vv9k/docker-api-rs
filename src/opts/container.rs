@@ -631,6 +631,12 @@ impl ContainerCreateOptsBuilder {
 
     impl_field!(privileged: bool => "HostConfig.Privileged");
 
+    impl_field!(
+        /// Run an init inside the container that forwards signals and reaps processes. This field is
+        /// omitted if empty, and the default (as configured on the daemon) is used.
+        init: bool => "HostConfig.Init"
+    );
+
     impl_str_field!(user => "User");
 
     pub fn build(&self) -> ContainerCreateOpts {
