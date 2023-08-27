@@ -4,8 +4,9 @@
 
 use dirs::home_dir;
 use env_vars::{DOCKER_CONFIG, DOCKER_CONTEXT, DOCKER_HOST};
+use serde::de::Error as SerdeError;
 use sha2::{Digest, Sha256};
-use std::{fs, path::PathBuf, str::FromStr};
+use std::{fs, path::PathBuf};
 
 #[cfg(unix)]
 pub const DEFAULT_DOCKER_ENDPOINT: &str = "unix:///var/run/docker.sock";
@@ -167,13 +168,12 @@ pub fn host_from_metadata_file(meta_filepath: PathBuf) -> Result<String, Endpoin
 
     let host = meta_json
         .get("Endpoints")
-        .and_then(|value| value.get("Endpoints"))
         .and_then(|value| value.get("docker"))
         .and_then(|value| value.get("Host"))
         .and_then(|value| value.as_str())
-        .ok_or_else(|error| EndpointError::InvalidJson {
+        .ok_or_else(|| EndpointError::InvalidJson {
             filepath: meta_filepath,
-            error,
+            error: SerdeError::missing_field("Endpoints.docker.Host"),
         })?
         .to_string();
 

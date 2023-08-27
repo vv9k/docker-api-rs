@@ -16,7 +16,9 @@ use crate::conn::get_https_connector;
 #[cfg(unix)]
 use crate::conn::get_unix_connector;
 
-use crate::detect_host::DEFAULT_DOCKER_ENDPOINT;
+#[cfg(feature = "detect-host")]
+use crate::detect_host::{find_docker_host, DEFAULT_DOCKER_ENDPOINT};
+
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
     stream::Stream,
@@ -37,7 +39,6 @@ pub struct Docker {
 #[cfg(feature = "detect-host")]
 impl Default for Docker {
     fn default() -> Self {
-        use crate::detect_host::{find_docker_host, DEFAULT_DOCKER_ENDPOINT};
         // Try to connect to the configured host, otherwise connect to default endpoint
         find_docker_host()
             .ok()
