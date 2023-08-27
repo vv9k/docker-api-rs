@@ -103,7 +103,7 @@ pub fn docker_config_dir() -> Result<PathBuf, EndpointError> {
 
     // Use the default config directory at $HOME/.docker/
     let Some(config_directory) = home_dir().map(|path| path.join(".docker/")) else {
-        return Err(EndpointError::CannotFindUserHomeDir)
+        return Err(EndpointError::CannotFindUserHomeDir);
     };
     Ok(config_directory)
 }
