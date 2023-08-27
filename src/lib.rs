@@ -39,6 +39,8 @@ pub mod conn {
     pub(crate) use containers_api::conn::*;
     pub use containers_api::conn::{Error, Transport, TtyChunk};
 }
+#[cfg(feature = "detect-host")]
+pub mod detect_host;
 pub mod docker;
 pub mod errors;
 pub mod opts;

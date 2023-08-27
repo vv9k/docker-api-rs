@@ -16,6 +16,9 @@ use crate::conn::get_https_connector;
 #[cfg(unix)]
 use crate::conn::get_unix_connector;
 
+#[cfg(feature = "detect-host")]
+use crate::detect_host::{find_docker_host, DEFAULT_DOCKER_ENDPOINT};
+
 use futures_util::{
     io::{AsyncRead, AsyncWrite},
     stream::Stream,
@@ -31,6 +34,20 @@ use std::pin::Pin;
 pub struct Docker {
     version: Option<ApiVersion>,
     client: RequestClient<Error>,
+}
+
+#[cfg(feature = "detect-host")]
+impl Default for Docker {
+    fn default() -> Self {
+        // Try to connect to the configured host, otherwise connect to default endpoint
+        find_docker_host()
+            .ok()
+            .and_then(|endpoint| Self::new(endpoint).ok())
+            .unwrap_or_else(|| {
+                Self::new(DEFAULT_DOCKER_ENDPOINT)
+                    .expect("the default endpoint is always valid: qed")
+            })
+    }
 }
 
 impl Docker {
