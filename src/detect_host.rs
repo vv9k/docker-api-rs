@@ -62,8 +62,8 @@ pub enum EndpointError {
 /// # Fails when
 /// * Cannot find docker config directory
 /// * `DOCKER_CONTEXT` is defined and is invalid
-/// * `config.js` file exists and fails to read or parse it
-/// * `config.js` have the `currentContext` property defined, but fails to find the context endpoint
+/// * `config.json` file exists and fails to read or parse it
+/// * `config.json` have the `currentContext` property defined, but fails to find the context endpoint
 pub fn find_docker_host() -> Result<String, EndpointError> {
     // If defined, Load the endpoint from the `DOCKER_CONTEXT` environment variable
     if let Some(context) = env_vars::non_empty_var(DOCKER_CONTEXT) {
@@ -111,11 +111,11 @@ pub fn docker_config_dir() -> Result<PathBuf, EndpointError> {
 /// Attempts to load the endpoint from the `.docker/config.json` file
 ///
 /// # Returns
-/// * Ok(Some(host)) - if the config.js exists and contains currentContext field
-/// * Ok(None) - if the config.js exists and not contain currentContext field
+/// * Ok(Some(host)) - if the config.json exists and contains currentContext field
+/// * Ok(None) - if the config.json exists and not contain currentContext field
 ///
 /// # Fails when
-/// * config.js doesn't exists
+/// * config.json doesn't exists
 /// * cannot read or parse the config.js file
 /// * the currentContext is defined, but fails to load the context endpoint
 pub fn host_from_config_file(config_file: PathBuf) -> Result<Option<String>, EndpointError> {
