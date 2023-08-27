@@ -2,7 +2,6 @@
 //!
 //! Reference: <https://github.com/docker/cli/blob/v24.0.5/opts/hosts.go#L11-L33>
 
-use anyhow::Context;
 use dirs::home_dir;
 use env_vars::{DOCKER_CONFIG, DOCKER_CONTEXT, DOCKER_HOST};
 use sha2::{Digest, Sha256};
