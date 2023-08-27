@@ -40,6 +40,8 @@ pub mod conn {
     pub use containers_api::conn::{Error, Transport, TtyChunk};
 }
 pub mod docker;
+#[cfg(feature = "detect-host")]
+pub mod detect_host;
 pub mod errors;
 pub mod opts;
 
