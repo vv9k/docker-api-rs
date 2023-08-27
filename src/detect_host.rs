@@ -41,8 +41,8 @@ pub(crate) mod env_vars {
     }
 }
 
-enum EndpointError {
-    InvalidEndpoint,
+#[derive(Debug)]
+pub enum EndpointError {
     CannotFindUserHomeDir,
     InvalidJson {
         filepath: PathBuf,
@@ -80,7 +80,7 @@ pub fn find_docker_host() -> Result<String, EndpointError> {
     let config_file = docker_config_dir().map(|config_dir| config_dir.join("config.json"))?;
     if config_file.exists() {
         let maybe_host = host_from_config_file(config_file)?;
-        return maybe_host.ok_or_else(|| EndpointError::InvalidEndpoint);
+        return Ok(maybe_host.unwrap_or_else(|| DEFAULT_DOCKER_ENDPOINT.to_string()));
     }
 
     // otherwise return the default endpoint
