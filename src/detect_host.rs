@@ -183,7 +183,7 @@ pub fn host_from_metadata_file(meta_filepath: PathBuf) -> Result<String, Endpoin
 /// Parsers a file to a json value
 fn file_to_json(filepath: &PathBuf) -> Result<serde_json::Value, EndpointError> {
     fs::read_to_string(filepath)
-        .map_err(|error| EndpointError::IOError(error))?
+        .map_err(EndpointError::IOError)?
         .parse::<serde_json::Value>()
         .map_err(|error| EndpointError::InvalidJson {
             filepath: filepath.clone(),
