@@ -601,6 +601,8 @@ impl ContainerCreateOptsBuilder {
 
     impl_map_field!(json log_driver_config => "HostConfig.LogConfig.Config");
 
+    impl_vec_field!(binds => "HostConfig.Binds");
+
     pub fn restart_policy(mut self, name: &str, maximum_retry_count: u64) -> Self {
         self.params
             .insert("HostConfig.RestartPolicy.Name", json!(name));
@@ -912,6 +914,13 @@ mod tests {
                 .image("test_image")
                 .log_driver_config(vec![("tag", "container-tag")]),
             r#"{"HostConfig":{"LogConfig":{"Config":{"tag":"container-tag"}}},"Image":"test_image"}"#
+        );
+
+        test_case!(
+            ContainerCreateOptsBuilder::default()
+                .image("test_image")
+                .binds(vec![("/etc/hosts:/etc/hosts:ro")]),
+            r#"{"HostConfig":{"Binds":["/etc/hosts:/etc/hosts:ro"]},"Image":"test_image"}"#
         );
 
         test_case!(

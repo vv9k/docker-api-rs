@@ -677,12 +677,11 @@ async fn container_attach() {
     let _ = container.start().await;
 
     let mut multiplexer = container.attach().await.unwrap();
-    while let Some(chunk) = multiplexer.next().await {
+    if let Some(chunk) = multiplexer.next().await {
         match chunk {
             Ok(TtyChunk::StdOut(chunk)) => {
                 let logs = String::from_utf8_lossy(&chunk);
                 assert_eq!(logs, "123456\r\n");
-                break;
             }
             chunk => {
                 eprintln!("invalid chunk {chunk:?}");
@@ -713,12 +712,11 @@ async fn container_attach() {
     let _ = container.start().await;
 
     let mut multiplexer = container.attach().await.unwrap();
-    while let Some(chunk) = multiplexer.next().await {
+    if let Some(chunk) = multiplexer.next().await {
         match chunk {
             Ok(TtyChunk::StdOut(chunk)) => {
                 let logs = String::from_utf8_lossy(&chunk);
                 assert_eq!(logs, "123456\n");
-                break;
             }
             chunk => {
                 eprintln!("invalid chunk {chunk:?}");

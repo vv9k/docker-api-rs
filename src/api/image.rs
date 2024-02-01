@@ -89,7 +89,7 @@ impl Image {
         let headers = opts
             .auth_header()
             .map(|auth| Headers::single(AUTH_HEADER, auth))
-            .unwrap_or_else(Headers::default);
+            .unwrap_or_default();
 
         self.docker
             .post_string(&ep, Payload::empty(), Some(headers))
